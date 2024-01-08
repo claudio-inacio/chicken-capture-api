@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Auth\LoginController;
+use App\Http\Controllers\Api\TestController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -19,6 +20,10 @@ use Illuminate\Support\Facades\Route;
 //Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //    return $request->user();
 //});
+
+Route::group(['middleware' => ['authJwt']], function (){
+    Route::get('/teste', [TestController::class, 'test']);
+});
 
 Route::prefix('auth')->group(function () {
     Route::post('/login', [LoginController::class, 'login']);
