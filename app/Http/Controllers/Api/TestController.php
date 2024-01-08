@@ -14,10 +14,9 @@ class TestController extends Controller
     public function test(Request $request){
         $teste = false;
 
-        if (!$teste)
-            $response = ResponseService::reponse(false, 'Teste de erro ok', ['Bug' => 'the Bug is on the table'], 422);
+        if ($teste)
+            return ResponseService::reponse(false, 'Teste de erro ok', ['Bug' => 'the Bug is on the table'], 422);
 
-
-         return response()->json($response, $response['code']);
+            return ResponseService::success('Sucesso garotinho');
     }
 }
