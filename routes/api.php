@@ -27,4 +27,6 @@ Route::group(['middleware' => ['authJwt']], function (){
 
 Route::prefix('auth')->group(function () {
     Route::post('/login', [LoginController::class, 'login']);
+    Route::post('/refresh', [LoginController::class, 'refreshToken']);
+    Route::post('/logout', [LoginController::class, 'logout']);
 });

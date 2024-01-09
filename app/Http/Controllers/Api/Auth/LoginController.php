@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Interfaces\Authentication\CredentialRepositoryInterface;
+use App\Services\ResponseService;
 use Illuminate\Http\Request;
 
 class LoginController extends Controller
@@ -21,23 +22,36 @@ class LoginController extends Controller
         $data = $request->only('document', 'password');
 
         if (! $token = auth('api')->attempt($data)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return ResponseService::unauthenticated('Unauthorized', '');
         }
 
         if(empty($data['password']) || empty($data['document']))
-            return response()->json(['message' => 'Informe seu login e senha!'], 422);
+            return ResponseService::businessError('Informe seu login e senha!', ['data' => $data]);
 
         $user = $this->credentialRepository->getByCpf($request->document);
 
         if(count($user) <= 0)
-            return response()->json(['message' => 'Login ou senha incorreta!']);
+            return ResponseService::businessError('Login ou senha incorreta!', '');
 
         if (crypt($data['password'], $user[0]['password']) != $user[0]['password']) {
-            return response()->json(['message' => 'Login ou senha incorreta!']);
+            return ResponseService::businessError('Login ou senha incorreta!', '');
         }
 
         $token = $this->respondWithToken($token);
         return response()->json([ 'token' => $token, 'user' => $user[0] ]);
+    }
+
+    public function logout(){
+        auth('api')->logout();
+
+        return ResponseService::success('Logout efetuado com sucesso!');
+    }
+
+    public function refreshToken(){
+        $newToken = auth('api')->refresh();
+        $token = $this->respondWithToken($newToken);
+
+        return response()->json(['token' => $token]);
     }
 
     protected function respondWithToken($token): \Illuminate\Http\JsonResponse
