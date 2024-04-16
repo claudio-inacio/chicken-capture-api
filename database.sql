@@ -56,28 +56,28 @@ CREATE TABLE main.company
 );
 
 -- Table to store user information
-CREATE TABLE authentication.credential
-(
-    id              SERIAL PRIMARY KEY,
-    document        VARCHAR(14)  NOT NULL,
-    email           VARCHAR(100) UNIQUE,
-    password        VARCHAR(100) NOT NULL,
-    access_group_id INT          NOT NULL references authentication.access_group (id),
-    company_id      int not null REFERENCES main.company(id),
-    phone_number    varchar(15),
-    created_at      timestamp,
-    updated_at      timestamp
-);
-
 CREATE TABLE authentication.person
 (
     id               SERIAL PRIMARY KEY,
     name             VARCHAR(100) NOT NULL,
+    email           VARCHAR(100) UNIQUE,
+    phone_number    varchar(15),
     company_group_id INT          NOT NULL references main.company_group (id),
-    credential_id    INT          NOT NULL references authentication.credential (id),
+    access_group_id INT          NOT NULL references authentication.access_group (id),
     is_owner         boolean      not null default false,
     created_at       timestamp,
     updated_at       timestamp
+);
+
+CREATE TABLE authentication.credential
+(
+    id              SERIAL PRIMARY KEY,
+    document        VARCHAR(14)  NOT NULL,
+    password        VARCHAR(100) NOT NULL,
+    person_id INT          NOT NULL references authentication.person (id),
+    company_id      int not null REFERENCES main.company(id),
+    created_at      timestamp,
+    updated_at      timestamp
 );
 
 CREATE TABLE main.credential_company

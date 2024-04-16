@@ -41,7 +41,12 @@ class CredentialRepository implements CredentialRepositoryInterface
     {
         return CredentialProposals::where('document',$cpf)
             ->join('main.company', 'company.id', '=', 'credential.company_id')
-            ->select(['credential.*', 'company.name as company_name'])
+            ->join('authentication.person', 'person.id', '=', 'credential.person_id')
+            ->select([
+                'credential.*', 'company.name as company_name',
+                'person.name', 'person.access_group_id', 'person.is_owner', 'person.email', 'person.company_group_id',
+                'person.phone_number'
+            ])
             ->get();
     }
 
