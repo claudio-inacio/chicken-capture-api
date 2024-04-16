@@ -68,7 +68,7 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => App\Models\CredentialProposals::class,
+            'model' => App\Models\Credential::class,
         ],
 
         // 'users' => [

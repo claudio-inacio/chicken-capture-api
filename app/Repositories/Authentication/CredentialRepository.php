@@ -5,14 +5,14 @@ namespace App\Repositories\Authentication;
 use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
 use App\Interfaces\Authentication\CredentialRepositoryInterface;
-use App\Models\CredentialProposals;
+use App\Models\Credential;
 use Illuminate\Support\Facades\DB;
 
 class CredentialRepository implements CredentialRepositoryInterface
 {
     public function getAll()
     {
-        return CredentialProposals::all();
+        return Credential::all();
     }
 
     public function findAll($selectConfig, array $whereCriterious) : array
@@ -39,7 +39,7 @@ class CredentialRepository implements CredentialRepositoryInterface
 
     public function getByCpf(string $cpf)
     {
-        return CredentialProposals::where('document',$cpf)
+        return Credential::where('document',$cpf)
             ->join('main.company', 'company.id', '=', 'credential.company_id')
             ->join('authentication.person', 'person.id', '=', 'credential.person_id')
             ->select([
@@ -52,16 +52,16 @@ class CredentialRepository implements CredentialRepositoryInterface
 
     public function getById(int $id)
     {
-        return CredentialProposals::where('id',$id)->get();
+        return Credential::where('id',$id)->get();
     }
 
     public function create(array $value)
     {
-        return CredentialProposals::create($value);
+        return Credential::create($value);
     }
 
     public function update(int $id, array $data)
     {
-        return CredentialProposals::whereId($id)->update($data);
+        return Credential::whereId($id)->update($data);
     }
 }

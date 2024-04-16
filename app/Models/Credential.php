@@ -6,7 +6,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class CredentialProposals extends Authenticatable implements JWTSubject
+class Credential extends Authenticatable implements JWTSubject
 {
     use HasApiTokens;
 
@@ -16,11 +16,9 @@ class CredentialProposals extends Authenticatable implements JWTSubject
 
     protected $fillable = [
         'document',
-        'name',
-        'phone_number',
         'password',
-        'access_group_id',
-        'enabled'
+        'person_id',
+        'company_id',
     ];
 
     protected $hidden = [
