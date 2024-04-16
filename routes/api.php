@@ -3,7 +3,6 @@
 use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\TestController;
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
