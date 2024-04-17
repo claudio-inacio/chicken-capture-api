@@ -6,6 +6,8 @@ use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
 use App\Interfaces\Authentication\PersonRespositoryInterface;
 use App\Models\Authentication\Person;
+use App\Models\Credential;
+use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
 
 class PersonRepository implements PersonRespositoryInterface
@@ -24,8 +26,8 @@ class PersonRepository implements PersonRespositoryInterface
     {
         $query = DB::table('authentication.person')
             ->join('main.company_group', 'company_group.id', '=','person.company_group_id')
-            ->leftJoin('authentication.credential', 'credential.person_id', '=', 'person.id')
-            ->leftJoin('main.company', 'company.company_group_id', '=', 'company_group.id');
+            ->join('authentication.credential', 'credential.person_id', '=', 'person.id')
+            ->join('main.company', 'company.company_group_id', '=', 'company_group.id');
 
 
         $whereFactory = new WhereFactory();
@@ -62,6 +64,14 @@ class PersonRepository implements PersonRespositoryInterface
 
     public function update(int $id, array $data)
     {
-        return Person::whereId($id)->update($data);
+        try {
+            Credential::where('person_id', $data['person_id'])->update(['company_id' => $data['company_id']]);
+            unset($data['person_id'], $data['company_id']);
+            Person::whereId($id)->update($data);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em atualizar registro', $e->getMessage());
+        }
+
     }
 }

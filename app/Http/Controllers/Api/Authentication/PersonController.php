@@ -27,7 +27,7 @@ class PersonController extends Controller
             'access_group_id' => 'required',
             'document' => 'required',
             'password' => 'required',
-            'company_ids' => 'required',
+            'company_id' => 'required',
         ]);
 
         return PersonService::create($request->all(), $request->user());
@@ -42,5 +42,18 @@ class PersonController extends Controller
             return response()->json(['message' => 'Where config is required!!!'], 422);
 
         return response()->json($this->personRespository->findAll($selectConfig, $whereCriterious));
+    }
+
+    public function update(Request $request){
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required',
+            'phone_number' => 'required',
+            'access_group_id' => 'required',
+            'company_id' => 'required',
+            'person_id' => 'required'
+        ]);
+
+        return $this->personRespository->update($request->person_id, $request->all());
     }
 }

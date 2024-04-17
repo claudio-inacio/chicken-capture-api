@@ -4,6 +4,7 @@ namespace App\Services\Authentication;
 
 
 use App\Enum\Authentication\AccessGroupEnum;
+use App\Helpers\FormatHelper;
 use App\Models\Authentication\Person;
 use App\Models\Credential;
 use App\Models\Main\Company;
@@ -14,8 +15,12 @@ class PersonService
 {
     public static function create(array $arrayRequest, $user): \Illuminate\Http\JsonResponse
     {
+        if (!FormatHelper::cpfIsValid($arrayRequest['document']))
+            return ResponseService::businessError('Por favor envie um cpf valido!');
+
         DB::beginTransaction();
         try {
+            $arrayRequest['document'] = FormatHelper::formatCnpjCpf($arrayRequest['document']);
             $arrayRequest['access_group_id'] == AccessGroupEnum::DIRETORIA ? $isOwner = true : $isOwner = false;
             $company = Company::whereId($user->company_id)->first();
 
@@ -34,14 +39,13 @@ class PersonService
                 'is_owner' => $isOwner,
             ]);
 
-            foreach ($arrayRequest['company_ids'] as $id) {
-                Credential::create([
-                    'document' => $arrayRequest['document'],
-                    'password' => bcrypt($arrayRequest['password']),
-                    'person_id' => $person->id,
-                    'company_id' => $id
-                ]);
-            }
+            Credential::create([
+                'document' => $arrayRequest['document'],
+                'password' => bcrypt($arrayRequest['password']),
+                'person_id' => $person->id,
+                'company_id' => $arrayRequest['company_id']
+            ]);
+
             DB::commit();
             return ResponseService::success204();
         } catch (\Exception $exception){

@@ -24,6 +24,7 @@ Route::group(['middleware' => ['authJwt']], function (){
     ################################### MODULE AUTHENTICATION #############################
     Route::post('/person', [PersonController::class, 'register']);
     Route::get('/person', [PersonController::class, 'list']);
+    Route::put('/person', [PersonController::class, 'update']);
 
     ####################################### MODULE MAIN ###################################
     Route::post('/teste', [TestController::class, 'test']);
