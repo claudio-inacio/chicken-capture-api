@@ -6,6 +6,7 @@ use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
 use App\Interfaces\ContractingCompany\ContractingCompanyRepositoryInterface;
 use App\Models\ContractingCompany\ContractingCompany;
+use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
 
 class ContractingCompanyRepository implements ContractingCompanyRepositoryInterface
@@ -47,13 +48,44 @@ class ContractingCompanyRepository implements ContractingCompanyRepositoryInterf
         return ContractingCompany::where('id',$id)->get();
     }
 
-    public function create(array $value)
+    public function create(array $value): \Illuminate\Http\JsonResponse
     {
-        return ContractingCompany::create($value);
+        try {
+            $catchType = ContractingCompany::where('name', $value['name'])
+                ->where('company_id', $value['company_id'])
+                ->first();
+            if ($catchType) return ResponseService::businessError('Ja existe uma compania contratante com esse nome!');
+
+            ContractingCompany::create($value);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em registrar compania contratante', $e->getMessage());
+        }
     }
 
-    public function update(int $id, array $data)
+    public function update(int $id, array $data): \Illuminate\Http\JsonResponse
     {
-        return ContractingCompany::whereId($id)->update($data);
+        unset($data['contracting_company_id']);
+        try {
+            $catchType = ContractingCompany::where('name', $data['name'])
+                ->where('id', '<>', $id)->first();
+
+            if ($catchType) return ResponseService::businessError('Ja existe uma compania contratante com esse nome!');
+
+            ContractingCompany::whereId($id)->update($data);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em alterar compania contratante', $e->getMessage());
+        }
+    }
+
+    public function enable(int $id, bool $enable): \Illuminate\Http\JsonResponse
+    {
+        try {
+            ContractingCompany::whereId($id)->update(['enabled' => $enable]);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha Ativar/Desativar compania contratante', $e->getMessage());
+        }
     }
 }

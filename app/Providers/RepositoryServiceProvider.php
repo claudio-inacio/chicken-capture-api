@@ -9,6 +9,8 @@ use App\Interfaces\Catch\CatchTypeRespositoryInterface;
 use App\Interfaces\Catch\CatchsConfigurationRespositoryInterface;
 use App\Interfaces\Catch\CatchsCancelledRespositoryInterface;
 use App\Interfaces\Catch\CatchDailyRespositoryInterface;
+use App\Interfaces\ContractingCompany\ContractingCompanyRepositoryInterface;
+use App\Interfaces\ContractingCompany\IntegratedRepositoryInterface;
 
 use App\Repositories\Authentication\AccessGroupRepository;
 use App\Repositories\Authentication\CredentialRepository;
@@ -17,6 +19,8 @@ use App\Repositories\Catch\CatchTypeRepository;
 use App\Repositories\Catch\CatchsConfigurationRepository;
 use App\Repositories\Catch\CatchsCancelledRepository;
 use App\Repositories\Catch\CatchDailyRepository;
+use App\Repositories\ContractingCompany\ContractingCompanyRepository;
+use App\Repositories\ContractingCompany\IntegratedRepository;
 
 use Illuminate\Support\ServiceProvider;
 
@@ -37,6 +41,8 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(CatchsConfigurationRespositoryInterface::class, CatchsConfigurationRepository::class);
         $this->app->bind(CatchsCancelledRespositoryInterface::class, CatchsCancelledRepository::class);
         $this->app->bind(CatchDailyRespositoryInterface::class, CatchDailyRepository::class);
+        $this->app->bind(ContractingCompanyRepositoryInterface::class, ContractingCompanyRepository::class);
+        $this->app->bind(IntegratedRepositoryInterface::class, IntegratedRepository::class);
     }
 
     /**

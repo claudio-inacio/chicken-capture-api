@@ -1,5 +1,5 @@
 <?php
-namespace App\Interfaces\ContractingCompany;
+namespace App\Interfaces\Financial;
 
 interface MonthlyClosingReportsRepositoryInterface
 {

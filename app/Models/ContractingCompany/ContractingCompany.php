@@ -12,5 +12,5 @@ class ContractingCompany extends Model
 
     protected $table = 'contracting_company.contracting_company';
 
-    protected $fillable = ['id', 'name', 'company_id', 'created_at', 'updated_at'];
+    protected $fillable = ['id', 'name', 'company_id', 'enabled', 'created_at', 'updated_at'];
 }

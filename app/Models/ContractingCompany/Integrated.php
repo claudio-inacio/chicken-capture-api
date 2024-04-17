@@ -12,5 +12,5 @@ class Integrated extends Model
 
     protected $table = 'contracting_company.integrated';
 
-    protected $fillable = ['id', 'name', 'contracting_company_id', 'created_at', 'updated_at'];
+    protected $fillable = ['id', 'name', 'contracting_company_id', 'enabled', 'created_at', 'updated_at'];
 }
