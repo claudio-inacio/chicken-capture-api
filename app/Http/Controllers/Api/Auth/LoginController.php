@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Interfaces\Authentication\CredentialRepositoryInterface;
+use App\Models\Authentication\Person;
 use App\Services\ResponseService;
 use Illuminate\Http\Request;
 
@@ -32,6 +33,10 @@ class LoginController extends Controller
 
         if(count($user) <= 0)
             return ResponseService::businessError('Login ou senha incorreta!', '');
+
+        $person = Person::whereId($user[0]['person_id'])->first();
+        if (!$person->enabled)
+            return ResponseService::businessError('Usuario Desativado!');
 
         if (crypt($data['password'], $user[0]['password']) != $user[0]['password']) {
             return ResponseService::businessError('Login ou senha incorreta!', '');

@@ -62,7 +62,7 @@ class PersonRepository implements PersonRespositoryInterface
         return Person::create($value);
     }
 
-    public function update(int $id, array $data)
+    public function update(int $id, array $data): \Illuminate\Http\JsonResponse
     {
         try {
             Credential::where('person_id', $data['person_id'])->update(['company_id' => $data['company_id']]);
@@ -73,5 +73,15 @@ class PersonRepository implements PersonRespositoryInterface
             return ResponseService::internalServerError('Falha em atualizar registro', $e->getMessage());
         }
 
+    }
+
+    public function enable(int $id, bool $enabled): \Illuminate\Http\JsonResponse
+    {
+        try {
+            Person::whereId($id)->update(['enabled' => $enabled]);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em ativar/desativar registro', $e->getMessage());
+        }
     }
 }

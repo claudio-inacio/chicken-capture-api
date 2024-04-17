@@ -56,4 +56,13 @@ class PersonController extends Controller
 
         return $this->personRespository->update($request->person_id, $request->all());
     }
+
+    public function enable(Request $request){
+        $request->validate([
+            'person_id' => 'required',
+            'enabled' => 'required'
+        ]);
+
+        return $this->personRespository->enable($request->person_id, $request->enabled);
+    }
 }
