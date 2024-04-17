@@ -12,5 +12,5 @@ class CatchType extends Model
 
     protected $table = 'catch.catch_type';
 
-    protected $fillable = ['id', 'name', 'created_at', 'updated_at'];
+    protected $fillable = ['id', 'name', 'enabled', 'created_at', 'updated_at'];
 }

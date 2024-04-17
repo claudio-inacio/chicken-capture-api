@@ -51,7 +51,7 @@ class CatchTypeRepository implements CatchTypeRespositoryInterface
     public function create(array $value): \Illuminate\Http\JsonResponse
     {
         try {
-            $catchType = CatchType::where('name', $value['name']);
+            $catchType = CatchType::where('name', $value['name'])->first();
             if ($catchType) return ResponseService::businessError('Ja existe um tipo de apanha com esse nome!');
 
             CatchType::create($value);
@@ -61,8 +61,29 @@ class CatchTypeRepository implements CatchTypeRespositoryInterface
         }
     }
 
-    public function update(int $id, array $data)
+    public function update(int $id, array $data): \Illuminate\Http\JsonResponse
     {
-        return CatchType::whereId($id)->update($data);
+        unset($data['catch_type_id']);
+        try {
+            $catchType = CatchType::where('name', $data['name'])
+                ->where('id', '<>', $id)->first();
+
+            if ($catchType) return ResponseService::businessError('Ja existe um tipo de apanha com esse nome!');
+
+            CatchType::whereId($id)->update($data);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em registrar tipo de apanha', $e->getMessage());
+        }
+    }
+
+    public function enable(int $id, bool $enable): \Illuminate\Http\JsonResponse
+    {
+        try {
+            CatchType::whereId($id)->update(['enabled' => $enable]);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha Ativar/Desativar tipo de apanha', $e->getMessage());
+        }
     }
 }

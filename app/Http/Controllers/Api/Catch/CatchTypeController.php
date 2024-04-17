@@ -34,28 +34,24 @@ class CatchTypeController extends Controller
         if (!$whereCriterious)
             return response()->json(['message' => 'Where config is required!!!'], 422);
 
-        return response()->json($this->personRespository->findAll($selectConfig, $whereCriterious));
+        return response()->json($this->catchTypeRespository->findAll($selectConfig, $whereCriterious));
     }
 
     public function update(Request $request){
         $request->validate([
             'name' => 'required',
-            'email' => 'required',
-            'phone_number' => 'required',
-            'access_group_id' => 'required',
-            'company_id' => 'required',
-            'person_id' => 'required'
+            'catch_type_id' => 'required'
         ]);
 
-        return $this->personRespository->update($request->person_id, $request->all());
+        return $this->catchTypeRespository->update($request->catch_type_id, $request->all());
     }
 
     public function enable(Request $request){
         $request->validate([
-            'person_id' => 'required',
+            'catch_type_id' => 'required',
             'enabled' => 'required'
         ]);
 
-        return $this->personRespository->enable($request->person_id, $request->enabled);
+        return $this->catchTypeRespository->enable($request->catch_type_id, $request->enabled);
     }
 }
