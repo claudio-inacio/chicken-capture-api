@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Route;
 Route::group(['middleware' => ['authJwt']], function (){
     ################################### MODULE AUTHENTICATION #############################
     Route::post('/person', [PersonController::class, 'register']);
+    Route::get('/person', [PersonController::class, 'list']);
 
     ####################################### MODULE MAIN ###################################
     Route::post('/teste', [TestController::class, 'test']);

@@ -22,7 +22,11 @@ class PersonRepository implements PersonRespositoryInterface
 
     public function findAll($selectConfig, array $whereCriterious) : array
     {
-        $query = DB::table('authentication.person');
+        $query = DB::table('authentication.person')
+            ->join('main.company_group', 'company_group.id', '=','person.company_group_id')
+            ->leftJoin('authentication.credential', 'credential.person_id', '=', 'person.id')
+            ->leftJoin('main.company', 'company.company_group_id', '=', 'company_group.id');
+
 
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);
@@ -31,7 +35,11 @@ class PersonRepository implements PersonRespositoryInterface
 
         $selectFactory = new SelectFactory();
         $query = $selectFactory->byArray($query, $selectConfig);
-        $query->select(['person.*']);
+        $query->select(['person.*',
+            'company_group.name as company_group_name',
+            'credential.document',
+            'company.name as company_name'
+        ]);
 
         $result = $query->get();
 
