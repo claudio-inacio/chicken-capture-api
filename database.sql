@@ -145,7 +145,7 @@ CREATE TABLE catch.catch_type
     updated_at timestamp
 );
 
-CREATE TABLE catch.daily_catch
+CREATE TABLE catch.catch_daily
 (
     id              SERIAL PRIMARY KEY,
     date            DATE NOT NULL,

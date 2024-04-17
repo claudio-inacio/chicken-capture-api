@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Auth\LoginController;
-use App\Http\Controllers\Api\TestController;
+use App\Http\Controllers\Api\Authentication\PersonController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -21,7 +21,11 @@ use Illuminate\Support\Facades\Route;
 //});
 
 Route::group(['middleware' => ['authJwt']], function (){
-    Route::get('/teste', [TestController::class, 'test']);
+    ################################### MODULE AUTHENTICATION #############################
+    Route::post('/person', [PersonController::class, 'register']);
+
+    ####################################### MODULE MAIN ###################################
+    Route::post('/teste', [TestController::class, 'test']);
 });
 
 Route::prefix('auth')->group(function () {
