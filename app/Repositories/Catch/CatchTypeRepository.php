@@ -6,6 +6,7 @@ use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
 use App\Interfaces\Catch\CatchTypeRespositoryInterface;
 use App\Models\Catch\CatchType;
+use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
 
 class CatchTypeRepository implements CatchTypeRespositoryInterface
@@ -47,9 +48,17 @@ class CatchTypeRepository implements CatchTypeRespositoryInterface
         return CatchType::where('id',$id)->get();
     }
 
-    public function create(array $value)
+    public function create(array $value): \Illuminate\Http\JsonResponse
     {
-        return CatchType::create($value);
+        try {
+            $catchType = CatchType::where('name', $value['name']);
+            if ($catchType) return ResponseService::businessError('Ja existe um tipo de apanha com esse nome!');
+
+            CatchType::create($value);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em registrar tipo de apanha', $e->getMessage());
+        }
     }
 
     public function update(int $id, array $data)

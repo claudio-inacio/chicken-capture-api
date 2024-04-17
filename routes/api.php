@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Authentication\PersonController;
+use App\Http\Controllers\Api\Catch\CatchTypeController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -27,8 +28,11 @@ Route::group(['middleware' => ['authJwt']], function (){
     Route::put('/person', [PersonController::class, 'update']);
     Route::put('/person/enable', [PersonController::class, 'enable']);
 
-    ####################################### MODULE MAIN ###################################
-    Route::post('/teste', [TestController::class, 'test']);
+    ##################################### MODULE CATCH TYPE ###################################
+    Route::post('/catch-type', [CatchTypeController::class, 'register']);
+    Route::get('/catch-type', [CatchTypeController::class, 'list']);
+    Route::put('/catch-type', [CatchTypeController::class, 'update']);
+    Route::put('/catch-type/enable', [CatchTypeController::class, 'enable']);
 });
 
 Route::prefix('auth')->group(function () {
