@@ -67,9 +67,10 @@ class UnitsRepository implements UnitsRepositoryInterface
 
     public function update(int $id, array $data): \Illuminate\Http\JsonResponse
     {
-        unset($data['integrated_id']);
+        unset($data['units_id']);
         try {
             $units = Units::where('name', $data['name'])
+                ->where('contracting_company_id', $data['contracting_company_id'])
                 ->where('id', '<>', $id)->first();
 
             if ($units) return ResponseService::businessError('Ja existe uma unidade com esse nome!');

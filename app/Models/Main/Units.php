@@ -12,5 +12,6 @@ class Units extends Model
 
     protected $table = 'main.units';
 
-    protected $fillable = ['id', 'name', 'location', 'company_id', 'contracting_company_id', 'created_at', 'updated_at'];
+    protected $fillable = ['id', 'name', 'location', 'company_id', 'contracting_company_id', 'enabled', 'created_at',
+        'updated_at'];
 }

@@ -45,18 +45,20 @@ class UnitsController extends Controller
     public function update(Request $request){
         $request->validate([
             'name' => 'required',
-            'integrated_id' => 'required'
+            'location' => 'required',
+            'contracting_company_id' => 'required',
+            'units_id' => 'required'
         ]);
 
-        return $this->unitsRepository->update($request->integrated_id, $request->all());
+        return $this->unitsRepository->update($request->units_id, $request->all());
     }
 
     public function enable(Request $request){
         $request->validate([
-            'integrated_id' => 'required',
+            'units_id' => 'required',
             'enabled' => 'required'
         ]);
 
-        return $this->unitsRepository->enable($request->integrated_id, $request->enabled);
+        return $this->unitsRepository->enable($request->units_id, $request->enabled);
     }
 }
