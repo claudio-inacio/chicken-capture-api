@@ -43,10 +43,10 @@ Route::group(['middleware' => ['authJwt']], function (){
     Route::put('/contracting-company', [ContractingCompanyController::class, 'update']);
     Route::put('/contracting-company/enable', [ContractingCompanyController::class, 'enable']);
 
-    Route::post('/integrated', [IntegratedController::class, 'register']);
-    Route::get('/integrated', [IntegratedController::class, 'list']);
-    Route::put('/integrated', [IntegratedController::class, 'update']);
-    Route::put('/integrated/enable', [IntegratedController::class, 'enable']);
+    Route::post('/contracting-company/integrated', [IntegratedController::class, 'register']);
+    Route::get('/contracting-company/integrated', [IntegratedController::class, 'list']);
+    Route::put('/contracting-company/integrated', [IntegratedController::class, 'update']);
+    Route::put('/contracting-company/integrated/enable', [IntegratedController::class, 'enable']);
 
     ##################################### MAIN ###################################
     Route::post('/main/units', [UnitsController::class, 'register']);
