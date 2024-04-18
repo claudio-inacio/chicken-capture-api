@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Authentication\PersonController;
 use App\Http\Controllers\Api\Catch\CatchTypeController;
 use App\Http\Controllers\Api\ContractingCompany\ContractingCompanyController;
 use App\Http\Controllers\Api\ContractingCompany\IntegratedController;
+use App\Http\Controllers\Api\Main\UnitsController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -25,16 +26,16 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(['middleware' => ['authJwt']], function (){
     ################################### AUTHENTICATION #############################
-    Route::post('/person', [PersonController::class, 'register']);
-    Route::get('/person', [PersonController::class, 'list']);
-    Route::put('/person', [PersonController::class, 'update']);
-    Route::put('/person/enable', [PersonController::class, 'enable']);
+    Route::post('/authentication/person', [PersonController::class, 'register']);
+    Route::get('/authentication/person', [PersonController::class, 'list']);
+    Route::put('/authentication/person', [PersonController::class, 'update']);
+    Route::put('/authentication/person/enable', [PersonController::class, 'enable']);
 
-    ##################################### CATCH TYPE ###################################
-    Route::post('/catch-type', [CatchTypeController::class, 'register']);
-    Route::get('/catch-type', [CatchTypeController::class, 'list']);
-    Route::put('/catch-type', [CatchTypeController::class, 'update']);
-    Route::put('/catch-type/enable', [CatchTypeController::class, 'enable']);
+    ##################################### CATCH ###################################
+    Route::post('/catch/catch-type', [CatchTypeController::class, 'register']);
+    Route::get('/catch/catch-type', [CatchTypeController::class, 'list']);
+    Route::put('/catch/catch-type', [CatchTypeController::class, 'update']);
+    Route::put('/catch/catch-type/enable', [CatchTypeController::class, 'enable']);
 
     ##################################### CONTRACTING COMPANY ###################################
     Route::post('/contracting-company', [ContractingCompanyController::class, 'register']);
@@ -48,6 +49,11 @@ Route::group(['middleware' => ['authJwt']], function (){
     Route::put('/integrated/enable', [IntegratedController::class, 'enable']);
 
     ##################################### MAIN ###################################
+    Route::post('/main/units', [UnitsController::class, 'register']);
+    Route::get('/main/units', [UnitsController::class, 'list']);
+    Route::put('/main/units', [UnitsController::class, 'update']);
+    Route::put('/main/units/enable', [UnitsController::class, 'enable']);
+
 //    Route::post('/catch-type', [CatchTypeController::class, 'register']);
 //    Route::get('/catch-type', [CatchTypeController::class, 'list']);
 //    Route::put('/catch-type', [CatchTypeController::class, 'update']);

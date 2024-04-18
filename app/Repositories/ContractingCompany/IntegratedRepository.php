@@ -51,8 +51,8 @@ class IntegratedRepository implements IntegratedRepositoryInterface
     public function create(array $value): \Illuminate\Http\JsonResponse
     {
         try {
-            $catchType = Integrated::where('name', $value['name'])->first();
-            if ($catchType) return ResponseService::businessError('Ja existe uma integraçao com esse nome!');
+            $integrated = Integrated::where('name', $value['name'])->first();
+            if ($integrated) return ResponseService::businessError('Ja existe uma integraçao com esse nome!');
 
             Integrated::create($value);
             return ResponseService::success204();
@@ -65,10 +65,10 @@ class IntegratedRepository implements IntegratedRepositoryInterface
     {
         unset($data['integrated_id']);
         try {
-            $catchType = Integrated::where('name', $data['name'])
+            $integrated = Integrated::where('name', $data['name'])
                 ->where('id', '<>', $id)->first();
 
-            if ($catchType) return ResponseService::businessError('Ja existe uma integraçao com esse nome!');
+            if ($integrated) return ResponseService::businessError('Ja existe uma integraçao com esse nome!');
 
             Integrated::whereId($id)->update($data);
             return ResponseService::success204();

@@ -51,10 +51,10 @@ class ContractingCompanyRepository implements ContractingCompanyRepositoryInterf
     public function create(array $value): \Illuminate\Http\JsonResponse
     {
         try {
-            $catchType = ContractingCompany::where('name', $value['name'])
+            $contractingCompany = ContractingCompany::where('name', $value['name'])
                 ->where('company_id', $value['company_id'])
                 ->first();
-            if ($catchType) return ResponseService::businessError('Ja existe uma compania contratante com esse nome!');
+            if ($contractingCompany) return ResponseService::businessError('Ja existe uma compania contratante com esse nome!');
 
             ContractingCompany::create($value);
             return ResponseService::success204();
@@ -67,10 +67,10 @@ class ContractingCompanyRepository implements ContractingCompanyRepositoryInterf
     {
         unset($data['contracting_company_id']);
         try {
-            $catchType = ContractingCompany::where('name', $data['name'])
+            $contractingCompany = ContractingCompany::where('name', $data['name'])
                 ->where('id', '<>', $id)->first();
 
-            if ($catchType) return ResponseService::businessError('Ja existe uma compania contratante com esse nome!');
+            if ($contractingCompany) return ResponseService::businessError('Ja existe uma compania contratante com esse nome!');
 
             ContractingCompany::whereId($id)->update($data);
             return ResponseService::success204();

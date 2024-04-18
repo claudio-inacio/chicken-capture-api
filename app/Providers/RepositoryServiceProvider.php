@@ -11,6 +11,12 @@ use App\Interfaces\Catch\CatchsCancelledRespositoryInterface;
 use App\Interfaces\Catch\CatchDailyRespositoryInterface;
 use App\Interfaces\ContractingCompany\ContractingCompanyRepositoryInterface;
 use App\Interfaces\ContractingCompany\IntegratedRepositoryInterface;
+use App\Interfaces\Main\UnitsRepositoryInterface;
+use App\Interfaces\Main\TeamRepositoryInterface;
+use App\Interfaces\Main\CredentialCompanyRepositoryInterface;
+use App\Interfaces\Main\CompanyRepositoryInterface;
+use App\Interfaces\Main\CompanyGroupRepositoryInterface;
+use App\Interfaces\Main\CollectorsRepositoryInterface;
 
 use App\Repositories\Authentication\AccessGroupRepository;
 use App\Repositories\Authentication\CredentialRepository;
@@ -21,6 +27,12 @@ use App\Repositories\Catch\CatchsCancelledRepository;
 use App\Repositories\Catch\CatchDailyRepository;
 use App\Repositories\ContractingCompany\ContractingCompanyRepository;
 use App\Repositories\ContractingCompany\IntegratedRepository;
+use App\Repositories\Main\UnitsRepository;
+use App\Repositories\Main\TeamRepository;
+use App\Repositories\Main\CredentialCompanyRepository;
+use App\Repositories\Main\CompanyRepository;
+use App\Repositories\Main\CompanyGroupRepository;
+use App\Repositories\Main\CollectorsRepository;
 
 use Illuminate\Support\ServiceProvider;
 
@@ -43,6 +55,13 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(CatchDailyRespositoryInterface::class, CatchDailyRepository::class);
         $this->app->bind(ContractingCompanyRepositoryInterface::class, ContractingCompanyRepository::class);
         $this->app->bind(IntegratedRepositoryInterface::class, IntegratedRepository::class);
+        $this->app->bind(UnitsRepositoryInterface::class, UnitsRepository::class);
+        $this->app->bind(TeamRepositoryInterface::class, TeamRepository::class);
+        $this->app->bind(CredentialCompanyRepositoryInterface::class, CredentialCompanyRepository::class);
+        $this->app->bind(CompanyRepositoryInterface::class, CompanyRepository::class);
+        $this->app->bind(CompanyGroupRepositoryInterface::class, CompanyGroupRepository::class);
+        $this->app->bind(CollectorsRepositoryInterface::class, CollectorsRepository::class);
+
     }
 
     /**

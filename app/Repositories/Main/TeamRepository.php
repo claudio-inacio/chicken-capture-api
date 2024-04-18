@@ -6,7 +6,9 @@ use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
 use App\Interfaces\Main\CredentialCompanyRepositoryInterface;
 use App\Interfaces\Main\TeamRepositoryInterface;
+use App\Models\ContractingCompany\Integrated;
 use App\Models\Main\Team;
+use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
 
 class TeamRepository implements TeamRepositoryInterface
@@ -45,16 +47,45 @@ class TeamRepository implements TeamRepositoryInterface
 
     public function getById(int $id)
     {
-        return Team::where('id',$id)->get();
+        return Integrated::where('id',$id)->get();
     }
 
-    public function create(array $value)
+    public function create(array $value): \Illuminate\Http\JsonResponse
     {
-        return Team::create($value);
+        try {
+            $catchType = Integrated::where('name', $value['name'])->first();
+            if ($catchType) return ResponseService::businessError('Ja existe uma integraçao com esse nome!');
+
+            Integrated::create($value);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em registrar integraçao', $e->getMessage());
+        }
     }
 
-    public function update(int $id, array $data)
+    public function update(int $id, array $data): \Illuminate\Http\JsonResponse
     {
-        return Team::whereId($id)->update($data);
+        unset($data['integrated_id']);
+        try {
+            $catchType = Integrated::where('name', $data['name'])
+                ->where('id', '<>', $id)->first();
+
+            if ($catchType) return ResponseService::businessError('Ja existe uma integraçao com esse nome!');
+
+            Integrated::whereId($id)->update($data);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em alterar integraçao', $e->getMessage());
+        }
+    }
+
+    public function enable(int $id, bool $enable): \Illuminate\Http\JsonResponse
+    {
+        try {
+            Integrated::whereId($id)->update(['enabled' => $enable]);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha Ativar/Desativar integraçao', $e->getMessage());
+        }
     }
 }

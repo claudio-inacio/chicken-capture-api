@@ -6,6 +6,7 @@ use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
 use App\Interfaces\Main\UnitsRepositoryInterface;
 use App\Models\Main\Units;
+use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
 
 class UnitsRepository implements UnitsRepositoryInterface
@@ -47,13 +48,46 @@ class UnitsRepository implements UnitsRepositoryInterface
         return Units::where('id',$id)->get();
     }
 
-    public function create(array $value)
+    public function create(array $value): \Illuminate\Http\JsonResponse
     {
-        return Units::create($value);
+        try {
+            $units = Units::where('name', $value['name'])
+                ->where('company_id', $value['company_id'])
+                ->where('contracting_company_id', $value['contracting_company_id'])
+                ->first();
+
+            if ($units) return ResponseService::businessError('Ja existe uma unidade com esse nome!');
+
+            Units::create($value);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em registrar unidade', $e->getMessage());
+        }
     }
 
-    public function update(int $id, array $data)
+    public function update(int $id, array $data): \Illuminate\Http\JsonResponse
     {
-        return Units::whereId($id)->update($data);
+        unset($data['integrated_id']);
+        try {
+            $units = Units::where('name', $data['name'])
+                ->where('id', '<>', $id)->first();
+
+            if ($units) return ResponseService::businessError('Ja existe uma unidade com esse nome!');
+
+            Units::whereId($id)->update($data);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em alterar unidade', $e->getMessage());
+        }
+    }
+
+    public function enable(int $id, bool $enable): \Illuminate\Http\JsonResponse
+    {
+        try {
+            Units::whereId($id)->update(['enabled' => $enable]);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha Ativar/Desativar unidade', $e->getMessage());
+        }
     }
 }
