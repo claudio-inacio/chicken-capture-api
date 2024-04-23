@@ -12,5 +12,5 @@ class CompanyGroup extends Model
 
     protected $table = 'main.company_group';
 
-    protected $fillable = ['id', 'name', 'created_at', 'updated_at'];
+    protected $fillable = ['id', 'name', 'enabled', 'created_at', 'updated_at'];
 }

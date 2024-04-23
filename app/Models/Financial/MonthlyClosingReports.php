@@ -12,6 +12,5 @@ class MonthlyClosingReports extends Model
 
     protected $table = 'financial.monthly_closing_reports';
 
-    protected $fillable = ['id', 'month', 'year', 'total_expenses', 'total_income', 'credential_id', 'company_id',
-        'created_at', 'updated_at'];
+    protected $fillable = ['id', 'month', 'year', 'total_expenses', 'total_income', 'company_id', 'created_at', 'updated_at'];
 }

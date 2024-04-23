@@ -4,8 +4,10 @@ namespace App\Repositories\Catch;
 
 use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
+use App\Helpers\FormatHelper;
 use App\Interfaces\Catch\CatchsCancelledRespositoryInterface;
 use App\Models\Catch\CatchsCancelled;
+use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
 
 class CatchsCancelledRepository implements CatchsCancelledRespositoryInterface
@@ -47,13 +49,27 @@ class CatchsCancelledRepository implements CatchsCancelledRespositoryInterface
         return CatchsCancelled::where('id',$id)->get();
     }
 
-    public function create(array $value)
+    public function create(array $value): \Illuminate\Http\JsonResponse
     {
-        return CatchsCancelled::create($value);
+        $value['date'] = FormatHelper::dateToUs($value['date']);
+
+        try {
+            CatchsCancelled::create($value);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em registrar cancelamento de apanha', $e->getMessage());
+        }
     }
 
-    public function update(int $id, array $data)
+    public function update(int $id, array $data): \Illuminate\Http\JsonResponse
     {
-        return CatchsCancelled::whereId($id)->update($data);
+        $data['date'] = FormatHelper::dateToUs($data['date']);
+        unset($data['catchs_cancelled_id']);
+        try {
+            CatchsCancelled::whereId($id)->update($data);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em alterar cancelamento de apanha', $e->getMessage());
+        }
     }
 }

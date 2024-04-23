@@ -202,7 +202,7 @@ CREATE TABLE vehicles.vehicles
 
 CREATE TABLE vehicles.driver_Area
 (
-    area_id              SERIAL PRIMARY KEY,
+    id              SERIAL PRIMARY KEY,
     credential_id        INT REFERENCES authentication.credential (id),
     vehicle_id           INT REFERENCES vehicles.vehicles (vehicle_id),
     fuel                 INTEGER        NOT NULL,

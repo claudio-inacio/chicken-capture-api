@@ -12,6 +12,6 @@ class CatchsCancelled extends Model
 
     protected $table = 'catch.catchs_cancelled';
 
-    protected $fillable = ['id', 'date', 'credential_id', 'quantity', 'daily_catch_id', 'company_id', 'notes',
+    protected $fillable = ['id', 'date', 'credential_id', 'quantity', 'catch_daily_id', 'company_id', 'notes',
         'created_at', 'updated_at'];
 }

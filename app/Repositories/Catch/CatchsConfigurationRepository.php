@@ -4,8 +4,10 @@ namespace App\Repositories\Catch;
 
 use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
+use App\Helpers\FormatHelper;
 use App\Interfaces\Catch\CatchsConfigurationRespositoryInterface;
 use App\Models\Catch\CatchsConfiguration;
+use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
 
 class CatchsConfigurationRepository implements CatchsConfigurationRespositoryInterface
@@ -47,13 +49,28 @@ class CatchsConfigurationRepository implements CatchsConfigurationRespositoryInt
         return CatchsConfiguration::where('id',$id)->get();
     }
 
-    public function create(array $value)
+    public function create(array $value): \Illuminate\Http\JsonResponse
     {
-        return CatchsConfiguration::create($value);
+        $value['catch_price'] = FormatHelper::brlTodecimal($value['catch_price']);
+        $value['cancellation_price'] = FormatHelper::brlTodecimal($value['cancellation_price']);
+        try {
+            CatchsConfiguration::create($value);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em registrar configuração de apanha', $e->getMessage());
+        }
     }
 
-    public function update(int $id, array $data)
+    public function update(int $id, array $data): \Illuminate\Http\JsonResponse
     {
-        return CatchsConfiguration::whereId($id)->update($data);
+        $data['catch_price'] = FormatHelper::brlTodecimal($data['catch_price']);
+        $data['cancellation_price'] = FormatHelper::brlTodecimal($data['cancellation_price']);
+        unset($data['catchs_configuration_id']);
+        try {
+            CatchsConfiguration::whereId($id)->update($data);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em alterar configuração de apanha', $e->getMessage());
+        }
     }
 }

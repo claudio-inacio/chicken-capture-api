@@ -4,8 +4,10 @@ namespace App\Repositories\Main;
 
 use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
+use App\Helpers\FormatHelper;
 use App\Interfaces\Main\CompanyGroupRepositoryInterface;
 use App\Models\Main\CompanyGroup;
+use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
 
 class CompanyGroupRepository implements CompanyGroupRepositoryInterface
@@ -47,13 +49,42 @@ class CompanyGroupRepository implements CompanyGroupRepositoryInterface
         return CompanyGroup::where('id',$id)->get();
     }
 
-    public function create(array $value)
+    public function create(array $value): \Illuminate\Http\JsonResponse
     {
-        return CompanyGroup::create($value);
+        try {
+            $companyGroup = CompanyGroup::where('name', $value['name'])->first();
+            if ($companyGroup) return ResponseService::businessError('Ja existe um grupo de compania com esse nome');
+
+            CompanyGroup::create($value);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em registrar grupo de compania', $e->getMessage());
+        }
     }
 
-    public function update(int $id, array $data)
+    public function update(int $id, array $data): \Illuminate\Http\JsonResponse
     {
-        return CompanyGroup::whereId($id)->update($data);
+        unset($data['company_group_id']);
+        try {
+            $companyGroup = CompanyGroup::where('name', $data['name'])
+                ->where('id', '<>', $id)
+                ->first();
+            if ($companyGroup) return ResponseService::businessError('Ja existe um grupo de compania com esse nome');
+
+            CompanyGroup::whereId($id)->update($data);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em alterar grupo de compania', $e->getMessage());
+        }
+    }
+
+    public function enable(int $id, bool $enable): \Illuminate\Http\JsonResponse
+    {
+        try {
+            CompanyGroup::whereId($id)->update(['enabled' => $enable]);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha Ativar/Desativar grupo de compania', $e->getMessage());
+        }
     }
 }

@@ -4,34 +4,36 @@ namespace App\Repositories\Vehicles;
 
 use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
+use App\Helpers\FormatHelper;
 use App\Interfaces\Vehicles\VehiclesRepositoryInterface;
-use App\Models\Vehicles\Vehicles;
+use App\Models\Vehicles\Vehicle;
+use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
 
 class VehiclesRepository implements VehiclesRepositoryInterface
 {
     public function getAll()
     {
-        return Vehicles::all();
+        return Vehicle::all();
     }
 
     public function getByName(string $name)
     {
-        return Vehicles::where('name', $name)->get();
+        return Vehicle::where('name', $name)->get();
     }
 
     public function findAll($selectConfig, array $whereCriterious) : array
     {
-        $query = DB::table('vehicles.vehicles');
+        $query = DB::table('vehicles.vehicle');
 
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);
 
-        $total = $query->count('vehicles.id');
+        $total = $query->count('vehicle.id');
 
         $selectFactory = new SelectFactory();
         $query = $selectFactory->byArray($query, $selectConfig);
-        $query->select(['vehicles.*']);
+        $query->select(['vehicle.*']);
 
         $result = $query->get();
 
@@ -44,16 +46,49 @@ class VehiclesRepository implements VehiclesRepositoryInterface
 
     public function getById(int $id)
     {
-        return Vehicles::where('id',$id)->get();
+        return Vehicle::where('id',$id)->get();
     }
 
-    public function create(array $value)
+    public function create(array $value): \Illuminate\Http\JsonResponse
     {
-        return Vehicles::create($value);
+        try {
+            $vehicle = Vehicle::where('plate_number', $value['plate_number'])
+                ->where('company_id', $value['company_id'])
+                ->first();
+
+            if ($vehicle) return ResponseService::businessError('Veiculo ja cadastrado no sistema!');
+            Vehicle::create($value);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em registrar Veiculo', $e->getMessage());
+        }
     }
 
-    public function update(int $id, array $data)
+    public function update(int $id, array $data): \Illuminate\Http\JsonResponse
     {
-        return Vehicles::whereId($id)->update($data);
+        unset($data['vehicle_id']);
+        try {
+            $vehicle = Vehicle::where('plate_number', $data['plate_number'])
+                ->where('company_id', $data['company_id'])
+                ->where('id', '<>', $id)
+                ->first();
+
+            if ($vehicle) return ResponseService::businessError('Veiculo ja cadastrado no sistema!');
+
+            Vehicle::whereId($id)->update($data);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em alterar Veiculo', $e->getMessage());
+        }
+    }
+
+    public function enable(int $id, bool $enable): \Illuminate\Http\JsonResponse
+    {
+        try {
+            Vehicle::whereId($id)->update(['enabled' => $enable]);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha Ativar/Desativar Veiculo', $e->getMessage());
+        }
     }
 }

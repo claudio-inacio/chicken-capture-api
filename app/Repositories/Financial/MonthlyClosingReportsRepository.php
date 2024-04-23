@@ -4,7 +4,8 @@ namespace App\Repositories\Financial;
 
 use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
-use App\Interfaces\ContractingCompany\MonthlyClosingReportsRepositoryInterface;
+use App\Helpers\FormatHelper;
+use App\Interfaces\Financial\MonthlyClosingReportsRepositoryInterface;
 use App\Models\Financial\MonthlyClosingReports;
 use Illuminate\Support\Facades\DB;
 
@@ -34,6 +35,10 @@ class MonthlyClosingReportsRepository implements MonthlyClosingReportsRepository
         $query->select(['monthly_closing_reports.*']);
 
         $result = $query->get();
+        foreach ($result as $item){
+            $item->total_expenses = FormatHelper::decimalToBr($item->total_expenses);
+            $item->total_income = FormatHelper::decimalToBr($item->total_income);
+        }
 
         return [
             'data' => $result->toArray(),

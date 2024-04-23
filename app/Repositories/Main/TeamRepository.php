@@ -4,9 +4,7 @@ namespace App\Repositories\Main;
 
 use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
-use App\Interfaces\Main\CredentialCompanyRepositoryInterface;
 use App\Interfaces\Main\TeamRepositoryInterface;
-use App\Models\ContractingCompany\Integrated;
 use App\Models\Main\Team;
 use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
@@ -47,45 +45,48 @@ class TeamRepository implements TeamRepositoryInterface
 
     public function getById(int $id)
     {
-        return Integrated::where('id',$id)->get();
+        return Team::where('id',$id)->get();
     }
 
     public function create(array $value): \Illuminate\Http\JsonResponse
     {
         try {
-            $catchType = Integrated::where('name', $value['name'])->first();
-            if ($catchType) return ResponseService::businessError('Ja existe uma integraçao com esse nome!');
+            $team = Team::where('name', $value['name'])
+                ->where('company_id', $value['company_id'])
+                ->first();
 
-            Integrated::create($value);
+            if ($team) return ResponseService::businessError('Ja existe um time com esse nome!');
+
+            Team::create($value);
             return ResponseService::success204();
         } catch (\Exception $e){
-            return ResponseService::internalServerError('Falha em registrar integraçao', $e->getMessage());
+            return ResponseService::internalServerError('Falha em registrar time', $e->getMessage());
         }
     }
 
     public function update(int $id, array $data): \Illuminate\Http\JsonResponse
     {
-        unset($data['integrated_id']);
+        unset($data['team_id']);
         try {
-            $catchType = Integrated::where('name', $data['name'])
+            $team = Team::where('name', $data['name'])
                 ->where('id', '<>', $id)->first();
 
-            if ($catchType) return ResponseService::businessError('Ja existe uma integraçao com esse nome!');
+            if ($team) return ResponseService::businessError('Ja existe um time com esse nome!');
 
-            Integrated::whereId($id)->update($data);
+            Team::whereId($id)->update($data);
             return ResponseService::success204();
         } catch (\Exception $e){
-            return ResponseService::internalServerError('Falha em alterar integraçao', $e->getMessage());
+            return ResponseService::internalServerError('Falha em alterar time', $e->getMessage());
         }
     }
 
     public function enable(int $id, bool $enable): \Illuminate\Http\JsonResponse
     {
         try {
-            Integrated::whereId($id)->update(['enabled' => $enable]);
+            Team::whereId($id)->update(['enabled' => $enable]);
             return ResponseService::success204();
         } catch (\Exception $e){
-            return ResponseService::internalServerError('Falha Ativar/Desativar integraçao', $e->getMessage());
+            return ResponseService::internalServerError('Falha Ativar/Desativar time', $e->getMessage());
         }
     }
 }

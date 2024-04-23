@@ -6,6 +6,7 @@ use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
 use App\Interfaces\Main\CredentialCompanyRepositoryInterface;
 use App\Models\Main\CredentialCompany;
+use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
 
 class CredentialCompanyRepository implements CredentialCompanyRepositoryInterface
@@ -47,13 +48,45 @@ class CredentialCompanyRepository implements CredentialCompanyRepositoryInterfac
         return CredentialCompany::where('id',$id)->get();
     }
 
-    public function create(array $value)
+    public function create(array $value): \Illuminate\Http\JsonResponse
     {
-        return CredentialCompany::create($value);
+        try {
+            $credentialCompany = CredentialCompany::where('credential_id', $value['credential_id'])
+                ->where('company_id', $value['company_id'])
+                ->first();
+            if ($credentialCompany) return ResponseService::businessError('Compania da credencial ja cadastrado!');
+
+            CredentialCompany::create($value);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em registrar compania da credencial', $e->getMessage());
+        }
     }
 
-    public function update(int $id, array $data)
+    public function update(int $id, array $data): \Illuminate\Http\JsonResponse
     {
-        return CredentialCompany::whereId($id)->update($data);
+        unset($data['credential_company_id']);
+        try {
+            $credentialCompany = CredentialCompany::where('credential_id', $data['credential_id'])
+                ->where('company_id', $data['company_id'])
+                ->where('id', '<>', $id)
+                ->first();
+            if ($credentialCompany) return ResponseService::businessError('Compania da credencial ja cadastrado!');
+
+            CredentialCompany::whereId($id)->update($data);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em alterar compania da credencial', $e->getMessage());
+        }
+    }
+
+    public function enable(int $id, bool $enable): \Illuminate\Http\JsonResponse
+    {
+        try {
+            CredentialCompany::whereId($id)->update(['enabled' => $enable]);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha Ativar/Desativar compania da credencial', $e->getMessage());
+        }
     }
 }

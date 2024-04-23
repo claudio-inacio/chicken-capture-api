@@ -4,8 +4,10 @@ namespace App\Repositories\Main;
 
 use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
+use App\Helpers\FormatHelper;
 use App\Interfaces\Main\CollectorsRepositoryInterface;
 use App\Models\Main\Collectors;
+use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
 
 class CollectorsRepository implements CollectorsRepositoryInterface
@@ -47,13 +49,37 @@ class CollectorsRepository implements CollectorsRepositoryInterface
         return Collectors::where('id',$id)->get();
     }
 
-    public function create(array $value)
+    public function create(array $value): \Illuminate\Http\JsonResponse
     {
-        return Collectors::create($value);
+        $value['salary_value'] = FormatHelper::brlTodecimal($value['salary_value']);
+
+        try {
+            Collectors::create($value);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em registrar coletores', $e->getMessage());
+        }
     }
 
-    public function update(int $id, array $data)
+    public function update(int $id, array $data): \Illuminate\Http\JsonResponse
     {
-        return Collectors::whereId($id)->update($data);
+        $data['salary_value'] = FormatHelper::brlTodecimal($data['salary_value']);
+        unset($data['collectors_id']);
+        try {
+            Collectors::whereId($id)->update($data);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em alterar coletores', $e->getMessage());
+        }
+    }
+
+    public function enable(int $id, bool $enable): \Illuminate\Http\JsonResponse
+    {
+        try {
+            Collectors::whereId($id)->update(['enabled' => $enable]);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha Ativar/Desativar coletores', $e->getMessage());
+        }
     }
 }

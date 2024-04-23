@@ -9,4 +9,5 @@ interface CredentialCompanyRepositoryInterface
     public function getById(int $id);
     public function create(array $value);
     public function update(int $id, array $data);
+    public function enable(int $id, bool $enable);
 }

@@ -13,5 +13,5 @@ class CatchDaily extends Model
     protected $table = 'catch.catch_daily';
 
     protected $fillable = ['id', 'date', 'quantity', 'code', 'batch', 'total_cancelled', 'credential_id', 'units_id',
-        'integrated_id', 'team_id', 'catch_type_id', 'company_id', 'created_at', 'updated_at'];
+        'integrated_id', 'team_id', 'catch_type_id', 'company_id', 'enabled', 'created_at', 'updated_at'];
 }

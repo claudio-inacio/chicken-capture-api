@@ -4,8 +4,10 @@ namespace App\Repositories\Financial;
 
 use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
-use App\Interfaces\ContractingCompany\FinancialAccountsRepositoryInterface;
+use App\Helpers\FormatHelper;
+use App\Interfaces\Financial\FinancialAccountsRepositoryInterface;
 use App\Models\Financial\FinancialAccounts;
+use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
 
 class FinancialAccountsRepository implements FinancialAccountsRepositoryInterface
@@ -47,13 +49,37 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
         return FinancialAccounts::where('id',$id)->get();
     }
 
-    public function create(array $value)
+    public function create(array $value): \Illuminate\Http\JsonResponse
     {
-        return FinancialAccounts::create($value);
+        $value['due_date'] = FormatHelper::dateToUsTimeStamp($value['due_date']);
+
+        try {
+            FinancialAccounts::create($value);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em registrar conta', $e->getMessage());
+        }
     }
 
-    public function update(int $id, array $data)
+    public function update(int $id, array $data): \Illuminate\Http\JsonResponse
     {
-        return FinancialAccounts::whereId($id)->update($data);
+        $data['due_date'] = FormatHelper::dateToUsTimeStamp($data['due_date']);
+        unset($data['financial_accounts_id']);
+        try {
+            FinancialAccounts::whereId($id)->update($data);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em alterar conta', $e->getMessage());
+        }
+    }
+
+    public function enable(int $id, bool $enable): \Illuminate\Http\JsonResponse
+    {
+        try {
+            FinancialAccounts::whereId($id)->update(['enabled' => $enable]);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha Ativar/Desativar conta', $e->getMessage());
+        }
     }
 }

@@ -17,6 +17,10 @@ use App\Interfaces\Main\CredentialCompanyRepositoryInterface;
 use App\Interfaces\Main\CompanyRepositoryInterface;
 use App\Interfaces\Main\CompanyGroupRepositoryInterface;
 use App\Interfaces\Main\CollectorsRepositoryInterface;
+use App\Interfaces\Financial\FinancialAccountsRepositoryInterface;
+use App\Interfaces\Financial\MonthlyClosingReportsRepositoryInterface;
+use App\Interfaces\Vehicles\VehiclesRepositoryInterface;
+use App\Interfaces\Vehicles\DriverAreaRepositoryInterface;
 
 use App\Repositories\Authentication\AccessGroupRepository;
 use App\Repositories\Authentication\CredentialRepository;
@@ -33,6 +37,10 @@ use App\Repositories\Main\CredentialCompanyRepository;
 use App\Repositories\Main\CompanyRepository;
 use App\Repositories\Main\CompanyGroupRepository;
 use App\Repositories\Main\CollectorsRepository;
+use App\Repositories\Financial\FinancialAccountsRepository;
+use App\Repositories\Financial\MonthlyClosingReportsRepository;
+use App\Repositories\Vehicles\VehiclesRepository;
+use App\Repositories\Vehicles\DriverAreaRepository;
 
 use Illuminate\Support\ServiceProvider;
 
@@ -61,6 +69,10 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(CompanyRepositoryInterface::class, CompanyRepository::class);
         $this->app->bind(CompanyGroupRepositoryInterface::class, CompanyGroupRepository::class);
         $this->app->bind(CollectorsRepositoryInterface::class, CollectorsRepository::class);
+        $this->app->bind(FinancialAccountsRepositoryInterface::class, FinancialAccountsRepository::class);
+        $this->app->bind(MonthlyClosingReportsRepositoryInterface::class, MonthlyClosingReportsRepository::class);
+        $this->app->bind(VehiclesRepositoryInterface::class, VehiclesRepository::class);
+        $this->app->bind(DriverAreaRepositoryInterface::class, DriverAreaRepository::class);
 
     }
 

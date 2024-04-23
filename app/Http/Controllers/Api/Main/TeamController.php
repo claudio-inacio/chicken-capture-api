@@ -1,0 +1,66 @@
+<?php
+
+namespace App\Http\Controllers\Api\Main;
+
+use App\Http\Controllers\Controller;
+use App\Interfaces\Main\TeamRepositoryInterface;
+use Illuminate\Http\Request;
+
+class TeamController extends Controller
+{
+    private TeamRepositoryInterface $teamRepository;
+
+    public function __construct
+    (
+        TeamRepositoryInterface $teamRepository
+    )
+    {
+        $this->teamRepository = $teamRepository;
+    }
+
+    public function register(Request $request) {
+        $request->validate([
+            'name' => 'required',
+            'default_unit_id' => 'required',
+            'quantity_collectors' => 'required',
+            'contracting_company_id' => 'required'
+        ]);
+
+        $arrayData = $request->all();
+        $arrayData['company_id'] = $request->user()->company_id;
+
+        return $this->teamRepository->create($arrayData);
+    }
+
+    public function list(Request $request){
+        $whereCriterious = $request->where ?? false;
+        $selectConfig = $request->selectConfig ?? false;
+        if (!$selectConfig)
+            return response()->json(['message' => 'Select config is required!!!'], 422);
+        if (!$whereCriterious)
+            return response()->json(['message' => 'Where config is required!!!'], 422);
+
+        return response()->json($this->teamRepository->findAll($selectConfig, $whereCriterious));
+    }
+
+    public function update(Request $request){
+        $request->validate([
+            'name' => 'required',
+            'default_unit_id' => 'required',
+            'quantity_collectors' => 'required',
+            'contracting_company_id' => 'required',
+            'team_id' => 'required'
+        ]);
+
+        return $this->teamRepository->update($request->team_id, $request->all());
+    }
+
+    public function enable(Request $request){
+        $request->validate([
+            'team_id' => 'required',
+            'enabled' => 'required'
+        ]);
+
+        return $this->teamRepository->enable($request->team_id, $request->enabled);
+    }
+}

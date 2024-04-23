@@ -12,5 +12,5 @@ class CredentialCompany extends Model
 
     protected $table = 'main.credential_company';
 
-    protected $fillable = ['credential_id', 'company_id', 'created_at', 'updated_at'];
+    protected $fillable = ['credential_id', 'company_id', 'enabled', 'created_at', 'updated_at'];
 }
