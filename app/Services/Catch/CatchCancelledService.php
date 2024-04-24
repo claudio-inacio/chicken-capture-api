@@ -73,8 +73,11 @@ class CatchCancelledService
             $catchsConfiguration = CatchsConfiguration::where('catch_type_id', $catchDaily->catch_type_id)->first();
 
             $cancelled = 0;
-            $olderCatchCancelled = CatchsCancelled::where('catch_daily_id', $catchDaily->id)->first();
-            if($olderCatchCancelled) $cancelled = $olderCatchCancelled->quantity;
+            $olderCatchCancelled = CatchsCancelled::where('catch_daily_id', $catchDaily->id)->get();
+            if($olderCatchCancelled)
+                foreach ($olderCatchCancelled as $item){
+                    $cancelled = $cancelled + $item->quantity;
+                }
 
             $catchCancelled = CatchCancelledService::save($arrayData, $catchDaily);
             if (!$catchCancelled['success']){
