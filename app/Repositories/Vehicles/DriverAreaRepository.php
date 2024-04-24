@@ -52,7 +52,7 @@ class DriverAreaRepository implements DriverAreaRepositoryInterface
         return DriverArea::where('id',$id)->get();
     }
 
-    public function createOrUpdate(array $value): \Illuminate\Http\JsonResponse
+    public function create(array $value): \Illuminate\Http\JsonResponse
     {
         DB::beginTransaction();
         $value['maintenance_expenses'] = FormatHelper::brlTodecimal($value['maintenance_expenses']);

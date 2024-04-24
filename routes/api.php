@@ -109,7 +109,7 @@ Route::group(['middleware' => ['authJwt']], function (){
     Route::put('/main/credential-company', [CredentialCompanyController::class, 'update']);
     Route::put('/main/credential-company/enable', [CredentialCompanyController::class, 'enable']);
 
-    #################################### FINANCIAL ###################################
+    #################################### FINANCIAL #########################################
     Route::post('/financial/financial-accounts', [FinancialAccountsController::class, 'register']);
     Route::get('/financial/financial-accounts', [FinancialAccountsController::class, 'list']);
     Route::put('/financial/financial-accounts', [FinancialAccountsController::class, 'update']);

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Catch;
 
 use App\Http\Controllers\Controller;
 use App\Interfaces\Catch\CatchDailyRespositoryInterface;
+use App\Services\Catch\CatchDailyService;
 use Illuminate\Http\Request;
 
 class CatchDailyController extends Controller
@@ -24,7 +25,6 @@ class CatchDailyController extends Controller
             'quantity' => 'required',
             'code' => 'required',
             'batch' => 'required',
-            'total_cancelled' => 'required',
             'units_id' => 'required',
             'integrated_id' => 'required',
             'team_id' => 'required',
@@ -35,7 +35,7 @@ class CatchDailyController extends Controller
         $arrayData['credential_id'] = $request->user()->id;
         $arrayData['company_id'] = $request->user()->company_id;
 
-        return $this->catchDailyRespository->create($arrayData);
+        return CatchDailyService::savefortnightFinance($arrayData);
     }
 
     public function list(Request $request){
@@ -55,15 +55,14 @@ class CatchDailyController extends Controller
             'quantity' => 'required',
             'code' => 'required',
             'batch' => 'required',
-            'total_cancelled' => 'required',
             'units_id' => 'required',
             'integrated_id' => 'required',
             'team_id' => 'required',
             'catch_type_id' => 'required',
-            'catch_daily_id' => 'required'
+            'catch_daily_id' => 'required',
         ]);
 
-        return $this->catchDailyRespository->update($request->catch_daily_id, $request->all());
+        return CatchDailyService::updatefortnightFinance($request->catch_daily_id ,$request->all());
     }
 
     public function enable(Request $request){

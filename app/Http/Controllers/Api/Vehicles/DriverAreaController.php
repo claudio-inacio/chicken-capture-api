@@ -31,7 +31,7 @@ class DriverAreaController extends Controller
         $arrayData['credential_id'] = $request->user()->id;
         $arrayData['company_id'] = $request->user()->company_id;
 
-        return $this->driverAreaRepository->createOrUpdate($arrayData);
+        return $this->driverAreaRepository->create($arrayData);
     }
 
     public function list(Request $request){

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Catch;
 
 use App\Http\Controllers\Controller;
 use App\Interfaces\Catch\CatchsCancelledRespositoryInterface;
+use App\Services\Catch\CatchCancelledService;
 use Illuminate\Http\Request;
 
 class CatchCancelledController extends Controller
@@ -21,7 +22,7 @@ class CatchCancelledController extends Controller
     public function register(Request $request) {
         $request->validate([
             'date' => 'required',
-            'quantity' => 'required',
+            'total_cancelled' => 'required',
             'catch_daily_id' => 'required',
             'notes' => 'required'
         ]);
@@ -30,7 +31,7 @@ class CatchCancelledController extends Controller
         $arrayData['credential_id'] = $request->user()->id;
         $arrayData['company_id'] = $request->user()->company_id;
 
-        return $this->catchsCancelledRespository->create($arrayData);
+        return CatchCancelledService::calculeAndSave($arrayData);
     }
 
     public function list(Request $request){
