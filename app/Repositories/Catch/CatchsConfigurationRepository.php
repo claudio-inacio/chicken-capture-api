@@ -24,7 +24,9 @@ class CatchsConfigurationRepository implements CatchsConfigurationRespositoryInt
 
     public function findAll($selectConfig, array $whereCriterious) : array
     {
-        $query = DB::table('catch.catchs_configuration');
+        $query = DB::table('catch.catchs_configuration')
+            ->join('catch.catch_type', 'catch_type.id', '=', 'catchs_configuration.catch_type_id')
+            ->join('main.company', 'company.id', '=', 'catchs_configuration.company_id');
 
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);
@@ -33,7 +35,11 @@ class CatchsConfigurationRepository implements CatchsConfigurationRespositoryInt
 
         $selectFactory = new SelectFactory();
         $query = $selectFactory->byArray($query, $selectConfig);
-        $query->select(['catchs_configuration.*']);
+        $query->select([
+            'catchs_configuration.*',
+            'catch_type.name as catch_type',
+            'company.name as company'
+        ]);
 
         $result = $query->get();
 
@@ -71,6 +77,16 @@ class CatchsConfigurationRepository implements CatchsConfigurationRespositoryInt
             return ResponseService::success204();
         } catch (\Exception $e){
             return ResponseService::internalServerError('Falha em alterar configuração de apanha', $e->getMessage());
+        }
+    }
+
+    public function enable(int $id, bool $enable): \Illuminate\Http\JsonResponse
+    {
+        try {
+            CatchsConfiguration::whereId($id)->update(['enabled' => $enable]);
+            return ResponseService::success204();
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em ATIVAR/DESATIVAR configuração de apanha', $e->getMessage());
         }
     }
 }

@@ -56,4 +56,13 @@ class CatchCancelledController extends Controller
 
         return $this->catchsCancelledRespository->update($request->catchs_cancelled_id, $request->all());
     }
+
+    public function enable(Request $request){
+        $request->validate([
+            'catch_cancelled_id' => 'required',
+            'enabled' => 'required'
+        ]);
+
+        return $this->catchsCancelledRespository->enable($request->catch_cancelled_id, $request->enabled);
+    }
 }

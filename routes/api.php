@@ -58,14 +58,17 @@ Route::group(['middleware' => ['authJwt']], function (){
     Route::get('/catch/catch-daily', [CatchDailyController::class, 'list']);
     Route::put('/catch/catch-daily', [CatchDailyController::class, 'update']);
     Route::put('/catch/catch-daily/enable', [CatchDailyController::class, 'enable']);
+    Route::put('/catch/catch-daily/analytic', [CatchDailyController::class, 'analytic']);
 
     Route::post('/catch/catch-cancelled', [CatchCancelledController::class, 'register']);
     Route::get('/catch/catch-cancelled', [CatchCancelledController::class, 'list']);
     Route::put('/catch/catch-cancelled', [CatchCancelledController::class, 'update']);
+    Route::put('/catch/catch-cancelled/enable', [CatchCancelledController::class, 'enable']);
 
     Route::post('/catch/catchs-configuration', [CatchConfigurationController::class, 'register']);
     Route::get('/catch/catchs-configuration', [CatchConfigurationController::class, 'list']);
     Route::put('/catch/catchs-configuration', [CatchConfigurationController::class, 'update']);
+    Route::put('/catch/catchs-configuration/enable', [CatchConfigurationController::class, 'enable']);
 
     ##################################### CONTRACTING COMPANY ###################################
     Route::post('/contracting-company', [ContractingCompanyController::class, 'register']);
@@ -114,6 +117,7 @@ Route::group(['middleware' => ['authJwt']], function (){
     Route::get('/financial/financial-accounts', [FinancialAccountsController::class, 'list']);
     Route::put('/financial/financial-accounts', [FinancialAccountsController::class, 'update']);
     Route::put('/financial/financial-accounts/enable', [FinancialAccountsController::class, 'enable']);
+    Route::put('/financial/financial-accounts/analytic', [FinancialAccountsController::class, 'analytic']);
 
     Route::post('/financial/monthly-closing-reports', [MonthlyClosingReportsController::class, 'register']);
     Route::get('/financial/monthly-closing-reports', [MonthlyClosingReportsController::class, 'list']);
@@ -129,6 +133,7 @@ Route::group(['middleware' => ['authJwt']], function (){
     Route::put('/vehicles/driver-area', [DriverAreaController::class, 'update']);
     Route::put('/vehicles/driver-area/finalize', [DriverAreaController::class, 'finalize']);
     Route::put('/vehicles/driver-area/enable', [DriverAreaController::class, 'enable']);
+    Route::put('/vehicles/driver-area/analytic', [DriverAreaController::class, 'analytic']);
 });
 
 Route::prefix('auth')->group(function () {

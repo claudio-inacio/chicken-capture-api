@@ -6,7 +6,11 @@ use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
 use App\Helpers\FormatHelper;
 use App\Interfaces\Catch\CatchsCancelledRespositoryInterface;
+use App\Models\Catch\CatchDaily;
 use App\Models\Catch\CatchsCancelled;
+use App\Models\Catch\CatchsConfiguration;
+use App\Models\Financial\FinancialAccounts;
+use App\Services\Financial\FinancialService;
 use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
 
@@ -72,4 +76,39 @@ class CatchsCancelledRepository implements CatchsCancelledRespositoryInterface
             return ResponseService::internalServerError('Falha em alterar cancelamento de apanha', $e->getMessage());
         }
     }
+
+   public function enable(int $id, bool $enable)
+   {
+       DB::beginTransaction();
+       try {
+           $catchCancelled = CatchsCancelled::whereId($id)->first();
+           $catchDaily = CatchDaily::whereId($catchCancelled->catch_daily_id)->first();
+           $catchsConfiguration = CatchsConfiguration::where('catch_type_id', $catchDaily->catch_type_id)->first();
+
+           if ($catchCancelled->enabled != $enable) {
+               $catchCancelled->update(['enabled' => $enable]);
+               $totalCancelled = 0;
+               $catchsCancelled = CatchsCancelled::where('catch_daily_id', $catchDaily->id)
+                   ->where('enabled', true)
+                   ->get();
+
+               foreach ($catchsCancelled as $item) {
+                   $totalCancelled = $totalCancelled + $item->quantity;
+               }
+
+               $catchDaily->quantity = $catchDaily->quantity - $totalCancelled;
+               $totalQuantity = $catchDaily->quantity * $catchsConfiguration->catch_price;
+               $totalValue = ($totalCancelled * $catchsConfiguration->cancellation_price) + $totalQuantity;
+
+               FinancialService::updateAccountReceivale($totalValue, $catchDaily->credential_id, $catchDaily->company_id, $catchDaily->id);
+               DB::commit();
+               return ResponseService::success204();
+           }
+
+           DB::commit();
+           return ResponseService::success204();
+       } catch (\Exception $e){
+           return ResponseService::internalServerError('Falha em alterar cancelamento de apanha', $e->getMessage());
+       }
+   }
 }

@@ -12,6 +12,6 @@ class CatchsConfiguration extends Model
 
     protected $table = 'catch.catchs_configuration';
 
-    protected $fillable = ['id', 'catch_type_id', 'company_id', 'catch_price', 'cancellation_price', 'created_at',
+    protected $fillable = ['id', 'catch_type_id', 'company_id', 'catch_price', 'cancellation_price', 'created_at', 'enabled',
         'updated_at'];
 }

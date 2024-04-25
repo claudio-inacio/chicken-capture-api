@@ -52,4 +52,13 @@ class CatchConfigurationController extends Controller
 
         return $this->catchsConfigurationRespository->update($request->catchs_configuration_id, $request->all());
     }
+
+    public function enable(Request $request){
+        $request->validate([
+           'enabled' => 'required',
+           'catchs_configuration_id' => 'required'
+        ]);
+
+        return $this->catchsConfigurationRespository->enable($request->catchs_configuration_id, $request->enabled);
+    }
 }
