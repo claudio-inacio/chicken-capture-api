@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Vehicles;
 
 use App\Http\Controllers\Controller;
 use App\Interfaces\Vehicles\DriverAreaRepositoryInterface;
+use App\Services\Vehicles\DriverAreaService;
 use Illuminate\Http\Request;
 
 class DriverAreaController extends Controller
@@ -31,7 +32,7 @@ class DriverAreaController extends Controller
         $arrayData['credential_id'] = $request->user()->id;
         $arrayData['company_id'] = $request->user()->company_id;
 
-        return $this->driverAreaRepository->create($arrayData);
+        return DriverAreaService::create($arrayData);
     }
 
     public function list(Request $request){
@@ -56,7 +57,7 @@ class DriverAreaController extends Controller
             'driver_area_id' => 'required'
         ]);
 
-        return $this->driverAreaRepository->update($request->driver_area_id, $request->all());
+        return DriverAreaService::update($request->driver_area_id, $request->all());
     }
 
     public function finalize(Request $request){
@@ -69,7 +70,7 @@ class DriverAreaController extends Controller
             'driver_area_id' => 'required'
         ]);
 
-        return $this->driverAreaRepository->finalize($request->driver_area_id, $request->all());
+        return DriverAreaService::finalize($request->driver_area_id, $request->all());
     }
 
     public function enable(Request $request){

@@ -5,7 +5,6 @@ namespace App\Services\Catch;
 use App\Enum\Financial\TableReferenceFinanceEnum;
 use App\Helpers\FormatHelper;
 use App\Models\Catch\CatchDaily;
-use App\Models\Catch\CatchsCancelled;
 use App\Models\Catch\CatchsConfiguration;
 use App\Services\Financial\FinancialService;
 use App\Services\ResponseService;

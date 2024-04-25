@@ -7,6 +7,7 @@ use App\Factory\WhereFactory;
 use App\Helpers\FormatHelper;
 use App\Interfaces\Catch\CatchDailyRespositoryInterface;
 use App\Models\Catch\CatchDaily;
+use App\Models\Catch\CatchsCancelled;
 use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
 
@@ -24,7 +25,16 @@ class CatchDailyRepository implements CatchDailyRespositoryInterface
 
     public function findAll($selectConfig, array $whereCriterious) : array
     {
-        $query = DB::table('catch.catch_daily');
+        $query = DB::table('catch.catch_daily')
+            ->join('authentication.credential', 'credential.id', '=', 'catch_daily.credential_id')
+            ->join('authentication.person', 'person.id', '=', 'credential.person_id')
+            ->join('main.units', 'units.id', '=', 'catch_daily.units_id')
+            ->join('contracting_company.integrated', 'integrated.id', '=', 'catch_daily.integrated_id')
+            ->join('main.company', 'company.id', '=', 'catch_daily.company_id')
+            ->join('main.team', 'team.id', '=', 'catch_daily.team_id')
+            ->join('catch.catch_type', 'catch_type.id', '=', 'catch_daily.catch_type_id')
+            ->join('contracting_company.contracting_company', 'contracting_company.id', '=', 'integrated.contracting_company_id');
+
 
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);
@@ -33,9 +43,30 @@ class CatchDailyRepository implements CatchDailyRespositoryInterface
 
         $selectFactory = new SelectFactory();
         $query = $selectFactory->byArray($query, $selectConfig);
-        $query->select(['catch_daily.*']);
+        $query->select([
+            'catch_daily.*',
+            'person.name as credential_name', 'credential.document as credential_document',
+            'units.name as unit',
+            'integrated.name as integrated',
+            'contracting_company.name as contracting_company',
+            'company.name as company',
+            'team.name as team',
+            'catch_type.name as catch_type'
+        ]);
 
         $result = $query->get();
+
+        $totalCancelled = 0;
+        foreach ($result as $item){
+
+            $cancelleds = CatchsCancelled::where('catch_daily_id', $item->id)->get();
+            foreach ($cancelleds as $cancelled){
+                $totalCancelled = $totalCancelled + $cancelled->quantity;
+            }
+
+            $item->total_cancelled = $totalCancelled;
+            $totalCancelled = 0;
+        }
 
         return [
             'data' => $result->toArray(),

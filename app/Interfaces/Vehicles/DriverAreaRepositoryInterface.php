@@ -10,5 +10,4 @@ interface DriverAreaRepositoryInterface
     public function create(array $value);
     public function update(int $id, array $data);
     public function enable(int $id, bool $enable);
-    public function finalize(int $id, array $data);
 }
