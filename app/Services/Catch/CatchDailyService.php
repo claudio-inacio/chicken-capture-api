@@ -113,7 +113,7 @@ class CatchDailyService
             $catchDaily = DB::select("SELECT * FROM catch.catch_daily
                                          WHERE catch_daily.date >= '{$startDate}'
                                            AND catch_daily.date <= '{$endDate}'
-                                           AND catch_daily.enabled = true,
+                                           AND catch_daily.enabled = true
                                            AND catch_daily.company_id = '$user->company_id'
                                 ");
 

@@ -81,4 +81,13 @@ class DriverAreaController extends Controller
 
         return $this->driverAreaRepository->enable($request->driver_area_id, $request->enabled);
     }
+
+    public function analytic(Request $request){
+        $request->validate([
+            'start_date' => 'required',
+            'end_date' => 'required'
+        ]);
+
+        return DriverAreaService::analytics($request->all(), $request->user());
+    }
 }

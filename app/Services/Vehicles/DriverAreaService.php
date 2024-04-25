@@ -3,6 +3,7 @@
 namespace App\Services\Vehicles;
 
 use App\Enum\Financial\StatusEnum;
+use App\Enum\Financial\TableReferenceFinanceEnum;
 use App\Enum\Financial\TypeFinanceEnum;
 use App\Helpers\FormatHelper;
 use App\Models\Financial\FinancialAccounts;
@@ -10,21 +11,31 @@ use App\Models\Vehicles\DriverArea;
 use App\Models\Vehicles\Vehicle;
 use App\Services\Financial\FinancialService;
 use App\Services\ResponseService;
+use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 
 class DriverAreaService
 {
+    /**
+     * @throws Exception
+     */
     public static function create(array $arrayData): JsonResponse
     {
         DB::beginTransaction();
         $arrayData['maintenance_expenses'] = FormatHelper::brlTodecimal($arrayData['maintenance_expenses']);
         $maintenance['success'] = false;
+        $day = (int)date('d') - 1;
+        $date = (new \DateTime(date('Y-m-d')))->format('Y-m')."-{$day}";
+        $dateOut = $date." 23:59:00";
+        $date = FormatHelper::dateToUsTimeStamp($date);
+
         $fuel['success'] = false;
+
         try {
             $vehicle = Vehicle::whereId($arrayData['vehicle_id'])->first();
             $driverArea = DriverArea::where('vehicle_id', $arrayData['vehicle_id'])
-                ->whereDay('created_at', '<', date('d'))
+                ->whereBetween('created_at', [$date, $dateOut])
                 ->first();
 
             if ($driverArea) {
@@ -34,34 +45,55 @@ class DriverAreaService
                 }
             }
 
+            $driverAreaUpdate = DriverArea::where('vehicle_id', $arrayData['vehicle_id'])->first();
+            if ($driverAreaUpdate){
+                $dateCreatedAt = FormatHelper::dateToUs($driverAreaUpdate->created_at);
+                if (date('Y-m-d') === $dateCreatedAt) {
+                    DriverArea::whereId($driverAreaUpdate->id)->update($arrayData);
+
+                    if ($arrayData['maintenance_expenses'] != 0) {
+                        $maintenance = FinancialService::saveMaintenanceFinance($arrayData, $driverAreaUpdate->id);
+                        if (!$maintenance['success']) {
+                            DB::rollBack();
+                            return ResponseService::businessError($maintenance['message'], $maintenance['error']);
+                        }
+                    }
+
+                    if ($arrayData['total_supply_value'] != 0) {
+                        $fuel = FinancialService::saveFuelFinance($arrayData, $driverAreaUpdate->id);
+                        if (!$fuel['success']) {
+                            DB::rollBack();
+                            return ResponseService::businessError($fuel['message'], $fuel['error']);
+                        }
+                    }
+
+                    DB::commit();
+                    return ResponseService::success204();
+                }
+            }
+
+           $arrayData['daily_start_km'] = $vehicle->mileage;
+           $driverArea = DriverArea::create($arrayData);
+
             if ($arrayData['maintenance_expenses'] != 0) {
-                $maintenance = FinancialService::saveMaintenanceFinance($arrayData);
+                $maintenance = FinancialService::saveMaintenanceFinance($arrayData, $driverArea->id);
                 if (!$maintenance['success']) {
                     DB::rollBack();
                     return ResponseService::businessError($maintenance['message'], $maintenance['error']);
                 }
             }
+
             if ($arrayData['total_supply_value'] != 0) {
-                $fuel = FinancialService::saveFuelFinance($arrayData);
+                $fuel = FinancialService::saveFuelFinance($arrayData, $driverArea->id);
                 if (!$fuel['success']) {
                     DB::rollBack();
                     return ResponseService::businessError($fuel['message'], $fuel['error']);
                 }
             }
 
-            $driverArea = DriverArea::where('vehicle_id', $arrayData['vehicle_id'])->first();
-            if ($driverArea){
-                DriverArea::whereId($driverArea->id)->update($arrayData);
-                DB::commit();
-                return ResponseService::success204();
-            }
-
-            $value['daily_start_km'] = $vehicle->mileage;
-            DriverArea::create($value);
-
             DB::commit();
             return ResponseService::success204();
-        } catch (\Exception $e){
+        } catch (Exception $e){
             DB::rollBack();
             return ResponseService::internalServerError('Falha em registrar area do motorista', $e->getMessage());
         }
@@ -110,7 +142,7 @@ class DriverAreaService
 
             DB::commit();
             return ResponseService::success204();
-        } catch (\Exception $e){
+        } catch (Exception $e){
             DB::rollBack();
             return ResponseService::internalServerError('Falha em alterar area do motorista', $e->getMessage());
         }
@@ -146,14 +178,14 @@ class DriverAreaService
             }
 
             if ($arrayData['maintenance_expenses'] != 0) {
-                $maintenance = FinancialService::saveMaintenanceFinance($arrayData);
+                $maintenance = FinancialService::saveMaintenanceFinance($arrayData, $id);
                 if (!$maintenance['success']) {
                     DB::rollBack();
                     return ResponseService::businessError($maintenance['message'], $maintenance['error']);
                 }
             }
             if ($arrayData['total_supply_value'] != 0) {
-                $fuel = FinancialService::saveFuelFinance($arrayData);
+                $fuel = FinancialService::saveFuelFinance($arrayData, $id);
                 if (!$fuel['success']) {
                     DB::rollBack();
                     return ResponseService::businessError($fuel['message'], $fuel['error']);
@@ -162,9 +194,63 @@ class DriverAreaService
 
             DB::commit();
             return ResponseService::success204();
-        } catch (\Exception $e){
+        } catch (Exception $e){
             DB::rollBack();
             return ResponseService::internalServerError('Falha em finalizar area do motorista', $e->getMessage());
         }
     }
+
+    public static function analytics(array $arrayRequest, $user): JsonResponse
+    {
+        try {
+            $startDate = FormatHelper::dateToUsTimeStamp($arrayRequest['start_date']);
+            $endDate = FormatHelper::dateToUsTimeStamp($arrayRequest['end_date']);
+
+            $driverArea = DriverArea::whereBetween('driver_area.created_at', [$startDate, $endDate])
+                ->join('vehicles.vehicle', 'vehicle.id', '=', 'driver_area.vehicle_id')
+                ->join('authentication.credential', 'credential.id', '=', 'driver_area.credential_id')
+                ->join('authentication.person', 'person.id', '=', 'credential.person_id')
+                ->where('driver_area.enabled', true)
+                ->where('driver_area.company_id', $user->company_id)
+                ->select([
+                    'driver_area.*',
+                    'person.name as person_name',
+                    'vehicle.vehicle_name', 'vehicle.plate_number'
+                ])
+                ->get();
+
+            $arrayDriverArea = [];
+            foreach ($driverArea as $key => $item){
+                $financialAccounts = FinancialAccounts::where('reference_id', $item->id)->get();
+                $totalFuel = 0;
+                $totalMaintenance = 0;
+                foreach ($financialAccounts as $itemFinancial){
+                    if($itemFinancial->description == 'Despesas com manuntencao')
+                        $totalMaintenance = $totalMaintenance + $itemFinancial->amount;
+
+                    if($itemFinancial->description == 'Despesas com combustivel')
+                        $totalFuel = $totalFuel + $itemFinancial->amount;
+                }
+                $arrayDriverArea[$key] = [
+                    'vehicle' => [
+                        'name' => $item->vehicle_name,
+                        'plate_number' => $item->plate_number,
+                        'driver' => $item->person_name
+                    ],
+                    'fuel' => FormatHelper::decimalToBr($totalFuel),
+                    'maintenance_expenses' => FormatHelper::decimalToBr($totalMaintenance),
+                    'daily_start_km' => $item->daily_start_km,
+                    'daily_start_time' => $item->daily_start_time,
+                    'daily_end_km' => $item->daily_end_km,
+                    'daily_end_date' => $item->daily_end_date,
+                    'enabled' => $item->enabled
+                ];
+            }
+
+            return ResponseService::success('Sucesso em listar analitico da area de motoristas', $arrayDriverArea);
+        } catch (Exception $e){
+            return ResponseService::internalServerError('Falha em listar analitico da area de motoristas', $e->getMessage());
+        }
+    }
+
 }

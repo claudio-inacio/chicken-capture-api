@@ -3,10 +3,9 @@
 namespace App\Services\Financial;
 
 use App\Enum\Financial\StatusEnum;
+use App\Enum\Financial\TableReferenceFinanceEnum;
 use App\Enum\Financial\TypeFinanceEnum;
 use App\Helpers\FormatHelper;
-use App\Models\Catch\CatchsCancelled;
-use App\Models\Catch\CatchsConfiguration;
 use App\Models\Financial\FinancialAccounts;
 use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
@@ -75,11 +74,12 @@ class FinancialService
         }
     }
 
-    public static function saveMaintenanceFinance(array $arrayRequest): array
+    public static function saveMaintenanceFinance(array $arrayRequest, int $referenceId): array
     {
         DB::beginTransaction();
         try {
             $financialAccount = FinancialAccounts::where('description', 'Despesas com manuntenca')
+                ->where('reference_id', $referenceId)
                 ->where('credential_id', $arrayRequest['credential_id'])
                 ->where('company_id', $arrayRequest['company_id'])
                 ->whereDay('created_at', date('d'))
@@ -101,6 +101,8 @@ class FinancialService
                 'amount' => FormatHelper::brlTodecimal($arrayRequest['maintenance_expenses']),
                 'type' => TypeFinanceEnum::TO_DISCOUNT,
                 'status_id' => StatusEnum::TO_DISCOUNT,
+                'reference_id' => $referenceId,
+                'table_reference_id' => TableReferenceFinanceEnum::MAINTENANCE,
                 'due_date' => now(),
                 'credential_id' => $arrayRequest['credential_id'],
                 'company_id' => $arrayRequest['company_id'],
@@ -119,11 +121,12 @@ class FinancialService
         }
     }
 
-    public static function saveFuelFinance(array $arrayRequest): array
+    public static function saveFuelFinance(array $arrayRequest, int $referenceId): array
     {
         DB::beginTransaction();
         try {
             $financialAccount = FinancialAccounts::where('description', 'Despesas com combustivel')
+                ->where('reference_id', $referenceId)
                 ->where('credential_id', $arrayRequest['credential_id'])
                 ->where('company_id', $arrayRequest['company_id'])
                 ->whereDay('created_at', date('d'))
@@ -144,6 +147,9 @@ class FinancialService
                 'description' => 'Despesas com combustivel',
                 'amount' => FormatHelper::brlTodecimal($arrayRequest['total_supply_value']),
                 'type' => TypeFinanceEnum::TO_DISCOUNT,
+                'status_id' => StatusEnum::TO_DISCOUNT,
+                'reference_id' => $referenceId,
+                'table_reference_id' => TableReferenceFinanceEnum::FUEL,
                 'due_date' => now(),
                 'credential_id' => $arrayRequest['credential_id'],
                 'company_id' => $arrayRequest['company_id'],
@@ -174,6 +180,7 @@ class FinancialService
                                          WHERE f.due_date >= '{$startDate}'
                                            AND f.due_date <= '{$endDate}'
                                            AND f.type = '{$toReceive}'
+                                           AND f.enabled = true
                                            AND f.company_id = '$user->company_id'
                                 ");
 
@@ -195,6 +202,8 @@ class FinancialService
                                          WHERE f.due_date >= '{$startDate}'
                                            AND f.due_date <= '{$endDate}'
                                            AND f.type = '{$toDiscount}'
+                                           AND f.enabled = true
+                                           AND f.company_id = '$user->company_id'
                                 ");
 
             $toDiscountValue = 0;
