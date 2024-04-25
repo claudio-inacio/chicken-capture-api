@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Financial;
 
 use App\Http\Controllers\Controller;
 use App\Interfaces\Financial\FinancialAccountsRepositoryInterface;
+use App\Services\Financial\FinancialService;
 use Illuminate\Http\Request;
 
 class FinancialAccountsController extends Controller
@@ -49,6 +50,7 @@ class FinancialAccountsController extends Controller
             'description' => 'required',
             'amount' => 'required',
             'due_date' => 'required',
+            'finished_data' => 'required',
             'type' => 'required',
             'financial_accounts_id' => 'required'
         ]);
@@ -63,5 +65,14 @@ class FinancialAccountsController extends Controller
         ]);
 
         return $this->financialAccountsRepository->enable($request->financial_accounts_id, $request->enabled);
+    }
+
+    public function analytic(Request $request){
+        $request->validate([
+            'start_date' => 'required',
+            'end_date' => 'required'
+        ]);
+
+        return FinancialService::analytics($request->all(), $request->user());
     }
 }

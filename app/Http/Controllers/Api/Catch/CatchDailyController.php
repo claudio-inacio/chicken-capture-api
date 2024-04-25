@@ -80,6 +80,6 @@ class CatchDailyController extends Controller
             'end_date' => 'required'
         ]);
 
-        return CatchDailyService::analytics($request->all());
+        return CatchDailyService::analytics($request->all(), $request->user());
     }
 }

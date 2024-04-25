@@ -2,10 +2,13 @@
 
 namespace App\Services\Financial;
 
+use App\Enum\Financial\StatusEnum;
 use App\Enum\Financial\TypeFinanceEnum;
 use App\Helpers\FormatHelper;
+use App\Models\Catch\CatchsCancelled;
+use App\Models\Catch\CatchsConfiguration;
 use App\Models\Financial\FinancialAccounts;
-use App\Models\Vehicles\Vehicle;
+use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
 
 class FinancialService
@@ -24,6 +27,7 @@ class FinancialService
                 'amount' => $value,
                 'due_date' => date('Y-m').'-'.$day,
                 'reference_id' => $referenceId,
+                'status_id' => StatusEnum::TO_RECEIVE,
                 'table_reference_id' => $tableId,
                 'type' => TypeFinanceEnum::TO_RECEIVE,
                 'credential_id' => $credentialId,
@@ -54,6 +58,7 @@ class FinancialService
                 'amount' => $value,
                 'due_date' => date('Y-m').'-'.$day,
                 'type' => TypeFinanceEnum::TO_RECEIVE,
+                'status_id' => StatusEnum::TO_RECEIVE,
                 'credential_id' => $credentialId,
                 'company_id' => $companyId,
             ]);
@@ -95,6 +100,7 @@ class FinancialService
                 'description' => 'Despesas com manuntencao',
                 'amount' => FormatHelper::brlTodecimal($arrayRequest['maintenance_expenses']),
                 'type' => TypeFinanceEnum::TO_DISCOUNT,
+                'status_id' => StatusEnum::TO_DISCOUNT,
                 'due_date' => now(),
                 'credential_id' => $arrayRequest['credential_id'],
                 'company_id' => $arrayRequest['company_id'],
@@ -153,6 +159,72 @@ class FinancialService
                 'message' => 'Falha em cadastrar finanças',
                 'error' => $exception->getMessage()
             ];
+        }
+    }
+
+    public static function analytics(array $arrayRequest, $user){
+        try {
+            $startDate = FormatHelper::dateToUsTimeStamp($arrayRequest['start_date']);
+            $endDate = FormatHelper::dateToUsTimeStamp($arrayRequest['end_date']);
+
+            $toReceive = TypeFinanceEnum::TO_RECEIVE;
+            $toDiscount = TypeFinanceEnum::TO_DISCOUNT;
+
+            $financialAccountsToReceive = DB::select("SELECT * FROM financial.financial_accounts as f
+                                         WHERE f.due_date >= '{$startDate}'
+                                           AND f.due_date <= '{$endDate}'
+                                           AND f.type = '{$toReceive}'
+                                           AND f.company_id = '$user->company_id'
+                                ");
+
+            $toReceiveValue = 0;
+            $toReceiveDescriptions = [];
+            foreach ($financialAccountsToReceive as $key => $item){
+                $toReceiveDescriptions[$key] = [
+                    'description' => $item->description,
+                    'value' => FormatHelper::decimalToBr($item->amount),
+                    'due_date' => $item->due_date,
+                    'finished_data' => $item->finished_data,
+                    'status_id' => $item->status_id,
+                ];
+
+                $toReceiveValue = $toReceiveValue + $item->amount;
+            }
+
+            $financialAccountsToDiscount = DB::select("SELECT * FROM financial.financial_accounts as f
+                                         WHERE f.due_date >= '{$startDate}'
+                                           AND f.due_date <= '{$endDate}'
+                                           AND f.type = '{$toDiscount}'
+                                ");
+
+            $toDiscountValue = 0;
+            $toDiscountDescriptions = [];
+            foreach ($financialAccountsToDiscount as $key => $item){
+                $toDiscountDescriptions[$key] = [
+                    'description' => $item->description,
+                    'value' => FormatHelper::decimalToBr($item->amount),
+                    'due_date' => $item->due_date,
+                    'finished_data' => $item->finished_data,
+                    'status_id' => $item->status_id,
+                ];
+
+                $toDiscountValue = $toDiscountValue + $item->amount;
+            }
+
+            $analyticFinancialAccounts = [
+                'to_receive' => [
+                    'details' => $toReceiveDescriptions,
+                    'total' => FormatHelper::decimalToBr($toReceiveValue),
+                ],
+                'to_discount' => [
+                    'details' => $toDiscountDescriptions,
+                    'total' => FormatHelper::decimalToBr($toDiscountValue),
+                ]
+            ];
+
+            return ResponseService::success('Sucesso em listar analitico de finanças', $analyticFinancialAccounts);
+        } catch (\Exception $e){
+            return ResponseService::internalServerError('Falha em listar analitico de finanças', $e->getMessage());
         }
     }
 }
