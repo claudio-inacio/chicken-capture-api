@@ -3,8 +3,10 @@
 namespace App\Services\Catch;
 
 use App\Enum\Financial\TableReferenceFinanceEnum;
+use App\Enum\Financial\TypeFinanceEnum;
 use App\Helpers\FormatHelper;
 use App\Models\Catch\CatchDaily;
+use App\Models\Catch\CatchsCancelled;
 use App\Models\Catch\CatchsConfiguration;
 use App\Services\Financial\FinancialService;
 use App\Services\ResponseService;
@@ -100,5 +102,58 @@ class CatchDailyService
             DB::rollBack();
             return ResponseService::internalServerError('Falha em atualizar apanha diaria', $e->getMessage());
         }
+    }
+
+    public static function analytics(array $arrayRequest): JsonResponse
+    {
+        $startDate = FormatHelper::dateToUs($arrayRequest['start_date']);
+        $endDate = FormatHelper::dateToUs($arrayRequest['end_date']);
+
+        $catchDaily = DB::select("SELECT * FROM catch.catch_daily
+                                         WHERE catch_daily.date >= '{$startDate}'
+                                           AND catch_daily.date <= '{$endDate}'
+                                           AND catch_daily.enabled = true
+                                ");
+
+        $totalCatch = 0;
+        $totalCancelled = 0;
+        $totalCactchValue = 0;
+        $totalCancelledValue = 0;
+
+        foreach ($catchDaily as $item){
+            $catchConfiguration = CatchsConfiguration::where('catch_type_id', $item->catch_type_id)->first();
+            $totalCactchValue = $totalCactchValue + ($item->quantity * $catchConfiguration->catch_price);
+            $totalCatch = $totalCatch + $item->quantity;
+            $catchCancelled = CatchsCancelled::where('catch_daily_id', $item->id)
+                ->where('enabled', true)
+                ->get();
+
+            if($catchCancelled){
+                foreach ($catchCancelled as $cancelledItem){
+                    $totalCancelledValue = $totalCancelledValue + ($cancelledItem->quantity * $catchConfiguration->cancellation_price);
+                    $totalCancelled = $totalCancelled + $cancelledItem->quantity;
+                }
+            }
+        }
+
+        $totalValue = $totalCactchValue + $totalCancelledValue;
+
+        $analyticCatchDaily = [
+            'total_catch' => [
+                'total' => $totalCatch,
+                'value' => 'R$ '.FormatHelper::decimalToBr($totalCactchValue)
+            ],
+
+            'total_cancelled' => [
+                'total' => $totalCancelled,
+                'value' => 'R$ '.FormatHelper::decimalToBr($totalCancelledValue)
+            ],
+            'total' =>[
+                'total' => $totalCatch + $totalCancelled,
+                'value' => 'R$ '.FormatHelper::decimalToBr($totalValue)
+            ]
+        ];
+
+        return ResponseService::success('Sucesso em listar analitico de apanhas', $analyticCatchDaily);
     }
 }

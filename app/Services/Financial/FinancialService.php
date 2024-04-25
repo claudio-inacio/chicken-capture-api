@@ -94,6 +94,7 @@ class FinancialService
             FinancialAccounts::create([
                 'description' => 'Despesas com manuntencao',
                 'amount' => FormatHelper::brlTodecimal($arrayRequest['maintenance_expenses']),
+                'type' => TypeFinanceEnum::TO_DISCOUNT,
                 'due_date' => now(),
                 'credential_id' => $arrayRequest['credential_id'],
                 'company_id' => $arrayRequest['company_id'],
@@ -136,6 +137,7 @@ class FinancialService
             FinancialAccounts::create([
                 'description' => 'Despesas com combustivel',
                 'amount' => FormatHelper::brlTodecimal($arrayRequest['total_supply_value']),
+                'type' => TypeFinanceEnum::TO_DISCOUNT,
                 'due_date' => now(),
                 'credential_id' => $arrayRequest['credential_id'],
                 'company_id' => $arrayRequest['company_id'],

@@ -73,4 +73,13 @@ class CatchDailyController extends Controller
 
         return $this->catchDailyRespository->enable($request->catch_daily_id, $request->enabled);
     }
+
+    public function analytic(Request $request){
+        $request->validate([
+            'start_date' => 'required',
+            'end_date' => 'required'
+        ]);
+
+        return CatchDailyService::analytics($request->all());
+    }
 }

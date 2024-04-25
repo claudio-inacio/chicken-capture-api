@@ -2,6 +2,7 @@
 
 namespace App\Services\Vehicles;
 
+use App\Enum\Financial\TypeFinanceEnum;
 use App\Helpers\FormatHelper;
 use App\Models\Financial\FinancialAccounts;
 use App\Models\Vehicles\DriverArea;
@@ -83,6 +84,7 @@ class DriverAreaService
                 FinancialAccounts::create([
                     'description' => 'Despesas com manuntencao',
                     'amount' =>  $arrayData['maintenance_expenses'],
+                    'type' => TypeFinanceEnum::TO_DISCOUNT,
                     'due_date' => now(),
                     'credential_id' => $driverArea->credential_id,
                     'company_id' => $driverArea->company_id,
@@ -97,6 +99,7 @@ class DriverAreaService
                 FinancialAccounts::create([
                     'description' => 'Despesas com combustivel',
                     'amount' =>  $arrayData['total_supply_value'],
+                    'type' => TypeFinanceEnum::TO_DISCOUNT,
                     'due_date' => now(),
                     'credential_id' => $driverArea->credential_id,
                     'company_id' => $driverArea->company_id,
