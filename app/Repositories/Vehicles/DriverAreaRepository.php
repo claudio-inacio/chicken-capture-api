@@ -27,7 +27,10 @@ class DriverAreaRepository implements DriverAreaRepositoryInterface
 
     public function findAll($selectConfig, array $whereCriterious) : array
     {
-        $query = DB::table('vehicles.driver_area');
+        $query = DB::table('vehicles.driver_area')
+            ->join('authentication.credential', 'credential.id', '=', 'driver_area.credential_id')
+            ->join('vehicles.vehicle', 'vehicle.id', '=', 'driver_area.vehicles')
+            ->join('main.company', 'company.id', '=', 'driver_area.company_id');
 
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);
@@ -36,7 +39,11 @@ class DriverAreaRepository implements DriverAreaRepositoryInterface
 
         $selectFactory = new SelectFactory();
         $query = $selectFactory->byArray($query, $selectConfig);
-        $query->select(['driver_area.*']);
+        $query->select([
+            'driver_area.*',
+            'company.name as company_name',
+            'vehicle.vehicle_name', 'vehicle.plate_number'
+        ]);
 
         $result = $query->get();
 

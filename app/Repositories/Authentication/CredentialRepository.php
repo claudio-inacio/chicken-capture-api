@@ -17,7 +17,9 @@ class CredentialRepository implements CredentialRepositoryInterface
 
     public function findAll($selectConfig, array $whereCriterious) : array
     {
-        $query = DB::table('authentication.credential');
+        $query = DB::table('authentication.credential')
+            ->join('authentication.person', 'person.id', '=','credential.person_id')
+            ->join('main.company', 'company.id', '=','credential.company_id');
 
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);
@@ -27,7 +29,11 @@ class CredentialRepository implements CredentialRepositoryInterface
         $selectFactory = new SelectFactory();
         $query = $selectFactory->byArray($query, $selectConfig);
 
-        $query->select('credential.*')->orderBy($selectConfig['orderBy'][0], $selectConfig['orderBy'][1]);
+        $query->select([
+            'credential.*',
+            'company.name as company',
+            'person.name'
+        ])->orderBy($selectConfig['orderBy'][0], $selectConfig['orderBy'][1]);
         if(!empty($selectConfig['limit']))
             $query->limit($selectConfig['limit']);
         return  [

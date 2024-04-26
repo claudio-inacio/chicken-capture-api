@@ -23,7 +23,8 @@ class ContractingCompanyRepository implements ContractingCompanyRepositoryInterf
 
     public function findAll($selectConfig, array $whereCriterious) : array
     {
-        $query = DB::table('contracting_company.contracting_company');
+        $query = DB::table('contracting_company.contracting_company')
+            ->join('main.company', 'company.id', '=', 'contracting_company.company_id');
 
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);
@@ -32,7 +33,7 @@ class ContractingCompanyRepository implements ContractingCompanyRepositoryInterf
 
         $selectFactory = new SelectFactory();
         $query = $selectFactory->byArray($query, $selectConfig);
-        $query->select(['contracting_company.*']);
+        $query->select(['contracting_company.*', 'company.name as company']);
 
         $result = $query->get();
 

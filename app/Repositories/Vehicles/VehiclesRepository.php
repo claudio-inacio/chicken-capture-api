@@ -24,7 +24,9 @@ class VehiclesRepository implements VehiclesRepositoryInterface
 
     public function findAll($selectConfig, array $whereCriterious) : array
     {
-        $query = DB::table('vehicles.vehicle');
+        $query = DB::table('vehicles.vehicle')
+            ->join('main.company', 'company.id', '=', 'vehicle.company_id')
+            ->join('main.units', 'units.id', '=', 'vehicle.unit_id');
 
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);
@@ -33,7 +35,11 @@ class VehiclesRepository implements VehiclesRepositoryInterface
 
         $selectFactory = new SelectFactory();
         $query = $selectFactory->byArray($query, $selectConfig);
-        $query->select(['vehicle.*']);
+        $query->select([
+            'vehicle.*',
+            'company.name as company',
+            'units.name as unit_name', 'units.location as unit_location'
+        ]);
 
         $result = $query->get();
 

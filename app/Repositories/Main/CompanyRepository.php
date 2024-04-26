@@ -25,7 +25,8 @@ class CompanyRepository implements CompanyRepositoryInterface
 
     public function findAll($selectConfig, array $whereCriterious) : array
     {
-        $query = DB::table('main.company');
+        $query = DB::table('main.company')
+            ->join('main.company_group', 'company_group.id', '=', 'company.company_group_id');
 
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);
@@ -34,7 +35,10 @@ class CompanyRepository implements CompanyRepositoryInterface
 
         $selectFactory = new SelectFactory();
         $query = $selectFactory->byArray($query, $selectConfig);
-        $query->select(['company.*']);
+        $query->select([
+            'company.*',
+            'company_group.name as company_group'
+        ]);
 
         $result = $query->get();
 

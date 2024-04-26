@@ -23,7 +23,8 @@ class MonthlyClosingReportsRepository implements MonthlyClosingReportsRepository
 
     public function findAll($selectConfig, array $whereCriterious) : array
     {
-        $query = DB::table('financial.monthly_closing_reports');
+        $query = DB::table('financial.monthly_closing_reports')
+            ->join('main.company', 'company.id', '=', 'monthly_closing_reports.company_id');
 
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);
@@ -32,7 +33,7 @@ class MonthlyClosingReportsRepository implements MonthlyClosingReportsRepository
 
         $selectFactory = new SelectFactory();
         $query = $selectFactory->byArray($query, $selectConfig);
-        $query->select(['monthly_closing_reports.*']);
+        $query->select(['monthly_closing_reports.*', 'company.name as company_name']);
 
         $result = $query->get();
         foreach ($result as $item){

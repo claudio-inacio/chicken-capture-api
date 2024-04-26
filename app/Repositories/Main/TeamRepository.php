@@ -23,7 +23,10 @@ class TeamRepository implements TeamRepositoryInterface
 
     public function findAll($selectConfig, array $whereCriterious) : array
     {
-        $query = DB::table('main.team');
+        $query = DB::table('main.team')
+            ->join('main.company', 'company.id', '=', 'team.company_id')
+            ->join('main.units', 'units.id', '=', 'team.default_unit_id')
+            ->join('contracting_company.contracting_company', 'contracting_company.id', '=', 'team.contracting_company_id');
 
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);
@@ -32,7 +35,12 @@ class TeamRepository implements TeamRepositoryInterface
 
         $selectFactory = new SelectFactory();
         $query = $selectFactory->byArray($query, $selectConfig);
-        $query->select(['team.*']);
+        $query->select([
+            'team.*',
+            'company.name as company',
+            'units.name as unit_name','units.location as unit_location',
+            'contracting_company.name as contracting_company'
+        ]);
 
         $result = $query->get();
 

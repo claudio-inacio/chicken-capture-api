@@ -23,7 +23,9 @@ class UnitsRepository implements UnitsRepositoryInterface
 
     public function findAll($selectConfig, array $whereCriterious) : array
     {
-        $query = DB::table('main.units');
+        $query = DB::table('main.units')
+            ->join('main.company', 'company.id', '=', 'units.company_id')
+            ->join('contracting_company.contracting_company', 'contracting_company.id', '=', 'units.contracting_company_id');
 
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);
@@ -32,7 +34,11 @@ class UnitsRepository implements UnitsRepositoryInterface
 
         $selectFactory = new SelectFactory();
         $query = $selectFactory->byArray($query, $selectConfig);
-        $query->select(['units.*']);
+        $query->select([
+            'units.*',
+            'company.name as company',
+            'contracting_company.name as contracting_company'
+        ]);
 
         $result = $query->get();
 

@@ -24,7 +24,10 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
 
     public function findAll($selectConfig, array $whereCriterious) : array
     {
-        $query = DB::table('financial.financial_accounts');
+        $query = DB::table('financial.financial_accounts')
+            ->join('main.company', 'company.id', '=', 'financial_accounts.company_id')
+            ->join('authentication.credential', 'credential.id', '=', 'financial_accounts.credential_id')
+            ->join('authentication.person', 'person.id', '=', 'credential.person_id');
 
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);
@@ -33,7 +36,12 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
 
         $selectFactory = new SelectFactory();
         $query = $selectFactory->byArray($query, $selectConfig);
-        $query->select(['financial_accounts.*']);
+        $query->select([
+            'financial_accounts.*',
+            'credential.document as credential_document',
+            'person.name as credential_name',
+            'company.name as company'
+        ]);
 
         $result = $query->get();
 
