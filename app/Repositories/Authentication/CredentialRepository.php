@@ -44,7 +44,7 @@ class CredentialRepository implements CredentialRepositoryInterface
             ->join('authentication.person', 'person.id', '=', 'credential.person_id')
             ->select([
                 'credential.*', 'company.name as company_name',
-                'person.name', 'person.access_group_id', 'person.is_owner', 'person.email', 'person.company_group_id',
+                'person.name', 'person.is_owner', 'person.email', 'person.company_group_id',
                 'person.phone_number'
             ])
             ->get();

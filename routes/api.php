@@ -48,6 +48,11 @@ Route::group(['middleware' => ['authJwt']], function (){
     Route::put('/authentication/person', [PersonController::class, 'update']);
     Route::put('/authentication/person/enable', [PersonController::class, 'enable']);
 
+    Route::post('/authentication/credential-company', [CredentialCompanyController::class, 'register']);
+    Route::get('/authentication/credential-company', [CredentialCompanyController::class, 'list']);
+    Route::put('/authentication/credential-company', [CredentialCompanyController::class, 'update']);
+    Route::put('/authentication/credential-company/enable', [CredentialCompanyController::class, 'enable']);
+
     ##################################### CATCH ###################################
     Route::post('/catch/catch-type', [CatchTypeController::class, 'register']);
     Route::get('/catch/catch-type', [CatchTypeController::class, 'list']);
@@ -106,11 +111,6 @@ Route::group(['middleware' => ['authJwt']], function (){
     Route::get('/main/company-group', [CompanyGroupController::class, 'list']);
     Route::put('/main/company-group', [CompanyGroupController::class, 'update']);
     Route::put('/main/company-group/enable', [CompanyGroupController::class, 'enable']);
-
-    Route::post('/main/credential-company', [CredentialCompanyController::class, 'register']);
-    Route::get('/main/credential-company', [CredentialCompanyController::class, 'list']);
-    Route::put('/main/credential-company', [CredentialCompanyController::class, 'update']);
-    Route::put('/main/credential-company/enable', [CredentialCompanyController::class, 'enable']);
 
     #################################### FINANCIAL #########################################
     Route::post('/financial/financial-accounts', [FinancialAccountsController::class, 'register']);

@@ -2,10 +2,11 @@
 
 namespace App\Services\Vehicles;
 
+use App\Enum\Authentication\AccessGroupEnum;
 use App\Enum\Financial\StatusEnum;
-use App\Enum\Financial\TableReferenceFinanceEnum;
 use App\Enum\Financial\TypeFinanceEnum;
 use App\Helpers\FormatHelper;
+use App\Models\Credential;
 use App\Models\Financial\FinancialAccounts;
 use App\Models\Vehicles\DriverArea;
 use App\Models\Vehicles\Vehicle;
@@ -161,7 +162,7 @@ class DriverAreaService
 
             $driverArea->daily_end_km = $arrayData['daily_end_km'];
             $driverArea->daily_end_date = $arrayData['daily_end_date'];
-            $driverArea->total_supply_value = $arrayData['total_supply_value'];
+            $driverArea->total_supply_value = $driverArea->total_supply_value + $arrayData['total_supply_value'];
             $driverArea->liters_of_fuel = $arrayData['liters_of_fuel'];
             $driverArea->update();
 
@@ -206,16 +207,20 @@ class DriverAreaService
             $startDate = FormatHelper::dateToUsTimeStamp($arrayRequest['start_date']);
             $endDate = FormatHelper::dateToUsTimeStamp($arrayRequest['end_date']);
 
-            $driverArea = DriverArea::whereBetween('driver_area.created_at', [$startDate, $endDate])
-                ->join('vehicles.vehicle', 'vehicle.id', '=', 'driver_area.vehicle_id')
-                ->join('authentication.credential', 'credential.id', '=', 'driver_area.credential_id')
+            $driverArea = Credential::where('credential.company_id', $user->company_id)
                 ->join('authentication.person', 'person.id', '=', 'credential.person_id')
-                ->where('driver_area.enabled', true)
-                ->where('driver_area.company_id', $user->company_id)
+                ->leftJoin('vehicles.driver_area', function($join) use ($startDate, $endDate){
+                    $join->on("driver_area.credential_id", "=", "credential.id")
+                        ->whereBetween('driver_area.created_at', [$startDate, $endDate])
+                        ->where('driver_area.enabled', true);
+                })
+                ->leftJoin('vehicles.vehicle', 'vehicle.id', '=', 'driver_area.vehicle_id')
+                //->where('credential.access_group_id', AccessGroupEnum::DRIVER)
                 ->select([
                     'driver_area.*',
                     'person.name as person_name',
-                    'vehicle.vehicle_name', 'vehicle.plate_number'
+                    'vehicle.vehicle_name', 'vehicle.plate_number',
+                    'credential.id as user_id', 'credential.document'
                 ])
                 ->get();
 
@@ -235,7 +240,8 @@ class DriverAreaService
                     'vehicle' => [
                         'name' => $item->vehicle_name,
                         'plate_number' => $item->plate_number,
-                        'driver' => $item->person_name
+                        'driver' => $item->person_name,
+                        'driver_document' => $item->document,
                     ],
                     'fuel' => FormatHelper::decimalToBr($totalFuel),
                     'maintenance_expenses' => FormatHelper::decimalToBr($totalMaintenance),

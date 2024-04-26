@@ -19,6 +19,7 @@ class Credential extends Authenticatable implements JWTSubject
         'password',
         'person_id',
         'company_id',
+        'access_group_id',
     ];
 
     protected $hidden = [

@@ -23,7 +23,7 @@ class CredentialCompanyRepository implements CredentialCompanyRepositoryInterfac
 
     public function findAll($selectConfig, array $whereCriterious) : array
     {
-        $query = DB::table('main.credential_company');
+        $query = DB::table('authentication.credential_company');
 
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);

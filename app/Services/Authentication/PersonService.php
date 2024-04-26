@@ -21,7 +21,7 @@ class PersonService
         DB::beginTransaction();
         try {
             $arrayRequest['document'] = FormatHelper::formatCnpjCpf($arrayRequest['document']);
-            $arrayRequest['access_group_id'] == AccessGroupEnum::DIRETORIA ? $isOwner = true : $isOwner = false;
+            $arrayRequest['access_group_id'] == AccessGroupEnum::ADMINISTRATIVE ? $isOwner = true : $isOwner = false;
             $company = Company::whereId($user->company_id)->first();
 
             $personVerify = Person::where('email', $arrayRequest['email'])
@@ -35,7 +35,6 @@ class PersonService
                 'email' => $arrayRequest['email'],
                 'phone_number' => $arrayRequest['phone_number'],
                 'company_group_id' => $company->company_group_id,
-                'access_group_id' => $arrayRequest['access_group_id'],
                 'is_owner' => $isOwner,
             ]);
 
@@ -43,6 +42,7 @@ class PersonService
                 'document' => $arrayRequest['document'],
                 'password' => bcrypt($arrayRequest['password']),
                 'person_id' => $person->id,
+                'access_group_id' => $arrayRequest['access_group_id'],
                 'company_id' => $arrayRequest['company_id']
             ]);
 

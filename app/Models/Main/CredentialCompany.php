@@ -10,7 +10,7 @@ class CredentialCompany extends Model
 {
     use HasFactory;
 
-    protected $table = 'main.credential_company';
+    protected $table = 'authentication.credential_company';
 
     protected $fillable = ['credential_id', 'company_id', 'enabled', 'created_at', 'updated_at'];
 }
