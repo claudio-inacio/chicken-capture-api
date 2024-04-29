@@ -32,6 +32,7 @@ class CatchsCancelledRepository implements CatchsCancelledRespositoryInterface
             ->join('authentication.credential', 'credential.id', '=', 'catchs_cancelled.credential_id')
             ->join('authentication.person', 'person.id', '=', 'credential.person_id')
             ->join('catch.catch_daily', 'catch_daily.id', '=', 'catchs_cancelled.catch_daily_id')
+            ->join('main.units', 'units.id', '=', 'catch_daily.units_id')
             ->join('main.company', 'company.id', '=', 'catchs_cancelled.company_id');
 
         $whereFactory = new WhereFactory();
@@ -43,10 +44,11 @@ class CatchsCancelledRepository implements CatchsCancelledRespositoryInterface
         $query = $selectFactory->byArray($query, $selectConfig);
         $query->select([
             'catchs_cancelled.*',
-            'company.name as company',
+            'company.name as company_name',
             'catch_daily.quantity as catch_daily_quantity',
             'catch_daily.code as catch_daily_code',
             'catch_daily.batch as catch_daily_batch',
+            'units.id as unit_id', 'units.name as unit_name',
             'credential.document as credential_document',
             'person.name as credential_name'
         ]);

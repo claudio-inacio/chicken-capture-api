@@ -37,7 +37,7 @@ class VehiclesRepository implements VehiclesRepositoryInterface
         $query = $selectFactory->byArray($query, $selectConfig);
         $query->select([
             'vehicle.*',
-            'company.name as company',
+            'company.name as company_name',
             'units.name as unit_name', 'units.location as unit_location'
         ]);
 

@@ -31,7 +31,7 @@ class CredentialRepository implements CredentialRepositoryInterface
 
         $query->select([
             'credential.*',
-            'company.name as company',
+            'company.name as company_name',
             'person.name'
         ])->orderBy($selectConfig['orderBy'][0], $selectConfig['orderBy'][1]);
         if(!empty($selectConfig['limit']))

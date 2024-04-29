@@ -33,7 +33,7 @@ class IntegratedRepository implements IntegratedRepositoryInterface
 
         $selectFactory = new SelectFactory();
         $query = $selectFactory->byArray($query, $selectConfig);
-        $query->select(['integrated.*', 'contracting_company.name as contracting_company']);
+        $query->select(['integrated.*', 'contracting_company.name as contracting_company_name']);
 
         $result = $query->get();
 

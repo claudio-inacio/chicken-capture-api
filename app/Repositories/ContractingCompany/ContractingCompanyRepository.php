@@ -33,7 +33,7 @@ class ContractingCompanyRepository implements ContractingCompanyRepositoryInterf
 
         $selectFactory = new SelectFactory();
         $query = $selectFactory->byArray($query, $selectConfig);
-        $query->select(['contracting_company.*', 'company.name as company']);
+        $query->select(['contracting_company.*', 'company.name as company_name']);
 
         $result = $query->get();
 

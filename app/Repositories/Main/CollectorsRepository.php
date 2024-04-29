@@ -34,7 +34,7 @@ class CollectorsRepository implements CollectorsRepositoryInterface
 
         $selectFactory = new SelectFactory();
         $query = $selectFactory->byArray($query, $selectConfig);
-        $query->select(['collectors.*', 'company.name as company']);
+        $query->select(['collectors.*', 'company.name as company_name']);
 
         $result = $query->get();
 

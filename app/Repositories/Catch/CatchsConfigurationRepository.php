@@ -37,8 +37,8 @@ class CatchsConfigurationRepository implements CatchsConfigurationRespositoryInt
         $query = $selectFactory->byArray($query, $selectConfig);
         $query->select([
             'catchs_configuration.*',
-            'catch_type.name as catch_type',
-            'company.name as company'
+            'catch_type.name as catch_type_name',
+            'company.name as company_name'
         ]);
 
         $result = $query->get();

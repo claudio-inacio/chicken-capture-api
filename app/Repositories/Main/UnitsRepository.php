@@ -36,8 +36,8 @@ class UnitsRepository implements UnitsRepositoryInterface
         $query = $selectFactory->byArray($query, $selectConfig);
         $query->select([
             'units.*',
-            'company.name as company',
-            'contracting_company.name as contracting_company'
+            'company.name as company_name',
+            'contracting_company.name as contracting_company_name'
         ]);
 
         $result = $query->get();

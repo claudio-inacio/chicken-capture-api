@@ -48,11 +48,12 @@ class VehiclesController extends Controller
             'vehicle_name' => 'required',
             'plate_number' => 'required',
             'unit_id' => 'required',
-            'company_id' => 'required',
             'vehicle_id' => 'required'
         ]);
 
-        return $this->vehiclesRepository->update($request->vehicle_id, $request->all());
+        $arrayData = $request->all();
+        $arrayData['company_id'] = $request->user()->company_id;
+        return $this->vehiclesRepository->update($request->vehicle_id, $arrayData);
     }
 
     public function enable(Request $request){

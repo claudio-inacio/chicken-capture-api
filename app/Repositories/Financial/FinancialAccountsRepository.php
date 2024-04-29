@@ -40,7 +40,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             'financial_accounts.*',
             'credential.document as credential_document',
             'person.name as credential_name',
-            'company.name as company'
+            'company.name as company_name'
         ]);
 
         $result = $query->get();

@@ -8,6 +8,7 @@ use App\Helpers\FormatHelper;
 use App\Helpers\ValidatorHelpers;
 use App\Interfaces\Main\CompanyRepositoryInterface;
 use App\Models\Main\Company;
+use App\Models\Main\CompanyGroup;
 use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
 
@@ -37,7 +38,7 @@ class CompanyRepository implements CompanyRepositoryInterface
         $query = $selectFactory->byArray($query, $selectConfig);
         $query->select([
             'company.*',
-            'company_group.name as company_group'
+            'company_group.name as company_group_name'
         ]);
 
         $result = $query->get();
@@ -68,9 +69,24 @@ class CompanyRepository implements CompanyRepositoryInterface
                 ->orWhere('phone', $value['phone'])
                 ->orWhere('cnpj', $value['cnpj'])
                 ->orWhere('email', $value['email'])
+                ->where('company_group_id', $value['company_group_id'])
                 ->first();
 
             if($company) return ResponseService::businessError('Compania ja cadastrado, por favor verificar dados');
+
+            if ($value['is_main']) {
+                $company = Company::where('company.company_group_id', $value['company_group_id'])
+                    ->where('company.is_main', true)
+                    ->where('company.enabled', true)
+                    ->join('main.company_group', 'company_group.id', '=', 'company.company_group_id')
+                    ->select(['company.*', 'company_group.name as company_group_name'])
+                    ->first();
+
+                if ($company)
+                    return ResponseService::businessError(
+                        'Ja existe uma compania cadastrada como main para o grupo -> '. $company->company_group_name
+                    );
+            }
 
             Company::create($value);
             return ResponseService::success204();
@@ -108,6 +124,21 @@ class CompanyRepository implements CompanyRepositoryInterface
     public function enable(int $id, bool $enable): \Illuminate\Http\JsonResponse
     {
         try {
+            $company = Company::whereId($id)->first();
+            if ($enable) {
+                $companyVerify = Company::where('company_group_id', $company->company_group_id)
+                    ->where('enabled', true)
+                    ->where('is_main', true)
+                    ->where('id', '<>', $id)
+                    ->get();
+
+                $companyGroup = CompanyGroup::whereId($company->company_group_id)->first();
+                if (count($companyVerify) > 0)
+                    return ResponseService::businessError(
+                        'Voce nao pode reativar essa compania. Ja existe uma compania cadastrada como main para o grupo -> '. $companyGroup->name
+                    );
+            }
+
             Company::whereId($id)->update(['enabled' => $enable]);
             return ResponseService::success204();
         } catch (\Exception $e){

@@ -228,7 +228,8 @@ class FinancialService
                 'to_discount' => [
                     'details' => $toDiscountDescriptions,
                     'total' => FormatHelper::decimalToBr($toDiscountValue),
-                ]
+                ],
+                'finance_income' => FormatHelper::decimalToBr($toReceiveValue - $toDiscountValue)
             ];
 
             return ResponseService::success('Sucesso em listar analitico de finanças', $analyticFinancialAccounts);

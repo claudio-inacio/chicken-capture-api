@@ -37,9 +37,9 @@ class TeamRepository implements TeamRepositoryInterface
         $query = $selectFactory->byArray($query, $selectConfig);
         $query->select([
             'team.*',
-            'company.name as company',
-            'units.name as unit_name','units.location as unit_location',
-            'contracting_company.name as contracting_company'
+            'company.name as company_name',
+            'units.name as default_unit_name','units.location as default_unit_location',
+            'contracting_company.name as contracting_company_name'
         ]);
 
         $result = $query->get();
