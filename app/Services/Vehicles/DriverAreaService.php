@@ -225,16 +225,17 @@ class DriverAreaService
                 ->get();
 
             $arrayDriverArea = [];
+            $totalFuel = 0;
             foreach ($driverArea as $key => $item){
                 $financialAccounts = FinancialAccounts::where('reference_id', $item->id)->get();
-                $totalFuel = 0;
+                $fuel = 0;
                 $totalMaintenance = 0;
                 foreach ($financialAccounts as $itemFinancial){
                     if($itemFinancial->description == 'Despesas com manuntencao')
                         $totalMaintenance = $totalMaintenance + $itemFinancial->amount;
 
                     if($itemFinancial->description == 'Despesas com combustivel')
-                        $totalFuel = $totalFuel + $itemFinancial->amount;
+                        $fuel = $fuel + $itemFinancial->amount;
                 }
                 $arrayDriverArea[$key] = [
                     'vehicle' => [
@@ -243,7 +244,7 @@ class DriverAreaService
                         'driver' => $item->person_name,
                         'driver_document' => $item->document,
                     ],
-                    'fuel' => FormatHelper::decimalToBr($totalFuel),
+                    'fuel' => FormatHelper::decimalToBr($fuel),
                     'maintenance_expenses' => FormatHelper::decimalToBr($totalMaintenance),
                     'daily_start_km' => $item->daily_start_km,
                     'daily_start_time' => $item->daily_start_time,
@@ -251,9 +252,15 @@ class DriverAreaService
                     'daily_end_date' => $item->daily_end_date,
                     'enabled' => $item->enabled
                 ];
+
+                $totalFuel = $totalFuel + $fuel;
             }
 
-            return ResponseService::success('Sucesso em listar analitico da area de motoristas', $arrayDriverArea);
+
+            return ResponseService::success('Sucesso em listar analitico da area de motoristas', [
+                "daily_start" => $arrayDriverArea,
+                "total_fuel_expenditure" => FormatHelper::decimalToBr($totalFuel),
+            ]);
         } catch (Exception $e){
             return ResponseService::internalServerError('Falha em listar analitico da area de motoristas', $e->getMessage());
         }
