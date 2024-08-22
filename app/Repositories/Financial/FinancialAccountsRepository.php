@@ -11,6 +11,7 @@ use App\Models\Catch\CatchDaily;
 use App\Models\Financial\FinancialAccounts;
 use App\Models\Main\Units;
 use App\Services\ResponseService;
+use Exception;
 use Illuminate\Support\Facades\DB;
 
 class FinancialAccountsRepository implements FinancialAccountsRepositoryInterface
@@ -25,6 +26,9 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
         return FinancialAccounts::where('name', $name)->get();
     }
 
+    /**
+     * @throws Exception
+     */
     public function findAll($selectConfig, array $whereCriterious) : array
     {
         $query = DB::table('financial.financial_accounts')
@@ -52,11 +56,9 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
                 $catch = CatchDaily::find($item->reference_id);
 
                 if (!$catch) {
-                    $item->catch_daily_created_at = null;
-                    $item->catch_daily_updated_at = null;
+                    $item->catch_daily_date = null;
                 }else {
-                    $item->catch_daily_created_at = $catch->created_at;
-                    $item->catch_daily_updated_at = $catch->updated_at;
+                    $item->catch_daily_date = (new \DateTime($catch->date))->format('d/m/Y');
                 }
 
                 $unit = Units::find($catch->units_id);
@@ -90,7 +92,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
         try {
             FinancialAccounts::create($value);
             return ResponseService::success204();
-        } catch (\Exception $e){
+        } catch (Exception $e){
             return ResponseService::internalServerError('Falha em registrar conta', $e->getMessage());
         }
     }
@@ -100,9 +102,15 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
         $data['due_date'] = FormatHelper::dateToUsTimeStamp($data['due_date']);
         unset($data['financial_accounts_id']);
         try {
+            if ($data['table_reference_id'] == TableReferenceFinanceEnum::DAILY_CATCH) {
+                if (!empty($data['finished_data'])) {
+                    CatchDaily::whereId($data['reference_id'])->updated(['received' => true]);
+                }
+            }
+
             FinancialAccounts::whereId($id)->update($data);
             return ResponseService::success204();
-        } catch (\Exception $e){
+        } catch (Exception $e){
             return ResponseService::internalServerError('Falha em alterar conta', $e->getMessage());
         }
     }
@@ -112,7 +120,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
         try {
             FinancialAccounts::whereId($id)->update(['enabled' => $enable]);
             return ResponseService::success204();
-        } catch (\Exception $e){
+        } catch (Exception $e){
             return ResponseService::internalServerError('Falha Ativar/Desativar conta', $e->getMessage());
         }
     }

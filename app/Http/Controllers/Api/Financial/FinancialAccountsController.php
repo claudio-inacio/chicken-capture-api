@@ -52,7 +52,9 @@ class FinancialAccountsController extends Controller
             'due_date' => 'required',
             'finished_data' => 'required',
             'type' => 'required',
-            'financial_accounts_id' => 'required'
+            'financial_accounts_id' => 'required',
+            'table_reference_id' => 'required',
+            'reference_id' => 'required',
         ]);
 
         return $this->financialAccountsRepository->update($request->financial_accounts_id, $request->all());
