@@ -32,6 +32,18 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
      */
     public function findAll($selectConfig, array $whereCriterious): array
     {
+        $dateNow = (new \DateTime(now()))->format('Y-m-d');
+        $financialAccounts = FinancialAccounts::where('status_id', '<>', StatusEnum::DEFEATED)
+            ->where('due_date', '<', $dateNow)
+            ->where('finished_data', null)
+            ->get()
+            ->toarray();
+
+        foreach ($financialAccounts as $financialAccount){
+            FinancialAccounts::whereId($financialAccount['id'])->update(['status_id' => StatusEnum::DEFEATED]);
+        }
+
+
         $query = DB::table('financial.financial_accounts')
             ->join('main.company', 'company.id', '=', 'financial_accounts.company_id')
             ->join('authentication.credential', 'credential.id', '=', 'financial_accounts.credential_id')
@@ -53,14 +65,6 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
 
         $result = $query->get()->toArray();
         foreach ($result as $key => $item) {
-            $dateVerify = (new \DateTime($item->due_date))->format('d/m/Y');
-            $dateNow = (new \DateTime(now()))->format('d/m/Y');
-
-            if ($dateVerify < $dateNow and $item->finished_data == null) {
-                FinancialAccounts::whereId($item->id)->update(['status_id' => StatusEnum::DEFEATED]);
-                $item->status_id = StatusEnum::DEFEATED;
-            }
-
             $item->catch_daily_date = null;
             $item->catch_daily_enabled = null;
             $item->catch_daily_units_id = null;
