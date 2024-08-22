@@ -30,7 +30,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
     /**
      * @throws Exception
      */
-    public function findAll($selectConfig, array $whereCriterious) : array
+    public function findAll($selectConfig, array $whereCriterious): array
     {
         $query = DB::table('financial.financial_accounts')
             ->join('main.company', 'company.id', '=', 'financial_accounts.company_id')
@@ -52,8 +52,11 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
         ]);
 
         $result = $query->get()->toArray();
-        foreach ($result as $key => $item){
-            if ($item->due_date < now() and $item->finished_data == null){
+        foreach ($result as $key => $item) {
+            $dateVerify = (new \DateTime($item->due_date))->format('d/m/Y');
+            $dateNow = (new \DateTime(now()))->format('d/m/Y');
+
+            if ($dateVerify < $dateNow and $item->finished_data == null) {
                 FinancialAccounts::whereId($item->id)->update(['status_id' => StatusEnum::DEFEATED]);
                 $item->status_id = StatusEnum::DEFEATED;
             }
@@ -77,7 +80,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
                         $item->catch_daily_units_name = $unit->name;
                     }
                 }
-           }
+            }
         }
 
         return [
@@ -89,7 +92,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
 
     public function getById(int $id)
     {
-        return FinancialAccounts::where('id',$id)->get();
+        return FinancialAccounts::where('id', $id)->get();
     }
 
     public function create(array $value): \Illuminate\Http\JsonResponse
@@ -97,12 +100,12 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
         $value['due_date'] = FormatHelper::dateToUsTimeStamp($value['due_date']);
 
         try {
-            if ($value['status_id'] != StatusEnum::DISCOUNT){
+            if ($value['status_id'] != StatusEnum::DISCOUNT) {
                 unset($value['finished_data']);
             }
             FinancialAccounts::create($value);
             return ResponseService::success204();
-        } catch (Exception $e){
+        } catch (Exception $e) {
             return ResponseService::internalServerError('Falha em registrar conta', $e->getMessage());
         }
     }
@@ -120,7 +123,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
 
             FinancialAccounts::whereId($id)->update($data);
             return ResponseService::success204();
-        } catch (Exception $e){
+        } catch (Exception $e) {
             return ResponseService::internalServerError('Falha em alterar conta', $e->getMessage());
         }
     }
@@ -130,7 +133,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
         try {
             FinancialAccounts::whereId($id)->update(['enabled' => $enable]);
             return ResponseService::success204();
-        } catch (Exception $e){
+        } catch (Exception $e) {
             return ResponseService::internalServerError('Falha Ativar/Desativar conta', $e->getMessage());
         }
     }
