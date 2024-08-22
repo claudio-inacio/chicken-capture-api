@@ -92,6 +92,9 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
         $value['due_date'] = FormatHelper::dateToUsTimeStamp($value['due_date']);
 
         try {
+            if ($value['status_id'] != StatusEnum::DISCOUNT){
+                unset($value['finished_data']);
+            }
             FinancialAccounts::create($value);
             return ResponseService::success204();
         } catch (Exception $e){
