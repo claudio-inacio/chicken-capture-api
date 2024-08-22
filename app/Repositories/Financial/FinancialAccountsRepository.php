@@ -67,7 +67,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
 
                 $unit = Units::find($catch->units_id);
 
-                if(!$unit) {
+                if($unit) {
                     $item->catch_daily_units_id = $unit->id;
                     $item->catch_daily_units_name = $unit->name;
                 }
