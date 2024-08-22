@@ -53,7 +53,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
 
         $result = $query->get()->toArray();
         foreach ($result as $key => $item){
-            if ($item->due_date < now()){
+            if ($item->due_date < now() and $item->finished_data == null){
                 FinancialAccounts::whereId($item->id)->update(['status_id' => StatusEnum::DEFEATED]);
                 $item->status_id = StatusEnum::DEFEATED;
             }
