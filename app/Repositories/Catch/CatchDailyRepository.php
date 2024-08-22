@@ -2,12 +2,14 @@
 
 namespace App\Repositories\Catch;
 
+use App\Enum\Financial\TableReferenceFinanceEnum;
 use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
 use App\Helpers\FormatHelper;
 use App\Interfaces\Catch\CatchDailyRespositoryInterface;
 use App\Models\Catch\CatchDaily;
 use App\Models\Catch\CatchsCancelled;
+use App\Models\Financial\FinancialAccounts;
 use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
 
@@ -108,6 +110,11 @@ class CatchDailyRepository implements CatchDailyRespositoryInterface
     {
         try {
             CatchDaily::whereId($id)->update(['enabled' => $enable]);
+
+            FinancialAccounts::where('table_reference_id', TableReferenceFinanceEnum::DAILY_CATCH)
+                ->where('reference_id', $id)
+                ->update(['enabled' => false]);
+
             return ResponseService::success204();
         } catch (\Exception $e){
             return ResponseService::internalServerError('Falha Ativar/Desativar apanha', $e->getMessage());
