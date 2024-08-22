@@ -113,7 +113,7 @@ class CatchDailyRepository implements CatchDailyRespositoryInterface
 
             FinancialAccounts::where('table_reference_id', TableReferenceFinanceEnum::DAILY_CATCH)
                 ->where('reference_id', $id)
-                ->update(['enabled' => false]);
+                ->update(['enabled' => $enable]);
 
             return ResponseService::success204();
         } catch (\Exception $e){
