@@ -18,13 +18,13 @@ class FinancialService
             $days = cal_days_in_month(CAL_GREGORIAN, date('m'), date('Y'));
             $day = '0';
 
-            if(date('d') > 0 and date('d') < 16) $day = '15';
-            if(date('d') > 15 and date('d') < $days) $day = $days;
+            if (date('d') > 0 and date('d') < 16) $day = '15';
+            if (date('d') > 15 and date('d') < $days) $day = $days;
 
             FinancialAccounts::create([
                 'description' => 'Apanha Diária',
                 'amount' => $value,
-                'due_date' => date('Y-m').'-'.$day,
+                'due_date' => date('Y-m') . '-' . $day,
                 'reference_id' => $referenceId,
                 'status_id' => StatusEnum::TO_RECEIVE,
                 'table_reference_id' => $tableId,
@@ -36,7 +36,7 @@ class FinancialService
             return [
                 'success' => true
             ];
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return [
                 'success' => true,
                 'message' => 'falha em registrar finança de apanha diaria',
@@ -50,12 +50,12 @@ class FinancialService
         try {
             $days = cal_days_in_month(CAL_GREGORIAN, date('m'), date('Y'));
             $day = '0';
-            if(date('d') > 0 and date('d') < 16) $day = '15';
-            if(date('d') > 15 and date('d') < $days) $day = $days;
+            if (date('d') > 0 and date('d') < 16) $day = '15';
+            if (date('d') > 15 and date('d') < $days) $day = $days;
 
             FinancialAccounts::where('reference_id', $referenceId)->update([
                 'amount' => $value,
-                'due_date' => date('Y-m').'-'.$day,
+                'due_date' => date('Y-m') . '-' . $day,
                 'type' => TypeFinanceEnum::TO_RECEIVE,
                 'status_id' => StatusEnum::TO_RECEIVE,
                 'credential_id' => $credentialId,
@@ -65,7 +65,7 @@ class FinancialService
             return [
                 'success' => true
             ];
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return [
                 'success' => true,
                 'message' => 'falha em registrar finança de apanha diaria',
@@ -85,7 +85,7 @@ class FinancialService
                 ->whereDay('created_at', date('d'))
                 ->first();
 
-            if ($financialAccount){
+            if ($financialAccount) {
                 FinancialAccounts::whereId($financialAccount->id)->update([
                     'amount' => $financialAccount->amount + FormatHelper::brlTodecimal($arrayRequest['maintenance_expenses']),
                 ]);
@@ -111,7 +111,7 @@ class FinancialService
             return [
                 'success' => true
             ];
-        } catch (\Exception $exception){
+        } catch (\Exception $exception) {
             DB::rollBack();
             return [
                 'success' => false,
@@ -132,7 +132,7 @@ class FinancialService
                 ->whereDay('created_at', date('d'))
                 ->first();
 
-            if ($financialAccount){
+            if ($financialAccount) {
                 FinancialAccounts::whereId($financialAccount->id)->update([
                     'amount' => $financialAccount->amount + FormatHelper::brlTodecimal($arrayRequest['total_supply_value']),
                 ]);
@@ -158,7 +158,7 @@ class FinancialService
             return [
                 'success' => true
             ];
-        } catch (\Exception $exception){
+        } catch (\Exception $exception) {
             DB::rollBack();
             return [
                 'success' => false,
@@ -168,57 +168,49 @@ class FinancialService
         }
     }
 
-    public static function analytics(array $arrayRequest, $user){
+    public static function analytics(array $arrayRequest, $user)
+    {
         try {
             $startDate = FormatHelper::dateToUsTimeStamp($arrayRequest['start_date']);
             $endDate = FormatHelper::dateToUsTimeStamp($arrayRequest['end_date']);
 
-            $toReceive = TypeFinanceEnum::TO_RECEIVE;
-            $toDiscount = TypeFinanceEnum::TO_DISCOUNT;
+            $company_id = $user->company_id;
 
-            $financialAccountsToReceive = DB::select("SELECT * FROM financial.financial_accounts as f
-                                         WHERE f.due_date >= '{$startDate}'
-                                           AND f.due_date <= '{$endDate}'
-                                           AND f.type = '{$toReceive}'
-                                           AND f.enabled = true
-                                           AND f.company_id = '$user->company_id'
-                                ");
+            // Obter contas financeiras a receber
+            $financialAccountsToReceive = FinancialAccounts::whereBetween('due_date', [$startDate, $endDate])
+                ->where('type', TypeFinanceEnum::TO_RECEIVE)
+                ->where('enabled', true)
+                ->where('company_id', $company_id)
+                ->get();
 
-            $toReceiveValue = 0;
-            $toReceiveDescriptions = [];
-            foreach ($financialAccountsToReceive as $key => $item){
-                $toReceiveDescriptions[$key] = [
+            $toReceiveValue = $financialAccountsToReceive->sum('amount');
+            $toReceiveDescriptions = $financialAccountsToReceive->map(function ($item) {
+                return [
                     'description' => $item->description,
                     'value' => FormatHelper::decimalToBr($item->amount),
                     'due_date' => $item->due_date,
                     'finished_data' => $item->finished_data,
                     'status_id' => $item->status_id,
                 ];
+            });
 
-                $toReceiveValue = $toReceiveValue + $item->amount;
-            }
+            // Obter contas financeiras a descontar
+            $financialAccountsToDiscount = FinancialAccounts::whereBetween('due_date', [$startDate, $endDate])
+                ->where('type', TypeFinanceEnum::TO_DISCOUNT)
+                ->where('enabled', true)
+                ->where('company_id', $company_id)
+                ->get();
 
-            $financialAccountsToDiscount = DB::select("SELECT * FROM financial.financial_accounts as f
-                                         WHERE f.due_date >= '{$startDate}'
-                                           AND f.due_date <= '{$endDate}'
-                                           AND f.type = '{$toDiscount}'
-                                           AND f.enabled = true
-                                           AND f.company_id = '$user->company_id'
-                                ");
-
-            $toDiscountValue = 0;
-            $toDiscountDescriptions = [];
-            foreach ($financialAccountsToDiscount as $key => $item){
-                $toDiscountDescriptions[$key] = [
+            $toDiscountValue = $financialAccountsToDiscount->sum('amount');
+            $toDiscountDescriptions = $financialAccountsToDiscount->map(function ($item) {
+                return [
                     'description' => $item->description,
                     'value' => FormatHelper::decimalToBr($item->amount),
                     'due_date' => $item->due_date,
                     'finished_data' => $item->finished_data,
                     'status_id' => $item->status_id,
                 ];
-
-                $toDiscountValue = $toDiscountValue + $item->amount;
-            }
+            });
 
             $analyticFinancialAccounts = [
                 'to_receive' => [
@@ -232,9 +224,9 @@ class FinancialService
                 'finance_income' => FormatHelper::decimalToBr($toReceiveValue - $toDiscountValue)
             ];
 
-            return ResponseService::success('Sucesso em listar analitico de finanças', $analyticFinancialAccounts);
-        } catch (\Exception $e){
-            return ResponseService::internalServerError('Falha em listar analitico de finanças', $e->getMessage());
+            return ResponseService::success('Sucesso em listar analítico de finanças', $analyticFinancialAccounts);
+        } catch (\Exception $e) {
+            return ResponseService::internalServerError('Falha em listar analítico de finanças', $e->getMessage());
         }
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Financial;
 
+use App\Enum\Financial\StatusEnum;
 use App\Enum\Financial\TableReferenceFinanceEnum;
 use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;

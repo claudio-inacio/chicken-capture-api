@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Financial;
 
+use App\Enum\Financial\StatusEnum;
 use App\Http\Controllers\Controller;
 use App\Interfaces\Financial\FinancialAccountsRepositoryInterface;
 use App\Services\Financial\FinancialService;
@@ -24,8 +25,13 @@ class FinancialAccountsController extends Controller
             'description' => 'required',
             'amount' => 'required',
             'due_date' => 'required',
-            'type' => 'required'
+            'type' => 'required',
+            'status_id' => 'required'
         ]);
+
+        if ($request->status_id == StatusEnum::DISCOUNT){
+            $request->validate(['finished_data' => 'required']);
+        }
 
         $arrayData = $request->all();
         $arrayData['company_id'] = $request->user()->company_id;
