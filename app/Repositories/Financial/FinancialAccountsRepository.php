@@ -62,14 +62,14 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
 
                 if ($catch) {
                     $item->catch_daily_date = (new \DateTime($catch->date))->format('d/m/Y');
-                    $item->catch_daily_enabled = $catch->enabled ;
-                }
+                    $item->catch_daily_enabled = $catch->enabled;
 
-                $unit = Units::find($catch->units_id);
+                    $unit = Units::find($catch->units_id);
 
-                if($unit) {
-                    $item->catch_daily_units_id = $unit->id;
-                    $item->catch_daily_units_name = $unit->name;
+                    if ($unit) {
+                        $item->catch_daily_units_id = $unit->id;
+                        $item->catch_daily_units_name = $unit->name;
+                    }
                 }
            }
         }
