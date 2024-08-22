@@ -8,6 +8,7 @@ use App\Enum\Financial\TypeFinanceEnum;
 use App\Helpers\FormatHelper;
 use App\Models\Financial\FinancialAccounts;
 use App\Services\ResponseService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
 class FinancialService
@@ -168,19 +169,17 @@ class FinancialService
         }
     }
 
-    public static function analytics(array $arrayRequest, $user)
+    public static function analytics(array $arrayRequest, $user): JsonResponse
     {
         try {
             $startDate = FormatHelper::dateToUsTimeStamp($arrayRequest['start_date']);
             $endDate = FormatHelper::dateToUsTimeStamp($arrayRequest['end_date']);
 
-            $company_id = $user->company_id;
-
             // Obter contas financeiras a receber
             $financialAccountsToReceive = FinancialAccounts::whereBetween('due_date', [$startDate, $endDate])
                 ->where('type', TypeFinanceEnum::TO_RECEIVE)
                 ->where('enabled', true)
-                ->where('company_id', $company_id)
+                ->where('company_id', $user->company_id)
                 ->get();
 
             $toReceiveValue = $financialAccountsToReceive->sum('amount');
@@ -198,7 +197,7 @@ class FinancialService
             $financialAccountsToDiscount = FinancialAccounts::whereBetween('due_date', [$startDate, $endDate])
                 ->where('type', TypeFinanceEnum::TO_DISCOUNT)
                 ->where('enabled', true)
-                ->where('company_id', $company_id)
+                ->where('company_id', $user->company_id)
                 ->get();
 
             $toDiscountValue = $financialAccountsToDiscount->sum('amount');
