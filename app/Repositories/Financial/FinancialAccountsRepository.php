@@ -52,21 +52,22 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
                 $catch = CatchDaily::find($item->reference_id);
 
                 if (!$catch) {
-                    $result[$key]['catch_daily_created_at'] = null;
-                    $result[$key]['catch_daily_updated_at'] = null;
+                    $item->catch_daily_created_at = null;
+                    $item->catch_daily_updated_at = null;
+                }else {
+                    $item->catch_daily_created_at = $catch->created_at;
+                    $item->catch_daily_updated_at = $catch->updated_at;
                 }
-
-                $result[$key]['catch_daily_created_at'] = $catch->created_at;
-                $result[$key]['catch_daily_updated_at'] = $catch->updated_at;
 
                 $unit = Units::find($catch->units_id);
 
                 if(!$unit) {
-                    $result[$key]['catch_daily_units_id'] = null;
-                    $result[$key]['catch_daily_units_name'] = null;
+                    $item->catch_daily_units_id = null;
+                    $item->catch_daily_units_name = null;
+                } else {
+                    $item->catch_daily_units_id = $unit->id;
+                    $item->catch_daily_units_name = $unit->name;
                 }
-                $result[$key]['catch_daily_units_id'] = $unit->id;
-                $result[$key]['catch_daily_units_name'] = $unit->name;
            }
         }
 
