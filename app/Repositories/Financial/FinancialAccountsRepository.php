@@ -56,6 +56,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             $item->catch_daily_enabled = null;
             $item->catch_daily_units_id = null;
             $item->catch_daily_units_name = null;
+
             if ($item->table_reference_id == TableReferenceFinanceEnum::DAILY_CATCH) {
                 $catch = CatchDaily::find($item->reference_id);
 
