@@ -48,8 +48,8 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
 
         $result = $query->get()->toArray();
         foreach ($result as $key => $item){
-            if ($item['table_reference_id'] == TableReferenceFinanceEnum::DAILY_CATCH) {
-                $catch = CatchDaily::find($item['reference_id']);
+            if ($item->table_reference_id == TableReferenceFinanceEnum::DAILY_CATCH) {
+                $catch = CatchDaily::find($item->reference_id);
 
                 if (!$catch) {
                     $result[$key]['catch_daily_created_at'] = null;
