@@ -57,8 +57,10 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
 
                 if (!$catch) {
                     $item->catch_daily_date = null;
+                    $item->catch_daily_enabled = null;
                 }else {
                     $item->catch_daily_date = (new \DateTime($catch->date))->format('d/m/Y');
+                    $item->catch_daily_enabled = $catch->enabled ;
                 }
 
                 $unit = Units::find($catch->units_id);
