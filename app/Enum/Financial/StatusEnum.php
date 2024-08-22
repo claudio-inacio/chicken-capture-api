@@ -8,4 +8,5 @@ class StatusEnum
     const TO_DISCOUNT = 2;
     const RECEIVE = 3;
     const DISCOUNT = 4;
+    const DEFEATED = 5;
 }
