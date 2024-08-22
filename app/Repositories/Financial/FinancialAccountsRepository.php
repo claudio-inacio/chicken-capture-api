@@ -2,11 +2,14 @@
 
 namespace App\Repositories\Financial;
 
+use App\Enum\Financial\TableReferenceFinanceEnum;
 use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
 use App\Helpers\FormatHelper;
 use App\Interfaces\Financial\FinancialAccountsRepositoryInterface;
+use App\Models\Catch\CatchDaily;
 use App\Models\Financial\FinancialAccounts;
+use App\Models\Main\Units;
 use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
 
@@ -43,10 +46,32 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             'company.name as company_name'
         ]);
 
-        $result = $query->get();
+        $result = $query->get()->toArray();
+        foreach ($result as $key => $item){
+            if ($item['table_reference_id'] == TableReferenceFinanceEnum::DAILY_CATCH) {
+                $catch = CatchDaily::find($item['reference_id']);
+
+                if (!$catch) {
+                    $result[$key]['catch_daily_created_at'] = null;
+                    $result[$key]['catch_daily_updated_at'] = null;
+                }
+
+                $result[$key]['catch_daily_created_at'] = $catch->created_at;
+                $result[$key]['catch_daily_updated_at'] = $catch->updated_at;
+
+                $unit = Units::find($catch->units_id);
+
+                if(!$unit) {
+                    $result[$key]['catch_daily_units_id'] = null;
+                    $result[$key]['catch_daily_units_name'] = null;
+                }
+                $result[$key]['catch_daily_units_id'] = $unit->id;
+                $result[$key]['catch_daily_units_name'] = $unit->name;
+           }
+        }
 
         return [
-            'data' => $result->toArray(),
+            'data' => $result,
             'total' => $total,
         ];
     }
