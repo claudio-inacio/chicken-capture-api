@@ -52,13 +52,14 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
 
         $result = $query->get()->toArray();
         foreach ($result as $key => $item){
+            $item->catch_daily_date = null;
+            $item->catch_daily_enabled = null;
+            $item->catch_daily_units_id = null;
+            $item->catch_daily_units_name = null;
             if ($item->table_reference_id == TableReferenceFinanceEnum::DAILY_CATCH) {
                 $catch = CatchDaily::find($item->reference_id);
 
-                if (!$catch) {
-                    $item->catch_daily_date = null;
-                    $item->catch_daily_enabled = null;
-                }else {
+                if ($catch) {
                     $item->catch_daily_date = (new \DateTime($catch->date))->format('d/m/Y');
                     $item->catch_daily_enabled = $catch->enabled ;
                 }
@@ -66,9 +67,6 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
                 $unit = Units::find($catch->units_id);
 
                 if(!$unit) {
-                    $item->catch_daily_units_id = null;
-                    $item->catch_daily_units_name = null;
-                } else {
                     $item->catch_daily_units_id = $unit->id;
                     $item->catch_daily_units_name = $unit->name;
                 }
