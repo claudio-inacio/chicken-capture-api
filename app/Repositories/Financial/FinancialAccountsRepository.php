@@ -104,7 +104,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
         try {
             if ($data['table_reference_id'] == TableReferenceFinanceEnum::DAILY_CATCH) {
                 if (!empty($data['finished_data'])) {
-                    CatchDaily::whereId($data['reference_id'])->updated(['received' => true]);
+                    CatchDaily::whereId($data['reference_id'])->update(['received' => true]);
                 }
             }
 
