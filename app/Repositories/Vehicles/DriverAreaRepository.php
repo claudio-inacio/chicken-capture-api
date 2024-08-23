@@ -42,7 +42,7 @@ class DriverAreaRepository implements DriverAreaRepositoryInterface
         $query->select([
             'driver_area.*',
             'company.name as company_name',
-            'vehicle.vehicle_name', 'vehicle.plate_number'
+            'vehicle.name', 'vehicle.plate_number'
         ]);
 
         $result = $query->get();

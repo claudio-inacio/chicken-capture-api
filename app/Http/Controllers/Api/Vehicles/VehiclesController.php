@@ -20,7 +20,7 @@ class VehiclesController extends Controller
 
     public function register(Request $request) {
         $request->validate([
-            'vehicle_name' => 'required',
+            'name' => 'required',
             'plate_number' => 'required',
             'unit_id' => 'required',
             'mileage' => 'required',
@@ -45,7 +45,7 @@ class VehiclesController extends Controller
 
     public function update(Request $request){
         $request->validate([
-            'vehicle_name' => 'required',
+            'name' => 'required',
             'plate_number' => 'required',
             'unit_id' => 'required',
             'vehicle_id' => 'required'

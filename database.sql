@@ -196,7 +196,7 @@ create table if not exists vehicles.vehicle
     id           integer default nextval('vehicles.vehicles_vehicle_id_seq'::regclass) not null
         constraint vehicles_pkey
             primary key,
-    vehicle_name varchar(100)                                                          not null,
+    name varchar(100)                                                          not null,
     plate_number varchar(20)                                                           not null,
     unit_id      integer
         constraint vehicles_unit_id_fkey

@@ -219,7 +219,7 @@ class DriverAreaService
                 ->select([
                     'driver_area.*',
                     'person.name as person_name',
-                    'vehicle.vehicle_name', 'vehicle.plate_number',
+                    'vehicle.name', 'vehicle.plate_number',
                     'credential.id as user_id', 'credential.document'
                 ])
                 ->get();
@@ -239,7 +239,7 @@ class DriverAreaService
                 }
                 $arrayDriverArea[$key] = [
                     'vehicle' => [
-                        'name' => $item->vehicle_name,
+                        'name' => $item->name,
                         'plate_number' => $item->plate_number,
                         'driver' => $item->person_name,
                         'driver_document' => $item->document,
