@@ -22,7 +22,7 @@ class PersonService
         try {
             $arrayRequest['document'] = FormatHelper::formatCnpjCpf($arrayRequest['document']);
             $arrayRequest['access_group_id'] == AccessGroupEnum::ADMINISTRATIVE ? $isOwner = true : $isOwner = false;
-            $company = Company::whereId($arrayRequest['company_id'])->first();
+            $company = Company::whereId($user->company_id)->first();
 
             $personVerify = Person::where('email', $arrayRequest['email'])
                 ->orWhere('phone_number', $arrayRequest['phone_number'])->first();

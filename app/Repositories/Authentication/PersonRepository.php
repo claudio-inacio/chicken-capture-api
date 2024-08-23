@@ -27,7 +27,7 @@ class PersonRepository implements PersonRespositoryInterface
         $query = DB::table('authentication.person')
             ->join('main.company_group', 'company_group.id', '=','person.company_group_id')
             ->join('authentication.credential', 'credential.person_id', '=', 'person.id')
-            ->join('main.company', 'company.company_group_id', '=', 'company_group.id');
+            ->join('main.company', 'company.id', '=', 'credential.company_id');
 
 
         $whereFactory = new WhereFactory();
