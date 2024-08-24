@@ -20,8 +20,7 @@ class IntegratedController extends Controller
 
     public function register(Request $request) {
         $request->validate([
-            'name' => 'required',
-            'contracting_company_id' => 'required'
+            'name' => 'required'
         ]);
 
         return $this->integratedRepository->create($request->all());
