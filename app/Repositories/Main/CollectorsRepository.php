@@ -25,7 +25,8 @@ class CollectorsRepository implements CollectorsRepositoryInterface
     public function findAll($selectConfig, array $whereCriterious) : array
     {
         $query = DB::table('main.collectors')
-            ->join('main.company', 'company.id', '=', 'collectors.company_id');
+            ->join('main.company', 'company.id', '=', 'collectors.company_id')
+            ->join('main.collectors_group', 'collectors_group.id', '=', 'collectors.collectors_group_id');
 
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);
@@ -34,7 +35,7 @@ class CollectorsRepository implements CollectorsRepositoryInterface
 
         $selectFactory = new SelectFactory();
         $query = $selectFactory->byArray($query, $selectConfig);
-        $query->select(['collectors.*', 'company.name as company_name']);
+        $query->select(['collectors.*', 'company.name as company_name', 'collectors_group.function_name as collectors_group_function_name']);
 
         $result = $query->get();
 

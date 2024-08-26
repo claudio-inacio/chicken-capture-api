@@ -105,6 +105,7 @@ Route::group(['middleware' => ['authJwt']], function (){
 
     Route::post('/main/collectors', [CollectorsController::class, 'register']);
     Route::get('/main/collectors', [CollectorsController::class, 'list']);
+    Route::get('/main/collectors/available', [CollectorsController::class, 'listAvailable']);
     Route::put('/main/collectors', [CollectorsController::class, 'update']);
     Route::put('/main/collectors/enable', [CollectorsController::class, 'enable']);
 

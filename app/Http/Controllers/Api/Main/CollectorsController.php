@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Main;
 
 use App\Http\Controllers\Controller;
 use App\Interfaces\Main\CollectorsRepositoryInterface;
+use App\Services\Main\CollectorsService;
 use Illuminate\Http\Request;
 
 class CollectorsController extends Controller
@@ -39,6 +40,11 @@ class CollectorsController extends Controller
             return response()->json(['message' => 'Where config is required!!!'], 422);
 
         return response()->json($this->collectorsRepository->findAll($selectConfig, $whereCriterious));
+    }
+
+    public function listAvailable(Request $request): \Illuminate\Http\JsonResponse
+    {
+        return CollectorsService::verifyQuantityAvailable($request);
     }
 
     public function update(Request $request){
