@@ -23,13 +23,22 @@ class  CollectorsService
                 ->get()
                 ->toArray();
 
+            $arrayTeamQuantity = [];
             foreach ($verifyTeams as $team) {
                 $collectorVerify = json_decode($team['collectors'], true);
                 foreach ($collectorVerify['group_collectors'] as $groupCollectorUsing) {
-                    if (key_exists($groupCollectorUsing['id'], $arrayCollectorsUsed))
+                    if (key_exists($groupCollectorUsing['id'], $arrayCollectorsUsed)) {
                         $arrayCollectorsUsed[$groupCollectorUsing['id']] = $arrayCollectorsUsed[$groupCollectorUsing['id']] + $groupCollectorUsing['quantity_collectors'];
-                    else
+                    }
+                    else {
                         $arrayCollectorsUsed[$groupCollectorUsing['id']] = $groupCollectorUsing['quantity_collectors'];
+                    }
+
+                    if (key_exists($groupCollectorUsing['id'], $arrayTeamQuantity)) {
+                        $arrayTeamQuantity[$groupCollectorUsing['id']] = $arrayTeamQuantity[$groupCollectorUsing['id']] + $groupCollectorUsing['quantity_collectors'];
+                    } else {
+                        $arrayTeamQuantity[$groupCollectorUsing['id']] = $groupCollectorUsing['quantity_collectors'];
+                    }
                 }
             }
 
@@ -48,6 +57,13 @@ class  CollectorsService
 
                 foreach ($arrayCollectors['group_collectors'] as $key => $collector) {
                     foreach ($arrayCollectorsQuantity as $collectorGroupId => $collectorQuantity) {
+                        if ($collector['quantity_collectors'] <= 0) {
+                            $collectorsGroup = CollectorsGroup::find($collectorGroupId);
+                            $errors[$key] = 'A quantidade de coletores para -> ' . $collectorsGroup->function_name . ' deve ser maior que 0';
+                        }
+
+                        $collectorQuantity = $collectorQuantity - $arrayTeamQuantity[$collectorGroupId];
+
                         if ($collector['id'] == $collectorGroupId) {
                             if ($collector['quantity_collectors'] >= $collectorQuantity) {
                                 $collectorsGroup = CollectorsGroup::find($collectorGroupId);

@@ -42,10 +42,14 @@ class TeamRepository implements TeamRepositoryInterface
             'contracting_company.name as contracting_company_name'
         ]);
 
-        $result = $query->get();
+        $result = $query->get()->toArray();
+
+        foreach ($result as $item){
+            $item->collectors = json_decode($item->collectors, true);
+        }
 
         return [
-            'data' => $result->toArray(),
+            'data' => $result,
             'total' => $total,
         ];
     }
