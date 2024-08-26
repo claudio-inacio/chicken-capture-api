@@ -12,5 +12,5 @@ class Collectors extends Model
 
     protected $table = 'main.collectors';
 
-    protected $fillable = ['id', 'quantity', 'salary_value', 'company_id', 'enabled', 'created_at', 'updated_at'];
+    protected $fillable = ['id', 'quantity', 'company_id', 'enabled', 'collectors_group_id', 'created_at', 'updated_at'];
 }

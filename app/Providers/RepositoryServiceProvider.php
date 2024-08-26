@@ -5,40 +5,62 @@ namespace App\Providers;
 use App\Interfaces\Authentication\AccessGroupRespositoryInterface;
 use App\Interfaces\Authentication\CredentialRepositoryInterface;
 use App\Interfaces\Authentication\PersonRespositoryInterface;
+
 use App\Interfaces\Catch\CatchTypeRespositoryInterface;
 use App\Interfaces\Catch\CatchsConfigurationRespositoryInterface;
 use App\Interfaces\Catch\CatchsCancelledRespositoryInterface;
 use App\Interfaces\Catch\CatchDailyRespositoryInterface;
+
 use App\Interfaces\ContractingCompany\ContractingCompanyRepositoryInterface;
 use App\Interfaces\ContractingCompany\IntegratedRepositoryInterface;
+
 use App\Interfaces\Main\UnitsRepositoryInterface;
 use App\Interfaces\Main\TeamRepositoryInterface;
 use App\Interfaces\Main\CredentialCompanyRepositoryInterface;
 use App\Interfaces\Main\CompanyRepositoryInterface;
 use App\Interfaces\Main\CompanyGroupRepositoryInterface;
 use App\Interfaces\Main\CollectorsRepositoryInterface;
+use App\Interfaces\Main\ColletorsGroupRepositoryInterface;
+
 use App\Interfaces\Financial\FinancialAccountsRepositoryInterface;
 use App\Interfaces\Financial\MonthlyClosingReportsRepositoryInterface;
+
 use App\Interfaces\Vehicles\VehiclesRepositoryInterface;
 use App\Interfaces\Vehicles\DriverAreaRepositoryInterface;
+
+
+
+
+
 
 use App\Repositories\Authentication\AccessGroupRepository;
 use App\Repositories\Authentication\CredentialRepository;
 use App\Repositories\Authentication\PersonRepository;
+
+
 use App\Repositories\Catch\CatchTypeRepository;
 use App\Repositories\Catch\CatchsConfigurationRepository;
 use App\Repositories\Catch\CatchsCancelledRepository;
 use App\Repositories\Catch\CatchDailyRepository;
+
+
 use App\Repositories\ContractingCompany\ContractingCompanyRepository;
 use App\Repositories\ContractingCompany\IntegratedRepository;
+
+
 use App\Repositories\Main\UnitsRepository;
 use App\Repositories\Main\TeamRepository;
 use App\Repositories\Main\CredentialCompanyRepository;
 use App\Repositories\Main\CompanyRepository;
 use App\Repositories\Main\CompanyGroupRepository;
 use App\Repositories\Main\CollectorsRepository;
+use App\Repositories\Main\ColletorsGroupRepository;
+
+
 use App\Repositories\Financial\FinancialAccountsRepository;
 use App\Repositories\Financial\MonthlyClosingReportsRepository;
+
+
 use App\Repositories\Vehicles\VehiclesRepository;
 use App\Repositories\Vehicles\DriverAreaRepository;
 
@@ -73,6 +95,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(MonthlyClosingReportsRepositoryInterface::class, MonthlyClosingReportsRepository::class);
         $this->app->bind(VehiclesRepositoryInterface::class, VehiclesRepository::class);
         $this->app->bind(DriverAreaRepositoryInterface::class, DriverAreaRepository::class);
+        $this->app->bind(ColletorsGroupRepositoryInterface::class, ColletorsGroupRepository::class);
 
     }
 

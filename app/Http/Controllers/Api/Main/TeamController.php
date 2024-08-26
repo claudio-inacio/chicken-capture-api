@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\Main;
 
 use App\Http\Controllers\Controller;
 use App\Interfaces\Main\TeamRepositoryInterface;
+use App\Services\Main\CollectorsService;
+use App\Services\ResponseService;
 use Illuminate\Http\Request;
 
 class TeamController extends Controller
@@ -22,13 +24,19 @@ class TeamController extends Controller
         $request->validate([
             'name' => 'required',
             'default_unit_id' => 'required',
-            'quantity_collectors' => 'required',
+            'collectors' => 'required',
             'contracting_company_id' => 'required'
         ]);
 
         $arrayData = $request->all();
         $arrayData['company_id'] = $request->user()->company_id;
 
+        $verify = CollectorsService::verifyQuantityCollectors($arrayData, $request->user());
+        if (!$verify['success']) {
+            return ResponseService::businessError($verify['message'], $verify['error']);
+        }
+
+        $arrayData['collectors'] = json_encode($arrayData['collectors']);
         return $this->teamRepository->create($arrayData);
     }
 
@@ -47,10 +55,18 @@ class TeamController extends Controller
         $request->validate([
             'name' => 'required',
             'default_unit_id' => 'required',
-            'quantity_collectors' => 'required',
+            'collectors' => 'required',
             'contracting_company_id' => 'required',
             'team_id' => 'required'
         ]);
+
+        $arrayData = $request->all();
+        $arrayData['company_id'] = $request->user()->company_id;
+
+        $verify = CollectorsService::verifyQuantityCollectors($arrayData, $request->user());
+        if (!$verify['success']) {
+            return ResponseService::businessError($verify['message'], $verify['error']);
+        }
 
         return $this->teamRepository->update($request->team_id, $request->all());
     }

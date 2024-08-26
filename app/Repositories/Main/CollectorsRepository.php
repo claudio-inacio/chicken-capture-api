@@ -52,8 +52,6 @@ class CollectorsRepository implements CollectorsRepositoryInterface
 
     public function create(array $value): \Illuminate\Http\JsonResponse
     {
-        $value['salary_value'] = FormatHelper::brlTodecimal($value['salary_value']);
-
         try {
             Collectors::create($value);
             return ResponseService::success204();
@@ -64,7 +62,6 @@ class CollectorsRepository implements CollectorsRepositoryInterface
 
     public function update(int $id, array $data): \Illuminate\Http\JsonResponse
     {
-        $data['salary_value'] = FormatHelper::brlTodecimal($data['salary_value']);
         unset($data['collectors_id']);
         try {
             Collectors::whereId($id)->update($data);

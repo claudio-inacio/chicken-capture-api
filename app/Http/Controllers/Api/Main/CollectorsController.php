@@ -21,7 +21,7 @@ class CollectorsController extends Controller
     public function register(Request $request) {
         $request->validate([
             'quantity' => 'required',
-            'salary_value' => 'required',
+            'collectors_group_id' => 'required'
         ]);
 
         $arrayData = $request->all();
@@ -44,7 +44,6 @@ class CollectorsController extends Controller
     public function update(Request $request){
         $request->validate([
             'quantity' => 'required',
-            'salary_value' => 'required',
             'collectors_id' => 'required'
         ]);
 

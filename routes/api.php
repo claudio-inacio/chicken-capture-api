@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\ContractingCompany\IntegratedController;
 
 use App\Http\Controllers\Api\Main\UnitsController;
 use App\Http\Controllers\Api\Main\TeamController;
+use App\Http\Controllers\Api\Main\CollectorsGroupCotroller;
 use App\Http\Controllers\Api\Main\CollectorsController;
 use App\Http\Controllers\Api\Main\CompanyController;
 use App\Http\Controllers\Api\Main\CompanyGroupController;
@@ -96,6 +97,11 @@ Route::group(['middleware' => ['authJwt']], function (){
     Route::get('/main/team', [TeamController::class, 'list']);
     Route::put('/main/team', [TeamController::class, 'update']);
     Route::put('/main/team/enable', [TeamController::class, 'enable']);
+
+    Route::post('/main/collectors-group', [CollectorsGroupCotroller::class, 'register']);
+    Route::get('/main/collectors-group', [CollectorsGroupCotroller::class, 'list']);
+    Route::put('/main/collectors-group', [CollectorsGroupCotroller::class, 'update']);
+    Route::put('/main/collectors-group/enable', [CollectorsGroupCotroller::class, 'enable']);
 
     Route::post('/main/collectors', [CollectorsController::class, 'register']);
     Route::get('/main/collectors', [CollectorsController::class, 'list']);

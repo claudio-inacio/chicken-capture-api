@@ -12,6 +12,6 @@ class Team extends Model
 
     protected $table = 'main.team';
 
-    protected $fillable = ['id', 'name', 'default_unit_id', 'company_id', 'quantity_collectors', 'contracting_company_id',
+    protected $fillable = ['id', 'name', 'default_unit_id', 'company_id', 'collectors', 'contracting_company_id',
         'enabled', 'created_at', 'updated_at'];
 }
