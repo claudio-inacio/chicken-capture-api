@@ -1,0 +1,113 @@
+<?php
+
+namespace App\Http\Controllers\Api\Main;
+
+use App\Helpers\FormatHelper;
+use App\Http\Controllers\Controller;
+use App\Interfaces\Main\DiaristRepositoryInterface;
+use Illuminate\Http\Request;
+
+class DiaristController extends Controller
+{
+    private DiaristRepositoryInterface $diaristRepository;
+
+    public function __construct
+    (
+        DiaristRepositoryInterface $diaristRepository
+    )
+    {
+        $this->diaristRepository = $diaristRepository;
+    }
+
+    public function register(Request $request)
+    {
+        $request->validate([
+            'name' => 'required',
+            'document' => 'required_without:phone_number',
+            'phone_number' => 'required_without:document',
+            'diarist_group_id' => 'required',
+        ]);
+
+        $arrayData = $request->all();
+        $arrayData['company_id'] = $request->user()->company_id;
+
+        if ($request->document) {
+            $arrayData['document'] = FormatHelper::formatCnpjCpf($arrayData['document']);
+            $arrayData['phone_number'] = null;
+        }
+        if ($request->phone_number) {
+            $arrayData['phone_number'] = FormatHelper::removeSpecialCaracterTel($arrayData['phone_number']);
+            $arrayData['document'] = null;
+        }
+
+        return $this->diaristRepository->create($arrayData, $request->user());
+    }
+
+    public function list(Request $request)
+    {
+        $whereCriterious = $request->where ?? false;
+        $selectConfig = $request->selectConfig ?? false;
+        if (!$selectConfig)
+            return response()->json(['message' => 'Select config is required!!!'], 422);
+        if (!$whereCriterious)
+            return response()->json(['message' => 'Where config is required!!!'], 422);
+
+        return response()->json($this->diaristRepository->findAll($selectConfig, $whereCriterious, $request->user()));
+    }
+
+    public function select(Request $request)
+    {
+        $request->validate([
+            'document' => 'required_without:phone_number',
+            'phone_number' => 'required_without:document',
+        ]);
+
+        $arrayData = $request->all();
+
+        if ($request->document and !$request->phone_number) {
+            $arrayData['document'] = FormatHelper::formatCnpjCpf($arrayData['document']);
+            $arrayData['phone_number'] = null;
+        }
+        if ($request->phone_number and !$request->document) {
+            $arrayData['phone_number'] = FormatHelper::removeSpecialCaracterTel($arrayData['phone_number']);
+            $arrayData['document'] = null;
+        }
+
+        return response()->json($this->diaristRepository->select($arrayData));
+    }
+
+    public function update(Request $request)
+    {
+        $request->validate([
+            'name' => 'required',
+            'document' => 'required_without:phone_number',
+            'phone_number' => 'required_without:document',
+            'diarist_group_id' => 'required',
+            'diarist_id' => 'required'
+        ]);
+
+        $arrayData = $request->all();
+        $arrayData['company_id'] = $request->user()->company_id;
+
+        if ($request->document) {
+            $arrayData['document'] = FormatHelper::formatCnpjCpf($arrayData['document']);
+            $arrayData['phone_number'] = null;
+        }
+        if ($request->phone_number) {
+            $arrayData['phone_number'] = FormatHelper::removeSpecialCaracterTel($arrayData['phone_number']);
+            $arrayData['document'] = null;
+        }
+
+        return $this->diaristRepository->update($request->diarist_id, $arrayData);
+    }
+
+    public function enable(Request $request)
+    {
+        $request->validate([
+            'diarist_id' => 'required',
+            'enabled' => 'required',
+        ]);
+
+        return $this->diaristRepository->enable($request->diarist_id, $request->enabled);
+    }
+}

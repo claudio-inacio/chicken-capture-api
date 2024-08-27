@@ -2,11 +2,15 @@
 
 namespace App\Repositories\Main;
 
-use App\Enum\Authentication\AccessGroupEnum;
+use App\Enum\Financial\StatusEnum;
+use App\Enum\Financial\TableReferenceFinanceEnum;
+use App\Enum\Financial\TypeFinanceEnum;
 use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
 use App\Interfaces\Main\DiaristRepositoryInterface;
+use App\Models\Financial\FinancialAccounts;
 use App\Models\Main\Diarist;
+use App\Models\Main\DiaristGroup;
 use App\Services\ResponseService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -21,22 +25,24 @@ class DiaristRepository implements DiaristRepositoryInterface
     public function findAll($selectConfig, array $whereCriterious, $credential) : array
     {
         $query = DB::table('main.diarist')
-            ->join('main.company', 'company.id', '=', 'collectors_group.company_id');
+            ->join('main.diarist_group', 'diarist_group.id', '=', 'diarist.diarist_group_id')
+            ->join('main.company', 'company.id', '=', 'diarist.company_id');
 
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);
 
-        if ($credential->access_group_id != AccessGroupEnum::DEVELOPER and $credential->access_group_id != AccessGroupEnum::ADMINISTRATIVE){
-            $query->where('collectors_group.company_id', $credential->company_id);
-        }
+//        if ($credential->access_group_id != AccessGroupEnum::DEVELOPER and $credential->access_group_id != AccessGroupEnum::ADMINISTRATIVE){
+//            $query->where('diarist.company_id', $credential->company_id);
+//        }
 
-        $total = $query->count('collectors_group.id');
+        $total = $query->count('diarist.id');
 
         $selectFactory = new SelectFactory();
         $query = $selectFactory->byArray($query, $selectConfig);
         $query->select([
-            'collectors_group.*',
-            'company.name as company_name'
+            'diarist.*',
+            'company.name as company_name',
+            'diarist_group.function_name', 'diarist_group.daily'
         ]);
 
         $result = $query->get();
@@ -47,38 +53,100 @@ class DiaristRepository implements DiaristRepositoryInterface
         ];
     }
 
-
-    public function create(array $arrayData): JsonResponse
+    public function select(array $arrayData): array
     {
+        $query = DB::table('main.diarist')
+            ->join('main.diarist_group', 'diarist_group.id', '=', 'diarist.diarist_group_id')
+            ->join('main.company', 'company.id', '=', 'diarist.company_id')
+            ->where(function($query) use ($arrayData) {
+                if ($arrayData['document'] != null) {
+                    $query->orWhere('document', $arrayData['document']);
+                }
+                if ($arrayData['phone_number'] != null) {
+                    $query->orWhere('phone_number', $arrayData['phone_number']);
+                }
+            });
+
+        $total = $query->count('diarist.id');
+
+        $query->select([
+            'diarist.*',
+            'company.name as company_name',
+            'diarist_group.function_name', 'diarist_group.daily'
+        ]);
+
+        $result = $query->get();
+
+        return [
+            'data' => $result->toArray(),
+            'total' => $total,
+        ];
+    }
+
+    public function create(array $arrayData, $credential): JsonResponse
+    {
+        DB::beginTransaction();
         try {
-            $collectorsGroup = Diarist::where('function_name', $arrayData['function_name'])
-                ->where('enabled', true)
+            $diarist = Diarist::where('enabled', true)
                 ->where('company_id', $arrayData['company_id'])
+                ->whereDay('created_at', date('d'))
+                ->where(function($query) use ($arrayData) {
+                    if ($arrayData['document'] != null)
+                        $query->where('document', $arrayData['document']);
+                    if ($arrayData['phone_number'] != null)
+                        $query->where('phone_number', $arrayData['phone_number']);
+                })
                 ->first();
 
-            if ($collectorsGroup) return ResponseService::businessError('Ja existe um grupo de coletores cadastrada com essa função');
+            if ($diarist) return ResponseService::businessError('Ja existe um diarista cadastrada para o dia de hoje');
 
-            Diarist::create($arrayData);
+            $diarist = Diarist::create($arrayData);
+            $diaristGroup = DiaristGroup::find($arrayData['diarist_group_id']);
+
+            $document = $diarist->document ?? 'NAO CONTEM!';
+            $phoneNumber = $diarist->phone_number ?? 'NAO CONTEM!';
+            FinancialAccounts::create([
+                'description' => "Cadastro de diarista. Nome: {$diarist->name}, CPF: {$document}, CELULAR: {$phoneNumber}, FUNÇÃO: {$diaristGroup->function_name}. ",
+                'amount' => $diaristGroup->daily,
+                'due_date' => (new \DateTime(now()))->format('Y-m-d'). " 20:00:00",
+                'type' => TypeFinanceEnum::TO_DISCOUNT,
+                'credential_id' => $credential->id,
+                'company_id' => $credential->company_id,
+                'reference_id' => $diarist->id,
+                'table_reference_id' => TableReferenceFinanceEnum::DIARIST,
+                'status_id' => StatusEnum::TO_DISCOUNT
+            ]);
+
+            DB::commit();
             return ResponseService::success204();
         } catch (\Exception $e){
-            return ResponseService::internalServerError('Falha em registrar grupo de coletores', $e->getMessage());
+            DB::rollBack();
+            return ResponseService::internalServerError('Falha em registrar diarista', $e->getMessage());
         }
     }
 
-    public function update(int $id, array $data): JsonResponse
+    public function update(int $id, array $arrayData): JsonResponse
     {
-        unset($data['collectors_group_id']);
+        unset($arrayData['diarist_id']);
         try {
-            $collectorsGroup = Diarist::where('function_name', $data['function_name'])
-                ->where('id', '<>', $id)
+            $diarist = Diarist::where('id', '<>', $id)
                 ->where('enabled', true)
+                ->where('company_id', $arrayData['company_id'])
+                ->whereDay('created_at', date('d'))
+                ->where(function($query) use ($arrayData) {
+                    if ($arrayData['document'] != null)
+                        $query->where('document', $arrayData['document']);
+                    if ($arrayData['phone_number'] != null)
+                        $query->where('phone_number', $arrayData['phone_number']);
+                })
                 ->first();
-            if ($collectorsGroup) return ResponseService::businessError('Ja existe um grupo de coletores cadastrada com essa função');
 
-            Diarist::whereId($id)->update($data);
+            if ($diarist) return ResponseService::businessError('Ja existe um diarista cadastrada para o dia de hoje');
+
+            Diarist::whereId($id)->update($arrayData);
             return ResponseService::success204();
         } catch (\Exception $e){
-            return ResponseService::internalServerError('Falha em registrar grupo de coletores', $e->getMessage());
+            return ResponseService::internalServerError('Falha em  registrar diarista', $e->getMessage());
         }
     }
 
@@ -88,7 +156,7 @@ class DiaristRepository implements DiaristRepositoryInterface
             Diarist::whereId($id)->update(['enabled' => $enable]);
             return ResponseService::success204();
         } catch (\Exception $e){
-            return ResponseService::internalServerError('Falha Ativar/Desativar grupo de coletores', $e->getMessage());
+            return ResponseService::internalServerError('Falha Ativar/Desativar diarista', $e->getMessage());
         }
     }
 }

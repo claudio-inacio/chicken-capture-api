@@ -4,32 +4,32 @@ namespace App\Http\Controllers\Api\Main;
 
 use App\Helpers\FormatHelper;
 use App\Http\Controllers\Controller;
-use App\Interfaces\Main\ColletorsGroupRepositoryInterface;
+use App\Interfaces\Main\DiaristGroupRepositoryInterface;
 use Illuminate\Http\Request;
 
-class CollectorsGroupCotroller extends Controller
+class DiaristGroupController extends Controller
 {
-    private ColletorsGroupRepositoryInterface $colletorsGroupRepository;
+    private DiaristGroupRepositoryInterface $diaristGroupRepository;
 
     public function __construct
     (
-        ColletorsGroupRepositoryInterface $colletorsGroupRepository
+        DiaristGroupRepositoryInterface $diaristGroupRepository
     )
     {
-        $this->colletorsGroupRepository = $colletorsGroupRepository;
+        $this->diaristGroupRepository = $diaristGroupRepository;
     }
 
     public function register(Request $request) {
         $request->validate([
             'function_name' => 'required',
-            'salary' => 'required',
+            'daily' => 'required',
         ]);
 
         $arrayData = $request->all();
         $arrayData['company_id'] = $request->user()->company_id;
-        $arrayData['salary'] = FormatHelper::moneyToUS($arrayData['salary']);
+        $arrayData['daily'] = FormatHelper::moneyToUS($arrayData['daily']);
 
-        return $this->colletorsGroupRepository->create($arrayData);
+        return $this->diaristGroupRepository->create($arrayData);
     }
 
     public function list(Request $request){
@@ -40,29 +40,29 @@ class CollectorsGroupCotroller extends Controller
         if (!$whereCriterious)
             return response()->json(['message' => 'Where config is required!!!'], 422);
 
-        return response()->json($this->colletorsGroupRepository->findAll($selectConfig, $whereCriterious, $request->user()));
+        return response()->json($this->diaristGroupRepository->findAll($selectConfig, $whereCriterious, $request->user()));
     }
 
     public function update(Request $request){
         $request->validate([
             'function_name' => 'required',
-            'salary' => 'required',
-            'collectors_group_id' => 'required'
+            'daily' => 'required',
+            'diarist_group_id' => 'required'
         ]);
 
         $arrayData = $request->all();
         $arrayData['company_id'] = $request->user()->company_id;
-        $arrayData['salary'] = FormatHelper::moneyToUS($arrayData['salary']);
+        $arrayData['daily'] = FormatHelper::moneyToUS($arrayData['daily']);
 
-        return $this->colletorsGroupRepository->update($request->collectors_group_id, $arrayData);
+        return $this->diaristGroupRepository->update($request->diarist_group_id, $arrayData);
     }
 
     public function enable(Request $request){
         $request->validate([
-            'collectors_group_id' => 'required',
+            'diarist_group_id' => 'required',
             'enabled' => 'required',
         ]);
 
-        return $this->colletorsGroupRepository->enable($request->collectors_group_id, $request->enabled);
+        return $this->diaristGroupRepository->enable($request->diarist_group_id, $request->enabled);
     }
 }

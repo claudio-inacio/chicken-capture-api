@@ -12,5 +12,5 @@ class DiaristGroup extends Model
 
     protected $table = 'main.diarist_group';
 
-    protected $fillable = ['id', 'function_name', 'salary', 'company_id', 'enabled', 'created_at', 'updated_at'];
+    protected $fillable = ['id', 'function_name', 'daily', 'company_id', 'enabled', 'created_at', 'updated_at'];
 }

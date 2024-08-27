@@ -21,6 +21,8 @@ use App\Interfaces\Main\CompanyRepositoryInterface;
 use App\Interfaces\Main\CompanyGroupRepositoryInterface;
 use App\Interfaces\Main\CollectorsRepositoryInterface;
 use App\Interfaces\Main\ColletorsGroupRepositoryInterface;
+use App\Interfaces\Main\DiaristGroupRepositoryInterface;
+use App\Interfaces\Main\DiaristRepositoryInterface;
 
 use App\Interfaces\Financial\FinancialAccountsRepositoryInterface;
 use App\Interfaces\Financial\MonthlyClosingReportsRepositoryInterface;
@@ -55,6 +57,8 @@ use App\Repositories\Main\CompanyRepository;
 use App\Repositories\Main\CompanyGroupRepository;
 use App\Repositories\Main\CollectorsRepository;
 use App\Repositories\Main\ColletorsGroupRepository;
+use App\Repositories\Main\DiaristGroupRepository;
+use App\Repositories\Main\DiaristRepository;
 
 
 use App\Repositories\Financial\FinancialAccountsRepository;
@@ -96,7 +100,9 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(VehiclesRepositoryInterface::class, VehiclesRepository::class);
         $this->app->bind(DriverAreaRepositoryInterface::class, DriverAreaRepository::class);
         $this->app->bind(ColletorsGroupRepositoryInterface::class, ColletorsGroupRepository::class);
-
+        $this->app->bind(DiaristGroupRepositoryInterface::class, DiaristGroupRepository::class);
+        $this->app->bind(ColletorsGroupRepositoryInterface::class, ColletorsGroupRepository::class);
+        $this->app->bind(DiaristRepositoryInterface::class, DiaristRepository::class);
     }
 
     /**

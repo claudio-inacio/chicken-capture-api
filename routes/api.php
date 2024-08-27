@@ -18,6 +18,8 @@ use App\Http\Controllers\Api\Main\CollectorsController;
 use App\Http\Controllers\Api\Main\CompanyController;
 use App\Http\Controllers\Api\Main\CompanyGroupController;
 use App\Http\Controllers\Api\Main\CredentialCompanyController;
+use App\Http\Controllers\Api\Main\DiaristGroupController;
+use App\Http\Controllers\Api\Main\DiaristController;
 
 use App\Http\Controllers\Api\Financial\FinancialAccountsController;
 use App\Http\Controllers\Api\Financial\MonthlyClosingReportsController;
@@ -108,6 +110,17 @@ Route::group(['middleware' => ['authJwt']], function (){
     Route::get('/main/collectors/available', [CollectorsController::class, 'listAvailable']);
     Route::put('/main/collectors', [CollectorsController::class, 'update']);
     Route::put('/main/collectors/enable', [CollectorsController::class, 'enable']);
+
+    Route::post('/main/diarist-group', [DiaristGroupController::class, 'register']);
+    Route::get('/main/diarist-group', [DiaristGroupController::class, 'list']);
+    Route::put('/main/diarist-group', [DiaristGroupController::class, 'update']);
+    Route::put('/main/diarist-group/enable', [DiaristGroupController::class, 'enable']);
+
+    Route::post('/main/diarist', [DiaristController::class, 'register']);
+    Route::get('/main/diarist', [DiaristController::class, 'list']);
+    Route::get('/main/diarist/select', [DiaristController::class, 'select']);
+    Route::put('/main/diarist', [DiaristController::class, 'update']);
+    Route::put('/main/diarist/enable', [DiaristController::class, 'enable']);
 
     Route::post('/main/company', [CompanyController::class, 'register']);
     Route::get('/main/company', [CompanyController::class, 'list']);

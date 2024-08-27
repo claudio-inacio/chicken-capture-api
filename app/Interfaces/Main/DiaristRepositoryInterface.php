@@ -5,7 +5,8 @@ interface DiaristRepositoryInterface
 {
     public function getAll();
     public function findAll(array $selectConfig, array $whereCriterious, $credential) : array;
-    public function create(array $arrayData);
-    public function update(int $id, array $data);
+    public function select(array $arrayData) : array;
+    public function create(array $arrayData, $credential);
+    public function update(int $id, array $arrayData);
     public function enable(int $id, bool $enable);
 }
