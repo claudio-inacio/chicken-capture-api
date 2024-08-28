@@ -93,6 +93,7 @@ class DiaristRepository implements DiaristRepositoryInterface
         ]);
 
         $result = $query->get()->toArray();
+        $financialAccount = FinancialAccounts::where('table_reference_id', TableReferenceFinanceEnum::DIARIST)->get();
 
         foreach ($result as $item){
             if ($item->daily < 1){
@@ -101,6 +102,12 @@ class DiaristRepository implements DiaristRepositoryInterface
 
             unset($item->diarist_group_daily);
             $item->daily = FormatHelper::decimalToBr($item->daily);
+
+            foreach ($financialAccount as $account){
+                if ($account->reference_id == $item->id){
+                    $item->status_id = $account->status_id;
+                }
+            }
         }
 
         return [
