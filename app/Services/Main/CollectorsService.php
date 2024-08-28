@@ -119,7 +119,7 @@ class  CollectorsService
                 }
 
                 if (!empty($arrayTeamQuantity))
-                    $arrayResult[$collectorGroup['id']] = $arrayCollectors[$collectorGroup['id']] -  $arrayTeamQuantity[$collectorGroup['id']];
+                    $arrayResult[$collectorGroup['id']] = $arrayCollectors[$collectorGroup['id']] - $arrayTeamQuantity[$collectorGroup['id']];
                 else
                     $arrayResult[$collectorGroup['id']] = $arrayCollectors[$collectorGroup['id']];
             }

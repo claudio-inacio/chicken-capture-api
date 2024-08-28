@@ -60,7 +60,7 @@ class IntegratedRepository implements IntegratedRepositoryInterface
             if ($integrated) return ResponseService::businessError('Ja existe uma integraçao com esse nome!');
 
             $city = City::find($value['city_id']);
-            if (!$city) return ResponseService::businessError('Cidade nao encontrado no banco de dados!');
+            if (!$city) return ResponseService::businessError('Cidade não encontrado no banco de dados!');
 
             Integrated::create($value);
             return ResponseService::success204();
@@ -79,7 +79,7 @@ class IntegratedRepository implements IntegratedRepositoryInterface
             if ($integrated) return ResponseService::businessError('Ja existe uma integraçao com esse nome!');
 
             $city = City::find($data['city_id']);
-            if (!$city) return ResponseService::businessError('Cidade nao encontrado no banco de dados!');
+            if (!$city) return ResponseService::businessError('Cidade não encontrado no banco de dados!');
 
             Integrated::whereId($id)->update($data);
             return ResponseService::success204();

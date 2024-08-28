@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\Main;
 
 use App\Http\Controllers\Controller;
 use App\Interfaces\Main\TeamRepositoryInterface;
+use App\Models\Main\ContractingCompany;
+use App\Models\Main\Units;
 use App\Services\Main\CollectorsService;
 use App\Services\ResponseService;
 use Illuminate\Http\Request;
@@ -30,6 +32,12 @@ class TeamController extends Controller
 
         $arrayData = $request->all();
         $arrayData['company_id'] = $request->user()->company_id;
+
+        $verifyUnits = Units::find($request->default_unit_id);
+        if (!$verifyUnits) return ResponseService::invalidArguments('Unidade não encontrada!');
+
+        $contractingCompany = ContractingCompany::find($request->contracting_company_id);
+        if (!$contractingCompany) return ResponseService::invalidArguments('Empresa contratante não encontrada!');
 
         $verify = CollectorsService::verifyQuantityCollectors($arrayData, $request->user());
         if (!$verify['success']) {

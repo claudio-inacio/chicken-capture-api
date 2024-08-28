@@ -17,7 +17,7 @@ class VehicleService
                 return [
                     'success' => false,
                     'message' => 'Falha em encontrar veiculo',
-                    'error' => 'id do veiculo nao encontrado id -> '.$arrayRequest['vehicle_id']
+                    'error' => 'id do veiculo não encontrado id -> '.$arrayRequest['vehicle_id']
                 ];
 
             Vehicle::whereId($vehicle->id)->update([

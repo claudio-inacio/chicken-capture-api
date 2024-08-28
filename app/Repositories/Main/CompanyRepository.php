@@ -135,7 +135,7 @@ class CompanyRepository implements CompanyRepositoryInterface
                 $companyGroup = CompanyGroup::whereId($company->company_group_id)->first();
                 if (count($companyVerify) > 0)
                     return ResponseService::businessError(
-                        'Voce nao pode reativar essa compania. Ja existe uma compania cadastrada como main para o grupo -> '. $companyGroup->name
+                        'Voce não pode reativar essa compania. Ja existe uma compania cadastrada como main para o grupo -> '. $companyGroup->name
                     );
             }
 
