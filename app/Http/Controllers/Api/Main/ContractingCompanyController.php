@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Api\ContractingCompany;
+namespace App\Http\Controllers\Api\Main;
 
 use App\Http\Controllers\Controller;
-use App\Interfaces\ContractingCompany\ContractingCompanyRepositoryInterface;
+use App\Interfaces\Main\ContractingCompanyRepositoryInterface;
 use Illuminate\Http\Request;
 
 class ContractingCompanyController extends Controller

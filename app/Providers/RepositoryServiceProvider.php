@@ -11,8 +11,8 @@ use App\Interfaces\Catch\CatchsConfigurationRespositoryInterface;
 use App\Interfaces\Catch\CatchsCancelledRespositoryInterface;
 use App\Interfaces\Catch\CatchDailyRespositoryInterface;
 
-use App\Interfaces\ContractingCompany\ContractingCompanyRepositoryInterface;
-use App\Interfaces\ContractingCompany\IntegratedRepositoryInterface;
+use App\Interfaces\Main\ContractingCompanyRepositoryInterface;
+use App\Interfaces\Main\IntegratedRepositoryInterface;
 
 use App\Interfaces\Main\UnitsRepositoryInterface;
 use App\Interfaces\Main\TeamRepositoryInterface;
@@ -46,8 +46,8 @@ use App\Repositories\Catch\CatchsCancelledRepository;
 use App\Repositories\Catch\CatchDailyRepository;
 
 
-use App\Repositories\ContractingCompany\ContractingCompanyRepository;
-use App\Repositories\ContractingCompany\IntegratedRepository;
+use App\Repositories\Main\ContractingCompanyRepository;
+use App\Repositories\Main\IntegratedRepository;
 
 
 use App\Repositories\Main\UnitsRepository;

@@ -8,9 +8,8 @@ use App\Http\Controllers\Api\Catch\CatchDailyController;
 use App\Http\Controllers\Api\Catch\CatchCancelledController;
 use App\Http\Controllers\Api\Catch\CatchConfigurationController;
 
-use App\Http\Controllers\Api\ContractingCompany\ContractingCompanyController;
-use App\Http\Controllers\Api\ContractingCompany\IntegratedController;
-
+use App\Http\Controllers\Api\Main\ContractingCompanyController;
+use App\Http\Controllers\Api\Main\IntegratedController;
 use App\Http\Controllers\Api\Main\UnitsController;
 use App\Http\Controllers\Api\Main\TeamController;
 use App\Http\Controllers\Api\Main\CollectorsGroupCotroller;
@@ -78,18 +77,17 @@ Route::group(['middleware' => ['authJwt']], function (){
     Route::put('/catch/catchs-configuration', [CatchConfigurationController::class, 'update']);
     Route::put('/catch/catchs-configuration/enable', [CatchConfigurationController::class, 'enable']);
 
-    ##################################### CONTRACTING COMPANY ###################################
-    Route::post('/contracting-company', [ContractingCompanyController::class, 'register']);
-    Route::get('/contracting-company', [ContractingCompanyController::class, 'list']);
-    Route::put('/contracting-company', [ContractingCompanyController::class, 'update']);
-    Route::put('/contracting-company/enable', [ContractingCompanyController::class, 'enable']);
-
-    Route::post('/contracting-company/integrated', [IntegratedController::class, 'register']);
-    Route::get('/contracting-company/integrated', [IntegratedController::class, 'list']);
-    Route::put('/contracting-company/integrated', [IntegratedController::class, 'update']);
-    Route::put('/contracting-company/integrated/enable', [IntegratedController::class, 'enable']);
-
     ##################################### MAIN ###################################
+    Route::post('/main/contracting-company', [ContractingCompanyController::class, 'register']);
+    Route::get('/main/contracting-company', [ContractingCompanyController::class, 'list']);
+    Route::put('/main/contracting-company', [ContractingCompanyController::class, 'update']);
+    Route::put('/main/contracting-company/enable', [ContractingCompanyController::class, 'enable']);
+
+    Route::post('/main/integrated', [IntegratedController::class, 'register']);
+    Route::get('/main/integrated', [IntegratedController::class, 'list']);
+    Route::put('/main/integrated', [IntegratedController::class, 'update']);
+    Route::put('/main/integrated/enable', [IntegratedController::class, 'enable']);
+
     Route::post('/main/units', [UnitsController::class, 'register']);
     Route::get('/main/units', [UnitsController::class, 'list']);
     Route::put('/main/units', [UnitsController::class, 'update']);

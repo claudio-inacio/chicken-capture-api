@@ -31,11 +31,11 @@ class CatchDailyRepository implements CatchDailyRespositoryInterface
             ->join('authentication.credential', 'credential.id', '=', 'catch_daily.credential_id')
             ->join('authentication.person', 'person.id', '=', 'credential.person_id')
             ->join('main.units', 'units.id', '=', 'catch_daily.units_id')
-            ->join('contracting_company.integrated', 'integrated.id', '=', 'catch_daily.integrated_id')
+            ->join('main.integrated', 'integrated.id', '=', 'catch_daily.integrated_id')
             ->join('main.company', 'company.id', '=', 'catch_daily.company_id')
             ->join('main.team', 'team.id', '=', 'catch_daily.team_id')
             ->join('catch.catch_type', 'catch_type.id', '=', 'catch_daily.catch_type_id')
-            ->join('contracting_company.contracting_company', 'contracting_company.id', '=', 'integrated.contracting_company_id');
+            ->join('main.contracting_company', 'contracting_company.id', '=', 'integrated.contracting_company_id');
 
 
         $whereFactory = new WhereFactory();

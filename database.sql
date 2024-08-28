@@ -75,7 +75,7 @@ create table if not exists main.company
 alter table main.company
     owner to postgres;
 
-create table if not exists contracting_company.contracting_company
+create table if not exists main.contracting_company
 (
     id         serial
         primary key,
@@ -87,22 +87,22 @@ create table if not exists contracting_company.contracting_company
     enabled    boolean default true not null
 );
 
-alter table contracting_company.contracting_company
+alter table main.contracting_company
     owner to postgres;
 
-create table if not exists contracting_company.integrated
+create table if not exists main.integrated
 (
     id                     serial
         primary key,
     name                   varchar(255)         not null,
     contracting_company_id integer              not null
-        references contracting_company.contracting_company,
+        references main.contracting_company,
     created_at             timestamp,
     updated_at             timestamp,
     enabled                boolean default true not null
 );
 
-alter table contracting_company.integrated
+alter table main.integrated
     owner to postgres;
 
 create table if not exists main.collectors
@@ -130,7 +130,7 @@ create table if not exists main.units
     company_id             integer
         references main.company,
     contracting_company_id integer
-        references contracting_company.contracting_company,
+        references main.contracting_company,
     created_at             timestamp,
     updated_at             timestamp,
     enabled                boolean default true not null
@@ -150,7 +150,7 @@ create table if not exists main.team
         references main.company,
     quantity_collectors    integer              not null,
     contracting_company_id integer
-        references contracting_company.contracting_company,
+        references main.contracting_company,
     created_at             timestamp,
     updated_at             timestamp,
     enabled                boolean default true not null
@@ -361,7 +361,7 @@ create table if not exists catch.catch_daily
     units_id      integer
         references main.units,
     integrated_id integer
-        references contracting_company.integrated,
+        references main.integrated,
     team_id       integer
         references main.team,
     catch_type_id integer              not null

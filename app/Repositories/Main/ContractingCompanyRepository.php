@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Repositories\ContractingCompany;
+namespace App\Repositories\Main;
 
 use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
-use App\Interfaces\ContractingCompany\ContractingCompanyRepositoryInterface;
-use App\Models\ContractingCompany\ContractingCompany;
+use App\Interfaces\Main\ContractingCompanyRepositoryInterface;
+use App\Models\Main\ContractingCompany;
 use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
 
@@ -23,7 +23,7 @@ class ContractingCompanyRepository implements ContractingCompanyRepositoryInterf
 
     public function findAll($selectConfig, array $whereCriterious) : array
     {
-        $query = DB::table('contracting_company.contracting_company')
+        $query = DB::table('main.contracting_company')
             ->join('main.company', 'company.id', '=', 'contracting_company.company_id');
 
         $whereFactory = new WhereFactory();

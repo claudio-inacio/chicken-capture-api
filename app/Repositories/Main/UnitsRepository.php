@@ -25,7 +25,7 @@ class UnitsRepository implements UnitsRepositoryInterface
     {
         $query = DB::table('main.units')
             ->join('main.company', 'company.id', '=', 'units.company_id')
-            ->join('contracting_company.contracting_company', 'contracting_company.id', '=', 'units.contracting_company_id');
+            ->join('main.contracting_company', 'contracting_company.id', '=', 'units.contracting_company_id');
 
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Repositories\ContractingCompany;
+namespace App\Repositories\Main;
 
 use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
-use App\Interfaces\ContractingCompany\IntegratedRepositoryInterface;
-use App\Models\ContractingCompany\Integrated;
+use App\Interfaces\Main\IntegratedRepositoryInterface;
+use App\Models\Main\Integrated;
 use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
 
@@ -23,8 +23,8 @@ class IntegratedRepository implements IntegratedRepositoryInterface
 
     public function findAll($selectConfig, array $whereCriterious) : array
     {
-        $query = DB::table('contracting_company.integrated')
-            ->join('contracting_company.contracting_company', 'contracting_company.id', '=', 'integrated.contracting_company_id');
+        $query = DB::table('main.integrated')
+            ->join('main.contracting_company', 'main.id', '=', 'integrated.contracting_company_id');
 
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);
@@ -33,7 +33,7 @@ class IntegratedRepository implements IntegratedRepositoryInterface
 
         $selectFactory = new SelectFactory();
         $query = $selectFactory->byArray($query, $selectConfig);
-        $query->select(['integrated.*', 'contracting_company.name as contracting_company_name']);
+        $query->select(['integrated.*', 'main.name as contracting_company_name']);
 
         $result = $query->get();
 

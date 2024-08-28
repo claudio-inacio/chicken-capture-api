@@ -19,24 +19,25 @@ class DiaristController extends Controller
         $this->diaristRepository = $diaristRepository;
     }
 
+    /**
+     * @throws \Exception
+     */
     public function register(Request $request)
     {
         $request->validate([
             'name' => 'required',
-            'document' => 'required_without:phone_number',
-            'phone_number' => 'required_without:document',
+            'phone_number' => 'required',
             'diarist_group_id' => 'required',
+            'date' => 'required',
         ]);
 
         $arrayData = $request->all();
         $arrayData['company_id'] = $request->user()->company_id;
+        $arrayData['phone_number'] = FormatHelper::removeSpecialCaracterTel($arrayData['phone_number']);
+        $arrayData['date'] = (new \DateTime($arrayData['date']))->format('Y-m-d');
+        $request->daily ? $arrayData['daily'] = FormatHelper::brlTodecimal($request->daily) : $arrayData['daily'] = 0;
 
-        if ($request->document) {
-            $arrayData['document'] = FormatHelper::formatCnpjCpf($arrayData['document']);
-            $arrayData['phone_number'] = null;
-        }
-        if ($request->phone_number) {
-            $arrayData['phone_number'] = FormatHelper::removeSpecialCaracterTel($arrayData['phone_number']);
+        if (!$request->document) {
             $arrayData['document'] = null;
         }
 
@@ -80,21 +81,19 @@ class DiaristController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'document' => 'required_without:phone_number',
-            'phone_number' => 'required_without:document',
+            'phone_number' => 'required',
             'diarist_group_id' => 'required',
+            'date' => 'required',
             'diarist_id' => 'required'
         ]);
 
         $arrayData = $request->all();
         $arrayData['company_id'] = $request->user()->company_id;
+        $arrayData['phone_number'] = FormatHelper::removeSpecialCaracterTel($arrayData['phone_number']);
+        $arrayData['date'] = (new \DateTime($arrayData['date']))->format('Y-m-d');
+        $request->daily ? $arrayData['daily'] = FormatHelper::brlTodecimal($request->daily) : $arrayData['daily'] = 0;
 
-        if ($request->document) {
-            $arrayData['document'] = FormatHelper::formatCnpjCpf($arrayData['document']);
-            $arrayData['phone_number'] = null;
-        }
-        if ($request->phone_number) {
-            $arrayData['phone_number'] = FormatHelper::removeSpecialCaracterTel($arrayData['phone_number']);
+        if (!$request->document) {
             $arrayData['document'] = null;
         }
 

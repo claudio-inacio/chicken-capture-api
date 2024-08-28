@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Api\ContractingCompany;
+namespace App\Http\Controllers\Api\Main;
 
 use App\Http\Controllers\Controller;
-use App\Interfaces\ContractingCompany\IntegratedRepositoryInterface;
+use App\Interfaces\Main\IntegratedRepositoryInterface;
 use Illuminate\Http\Request;
 
 class IntegratedController extends Controller
@@ -20,7 +20,8 @@ class IntegratedController extends Controller
 
     public function register(Request $request) {
         $request->validate([
-            'name' => 'required'
+            'name' => 'required',
+            'location' => 'required'
         ]);
 
         return $this->integratedRepository->create($request->all());

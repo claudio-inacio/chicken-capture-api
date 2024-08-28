@@ -1,7 +1,7 @@
 <?php
-namespace App\Interfaces\ContractingCompany;
+namespace App\Interfaces\Main;
 
-interface IntegratedRepositoryInterface
+interface ContractingCompanyRepositoryInterface
 {
     public function getAll();
     public function getByName(string $name);

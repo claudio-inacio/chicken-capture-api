@@ -26,7 +26,7 @@ class TeamRepository implements TeamRepositoryInterface
         $query = DB::table('main.team')
             ->join('main.company', 'company.id', '=', 'team.company_id')
             ->join('main.units', 'units.id', '=', 'team.default_unit_id')
-            ->join('contracting_company.contracting_company', 'contracting_company.id', '=', 'team.contracting_company_id');
+            ->join('main.contracting_company', 'contracting_company.id', '=', 'team.contracting_company_id');
 
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);

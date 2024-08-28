@@ -7,6 +7,7 @@ use App\Enum\Financial\TableReferenceFinanceEnum;
 use App\Enum\Financial\TypeFinanceEnum;
 use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
+use App\Helpers\FormatHelper;
 use App\Interfaces\Main\DiaristRepositoryInterface;
 use App\Models\Financial\FinancialAccounts;
 use App\Models\Main\Diarist;
@@ -35,21 +36,37 @@ class DiaristRepository implements DiaristRepositoryInterface
 //            $query->where('diarist.company_id', $credential->company_id);
 //        }
 
-        $total = $query->count('diarist.id');
-
         $selectFactory = new SelectFactory();
         $query = $selectFactory->byArray($query, $selectConfig);
+
+        $query->where('diarist.enabled', true);
         $query->select([
             'diarist.*',
             'company.name as company_name',
             'diarist_group.function_name', 'diarist_group.daily'
         ]);
 
-        $result = $query->get();
+        $result = $query->get()->toArray();
+
+        $arrayReturn = [];
+        foreach ($result as $item){
+            if (!key_exists($item->phone_number, $arrayReturn)) {
+                $arrayReturn[$item->phone_number] = $item;
+                $arrayReturn[$item->phone_number]->total_daily = 1;
+            } else {
+                $arrayReturn[$item->phone_number]->daily = $arrayReturn[$item->phone_number]->daily + $item->daily;
+                $arrayReturn[$item->phone_number]->total_daily = $arrayReturn[$item->phone_number]->total_daily + 1;
+            }
+        }
+
+        foreach ($arrayReturn as $item){
+            if (is_numeric($item->daily))
+                $item->daily = FormatHelper::decimalToBr($item->daily);
+        }
 
         return [
-            'data' => $result->toArray(),
-            'total' => $total,
+            'data' => $arrayReturn,
+            'total' => count($arrayReturn),
         ];
     }
 
@@ -89,7 +106,7 @@ class DiaristRepository implements DiaristRepositoryInterface
         try {
             $diarist = Diarist::where('enabled', true)
                 ->where('company_id', $arrayData['company_id'])
-                ->whereDay('created_at', date('d'))
+                ->whereDay('date', date('d', strtotime($arrayData['date'])))
                 ->where(function($query) use ($arrayData) {
                     if ($arrayData['document'] != null)
                         $query->where('document', $arrayData['document']);
@@ -98,17 +115,27 @@ class DiaristRepository implements DiaristRepositoryInterface
                 })
                 ->first();
 
-            if ($diarist) return ResponseService::businessError('Ja existe um diarista cadastrada para o dia de hoje');
+            if ($diarist) {
+                $day = (new \DateTime($arrayData['date']))->format('d-m-Y');
+                return ResponseService::businessError('Esse diarista ja foi cadastrada para o dia -> '. $day);
+            }
 
             $diarist = Diarist::create($arrayData);
-            $diaristGroup = DiaristGroup::find($arrayData['diarist_group_id']);
+
+            if ($arrayData['daily'] == 0) {
+                $diaristGroup = DiaristGroup::find($arrayData['diarist_group_id']);
+                $arrayData['daily'] = $diaristGroup->daily;
+            } else {
+                $diaristGroup = new \stdClass();
+                $diaristGroup->function_name = 'NAO_CONTEM';
+            }
 
             $document = $diarist->document ?? 'NAO CONTEM!';
             $phoneNumber = $diarist->phone_number ?? 'NAO CONTEM!';
             FinancialAccounts::create([
                 'description' => "Cadastro de diarista. Nome: {$diarist->name}, CPF: {$document}, CELULAR: {$phoneNumber}, FUNÇÃO: {$diaristGroup->function_name}. ",
-                'amount' => $diaristGroup->daily,
-                'due_date' => (new \DateTime(now()))->format('Y-m-d'). " 20:00:00",
+                'amount' => $arrayData['daily'],
+                'due_date' => (new \DateTime($arrayData['date']))->format('Y-m-d'). " 20:00:00",
                 'type' => TypeFinanceEnum::TO_DISCOUNT,
                 'credential_id' => $credential->id,
                 'company_id' => $credential->company_id,
@@ -132,7 +159,7 @@ class DiaristRepository implements DiaristRepositoryInterface
             $diarist = Diarist::where('id', '<>', $id)
                 ->where('enabled', true)
                 ->where('company_id', $arrayData['company_id'])
-                ->whereDay('created_at', date('d'))
+                ->whereDay('date', date('d', strtotime($arrayData['date'])))
                 ->where(function($query) use ($arrayData) {
                     if ($arrayData['document'] != null)
                         $query->where('document', $arrayData['document']);
@@ -141,7 +168,10 @@ class DiaristRepository implements DiaristRepositoryInterface
                 })
                 ->first();
 
-            if ($diarist) return ResponseService::businessError('Ja existe um diarista cadastrada para o dia de hoje');
+            if ($diarist) {
+                $day = (new \DateTime($arrayData['date']))->format('d-m-Y');
+                return ResponseService::businessError('Esse diarista ja foi cadastrada para o dia -> '. $day);
+            }
 
             Diarist::whereId($id)->update($arrayData);
             return ResponseService::success204();
