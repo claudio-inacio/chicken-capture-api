@@ -48,7 +48,7 @@ class CatchDailyRepository implements CatchDailyRespositoryInterface
         $query->select([
             'catch_daily.*',
             'person.name as credential_name', 'credential.document as credential_document',
-            'units.name as unit_name',
+            'units.name as unit_name', 'units.code as unit_code',
             'integrated.name as integrated_name',
             'contracting_company.name as contracting_company_name',
             'company.name as company_name',

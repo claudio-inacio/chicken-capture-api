@@ -38,7 +38,7 @@ class VehiclesRepository implements VehiclesRepositoryInterface
         $query->select([
             'vehicle.*',
             'company.name as company_name',
-            'units.name as unit_name', 'units.location as unit_location'
+            'units.name as unit_name', 'units.code as unit_code'
         ]);
 
         $result = $query->get();

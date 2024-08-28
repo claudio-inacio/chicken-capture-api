@@ -126,7 +126,6 @@ create table if not exists main.units
     id                     serial
         primary key,
     name                   varchar(100)         not null,
-    location               varchar(100)         not null,
     company_id             integer
         references main.company,
     contracting_company_id integer

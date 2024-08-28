@@ -30,6 +30,8 @@ use App\Interfaces\Financial\MonthlyClosingReportsRepositoryInterface;
 use App\Interfaces\Vehicles\VehiclesRepositoryInterface;
 use App\Interfaces\Vehicles\DriverAreaRepositoryInterface;
 
+use App\Interfaces\Region\CityRepositoryInterface;
+
 
 
 
@@ -68,6 +70,9 @@ use App\Repositories\Financial\MonthlyClosingReportsRepository;
 use App\Repositories\Vehicles\VehiclesRepository;
 use App\Repositories\Vehicles\DriverAreaRepository;
 
+
+use App\Repositories\Region\CityRepository;
+
 use Illuminate\Support\ServiceProvider;
 
 
@@ -103,6 +108,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(DiaristGroupRepositoryInterface::class, DiaristGroupRepository::class);
         $this->app->bind(ColletorsGroupRepositoryInterface::class, ColletorsGroupRepository::class);
         $this->app->bind(DiaristRepositoryInterface::class, DiaristRepository::class);
+        $this->app->bind(CityRepositoryInterface::class, CityRepository::class);
     }
 
     /**

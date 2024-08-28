@@ -6,6 +6,7 @@ use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
 use App\Interfaces\Main\IntegratedRepositoryInterface;
 use App\Models\Main\Integrated;
+use App\Models\Region\City;
 use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
 
@@ -24,7 +25,7 @@ class IntegratedRepository implements IntegratedRepositoryInterface
     public function findAll($selectConfig, array $whereCriterious) : array
     {
         $query = DB::table('main.integrated')
-            ->join('main.contracting_company', 'main.id', '=', 'integrated.contracting_company_id');
+            ->join('region.city', 'city.id', '=', 'integrated.city_id');
 
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);
@@ -33,7 +34,10 @@ class IntegratedRepository implements IntegratedRepositoryInterface
 
         $selectFactory = new SelectFactory();
         $query = $selectFactory->byArray($query, $selectConfig);
-        $query->select(['integrated.*', 'main.name as contracting_company_name']);
+        $query->select([
+            'integrated.*',
+            'city.name as city_name', 'city.uf as city_uf', 'city.code as city_code'
+        ]);
 
         $result = $query->get();
 
@@ -55,6 +59,9 @@ class IntegratedRepository implements IntegratedRepositoryInterface
             $integrated = Integrated::where('name', $value['name'])->first();
             if ($integrated) return ResponseService::businessError('Ja existe uma integraçao com esse nome!');
 
+            $city = City::find($value['city_id']);
+            if (!$city) return ResponseService::businessError('Cidade nao encontrado no banco de dados!');
+
             Integrated::create($value);
             return ResponseService::success204();
         } catch (\Exception $e){
@@ -70,6 +77,9 @@ class IntegratedRepository implements IntegratedRepositoryInterface
                 ->where('id', '<>', $id)->first();
 
             if ($integrated) return ResponseService::businessError('Ja existe uma integraçao com esse nome!');
+
+            $city = City::find($data['city_id']);
+            if (!$city) return ResponseService::businessError('Cidade nao encontrado no banco de dados!');
 
             Integrated::whereId($id)->update($data);
             return ResponseService::success204();

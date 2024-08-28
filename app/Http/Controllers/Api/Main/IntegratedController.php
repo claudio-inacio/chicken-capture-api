@@ -21,7 +21,7 @@ class IntegratedController extends Controller
     public function register(Request $request) {
         $request->validate([
             'name' => 'required',
-            'location' => 'required'
+            'city_id' => 'required'
         ]);
 
         return $this->integratedRepository->create($request->all());
@@ -41,6 +41,7 @@ class IntegratedController extends Controller
     public function update(Request $request){
         $request->validate([
             'name' => 'required',
+            'city_id' => 'required',
             'integrated_id' => 'required'
         ]);
 

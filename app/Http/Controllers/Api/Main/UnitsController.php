@@ -21,6 +21,7 @@ class UnitsController extends Controller
     public function register(Request $request) {
         $request->validate([
             'code' => 'required',
+            'name' => 'required',
             'contracting_company_id' => 'required'
         ]);
 
@@ -44,7 +45,6 @@ class UnitsController extends Controller
     public function update(Request $request){
         $request->validate([
             'name' => 'required',
-            'location' => 'required',
             'code' => 'required',
             'contracting_company_id' => 'required',
             'units_id' => 'required'

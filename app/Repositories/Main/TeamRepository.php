@@ -38,7 +38,7 @@ class TeamRepository implements TeamRepositoryInterface
         $query->select([
             'team.*',
             'company.name as company_name',
-            'units.name as default_unit_name','units.location as default_unit_location',
+            'units.name as default_unit_name', 'units.code as unit_code',
             'contracting_company.name as contracting_company_name'
         ]);
 

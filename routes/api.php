@@ -23,6 +23,8 @@ use App\Http\Controllers\Api\Main\DiaristController;
 use App\Http\Controllers\Api\Financial\FinancialAccountsController;
 use App\Http\Controllers\Api\Financial\MonthlyClosingReportsController;
 
+use App\Http\Controllers\Api\Region\CityController;
+
 use App\Http\Controllers\Api\Vehicles\VehiclesController;
 use App\Http\Controllers\Api\Vehicles\DriverAreaController;
 
@@ -139,6 +141,9 @@ Route::group(['middleware' => ['authJwt']], function (){
 
     Route::post('/financial/monthly-closing-reports', [MonthlyClosingReportsController::class, 'register']);
     Route::get('/financial/monthly-closing-reports', [MonthlyClosingReportsController::class, 'list']);
+
+    ################################## REGION ############################################
+    Route::get('/region/city', [CityController::class, 'list']);
 
     ################################### VEHICLES ###########################################
     Route::post('/vehicles/vehicle', [VehiclesController::class, 'register']);

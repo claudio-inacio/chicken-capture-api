@@ -48,7 +48,7 @@ class CatchsCancelledRepository implements CatchsCancelledRespositoryInterface
             'catch_daily.quantity as catch_daily_quantity',
             'catch_daily.code as catch_daily_code',
             'catch_daily.batch as catch_daily_batch',
-            'units.id as unit_id', 'units.name as unit_name',
+            'units.id as unit_id', 'units.name as unit_name', 'units.code as unit_code',
             'credential.document as credential_document',
             'person.name as credential_name'
         ]);
