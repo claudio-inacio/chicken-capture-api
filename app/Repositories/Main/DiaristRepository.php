@@ -75,6 +75,7 @@ class DiaristRepository implements DiaristRepositoryInterface
         $query = DB::table('main.diarist')
             ->join('main.diarist_group', 'diarist_group.id', '=', 'diarist.diarist_group_id')
             ->join('main.company', 'company.id', '=', 'diarist.company_id')
+            ->whereBetween('date', [$arrayData['start_date'], $arrayData['end_date']])
             ->where(function($query) use ($arrayData) {
                 if ($arrayData['document'] != null) {
                     $query->orWhere('document', $arrayData['document']);
@@ -94,6 +95,7 @@ class DiaristRepository implements DiaristRepositoryInterface
 
         $result = $query->get()->toArray();
         $financialAccount = FinancialAccounts::where('table_reference_id', TableReferenceFinanceEnum::DIARIST)->get();
+        $totalValue = 0;
 
         foreach ($result as $item){
             if ($item->daily < 1){
@@ -101,6 +103,7 @@ class DiaristRepository implements DiaristRepositoryInterface
             }
 
             unset($item->diarist_group_daily);
+            $totalValue = $totalValue + $item->daily;
             $item->daily = FormatHelper::decimalToBr($item->daily);
 
             foreach ($financialAccount as $account){
@@ -113,6 +116,7 @@ class DiaristRepository implements DiaristRepositoryInterface
         return [
             'data' => $result,
             'total' => $total,
+            'total_value' => "R$ ".FormatHelper::decimalToBr($totalValue)
         ];
     }
 

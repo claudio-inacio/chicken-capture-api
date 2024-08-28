@@ -165,11 +165,17 @@ class FormatHelper
         return  $mes ? "20{$mesAno[1]}". "-" . $mes ."-01": "";
     }
 
+    /**
+     * @throws \Exception
+     */
     public static function dateToUs(string $date): string
     {
         return (new \DateTime(str_replace('/','-', $date)))->format("Y-m-d");
     }
 
+    /**
+     * @throws \Exception
+     */
     public static function dateToUsTimeStamp(string $date): string
     {
         return (new \DateTime(str_replace('/','-', $date)))->format("Y-m-d H:i:s");

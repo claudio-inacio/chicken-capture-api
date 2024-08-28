@@ -61,6 +61,8 @@ class DiaristController extends Controller
         $request->validate([
             'document' => 'required_without:phone_number',
             'phone_number' => 'required_without:document',
+            'start_date' => 'required',
+            'end_date' => 'required'
         ]);
 
         $arrayData = $request->all();
@@ -73,6 +75,9 @@ class DiaristController extends Controller
             $arrayData['phone_number'] = FormatHelper::removeSpecialCaracterTel($arrayData['phone_number']);
             $arrayData['document'] = null;
         }
+
+        $arrayData['start_date'] = FormatHelper::dateToUsTimeStamp($arrayData['start_date']);
+        $arrayData['end_date'] = FormatHelper::dateToUsTimeStamp($arrayData['end_date']);
 
         return response()->json($this->diaristRepository->select($arrayData));
     }
