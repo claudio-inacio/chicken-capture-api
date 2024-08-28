@@ -94,8 +94,8 @@ class DiaristRepository implements DiaristRepositoryInterface
 
         $result = $query->get()->toArray();
 
-        foreach ($result as $key => $item){
-            if ($item->diarist_group_id != 0){
+        foreach ($result as $item){
+            if ($item->daily < 1){
                 $item->daily = $item->diarist_group_daily;
             }
 
