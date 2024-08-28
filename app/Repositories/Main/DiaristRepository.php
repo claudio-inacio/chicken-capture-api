@@ -89,13 +89,22 @@ class DiaristRepository implements DiaristRepositoryInterface
         $query->select([
             'diarist.*',
             'company.name as company_name',
-            'diarist_group.function_name', 'diarist_group.daily'
+            'diarist_group.function_name as diarist_group_function_name', 'diarist_group.daily as diarist_group_daily'
         ]);
 
-        $result = $query->get();
+        $result = $query->get()->toArray();
+
+        foreach ($result as $key => $item){
+            if ($item->diarist_group_id != 0){
+                $item->daily = $item->diarist_group_daily;
+            }
+
+            unset($item->diarist_group_daily);
+            $item->daily = FormatHelper::decimalToBr($item->daily);
+        }
 
         return [
-            'data' => $result->toArray(),
+            'data' => $result,
             'total' => $total,
         ];
     }
