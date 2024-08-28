@@ -95,14 +95,16 @@ class  CollectorsService
             $arrayCollectors = [];
             $arrayResult = [];
 
-            foreach ($teams as $team) {
-                $groupCollectors = json_decode($team->collectors, true)['group_collectors'];
-                foreach ($groupCollectors as $collector) {
-                    $collectorId = $collector['id'];
-                    $quantity = $collector['quantity_collectors'];
+            if ($teams) {
+                foreach ($teams as $team) {
+                    $groupCollectors = json_decode($team->collectors, true)['group_collectors'];
+                    foreach ($groupCollectors as $collector) {
+                        $collectorId = $collector['id'];
+                        $quantity = $collector['quantity_collectors'];
 
-                    // Incrementando as quantidades de coletores usados
-                    $arrayTeamQuantity[$collectorId] = ($arrayTeamQuantity[$collectorId] ?? 0) + $quantity;
+                        // Incrementando as quantidades de coletores usados
+                        $arrayTeamQuantity[$collectorId] = ($arrayTeamQuantity[$collectorId] ?? 0) + $quantity;
+                    }
                 }
             }
 
@@ -116,7 +118,10 @@ class  CollectorsService
                     $arrayCollectors[$collectorGroupId] = ($arrayCollectors[$collectorGroupId] ?? 0) + $quantity;
                 }
 
-                $arrayResult[$collectorGroup['id']] = $arrayCollectors[$collectorGroup['id']] -  $arrayTeamQuantity[$collectorGroup['id']];
+                if (!empty($arrayTeamQuantity))
+                    $arrayResult[$collectorGroup['id']] = $arrayCollectors[$collectorGroup['id']] -  $arrayTeamQuantity[$collectorGroup['id']];
+                else
+                    $arrayResult[$collectorGroup['id']] = $arrayCollectors[$collectorGroup['id']];
             }
 
             $arrayReturn = [];
