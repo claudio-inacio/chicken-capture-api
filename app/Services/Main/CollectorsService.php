@@ -118,10 +118,13 @@ class  CollectorsService
                     $arrayCollectors[$collectorGroupId] = ($arrayCollectors[$collectorGroupId] ?? 0) + $quantity;
                 }
 
-                if (!empty($arrayTeamQuantity))
+                if (key_exists($collectorGroup['id'], $arrayTeamQuantity))
                     $arrayResult[$collectorGroup['id']] = $arrayCollectors[$collectorGroup['id']] - $arrayTeamQuantity[$collectorGroup['id']];
-                else
-                    $arrayResult[$collectorGroup['id']] = $arrayCollectors[$collectorGroup['id']];
+                else {
+                    if (key_exists($collectorGroup['id'], $arrayCollectors))
+                        $arrayResult[$collectorGroup['id']] = $arrayCollectors[$collectorGroup['id']];
+                    else $arrayResult[$collectorGroup['id']] = 0;
+                }
             }
 
             $arrayReturn = [];
@@ -135,7 +138,14 @@ class  CollectorsService
 
             return ResponseService::success('Sucesso em listar quantidade de coletores disponiveis', array_values($arrayReturn));
         }catch (\Exception $e) {
-            return ResponseService::internalServerError('Falha em obter quantidade de coletores disponíveis.', $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Falha em obter quantidade de coletores disponíveis',
+                'error' => [
+                    'message' => $e->getMessage(),
+                    'line' => $e->getLine()
+                ]
+            ]);
         }
     }
 }
