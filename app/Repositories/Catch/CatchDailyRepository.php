@@ -57,7 +57,6 @@ class CatchDailyRepository implements CatchDailyRespositoryInterface
         $result = $query->get();
 
         $totalCancelled = 0;
-        $totalCatch = 0;
         $totalValueCatch = 0;
         $totalValueCatchCancelled = 0;
 
@@ -75,7 +74,6 @@ class CatchDailyRepository implements CatchDailyRespositoryInterface
 
             $item->total_cancelled = $totalCancelled;
             $totalCancelled = 0;
-            $totalCatch = 0;
         }
 
         return [
