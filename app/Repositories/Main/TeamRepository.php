@@ -25,6 +25,10 @@ class TeamRepository implements TeamRepositoryInterface
     {
         $query = DB::table('main.team')
             ->join('main.company', 'company.id', '=', 'team.company_id')
+            ->join('authentication.credential as credential_driver', 'credential_driver.id', '=', 'team.driver_credential_id')
+            ->join('authentication.credential as credential_leader', 'credential_leader.id', '=', 'team.leader_credential_id')
+            ->join('authentication.person as person_driver', 'person_driver.id', '=', 'credential_driver.person_id')
+            ->join('authentication.person as person_leader', 'person_leader.id', '=', 'credential_leader.person_id')
             ->join('main.units', 'units.id', '=', 'team.default_unit_id')
             ->join('main.contracting_company', 'contracting_company.id', '=', 'team.contracting_company_id');
 
@@ -39,7 +43,9 @@ class TeamRepository implements TeamRepositoryInterface
             'team.*',
             'company.name as company_name',
             'units.name as default_unit_name', 'units.code as unit_code',
-            'contracting_company.name as contracting_company_name'
+            'contracting_company.name as contracting_company_name',
+            "person_leader.name as leader_credential_name",
+            "person_driver.name as driver_credential_name",
         ]);
 
         $result = $query->get()->toArray();

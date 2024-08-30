@@ -4,6 +4,7 @@ namespace App\Repositories\Financial;
 
 use App\Enum\Financial\StatusEnum;
 use App\Enum\Financial\TableReferenceFinanceEnum;
+use App\Enum\Financial\TypeFinanceEnum;
 use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
 use App\Helpers\FormatHelper;
@@ -64,7 +65,18 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
 
         $result = $query->get()->toArray();
         $arrayStatus = [];
+        $arrayTotalValue = [];
         foreach ($result as $key => $item) {
+            if (!key_exists(TypeFinanceEnum::TO_RECEIVE, $arrayTotalValue)){
+                $arrayTotalValue[TypeFinanceEnum::TO_RECEIVE] = 0;
+            }
+            if (!key_exists(TypeFinanceEnum::TO_DISCOUNT, $arrayTotalValue)){
+                $arrayTotalValue[TypeFinanceEnum::TO_DISCOUNT] = 0;
+            }
+
+            $item->type == TypeFinanceEnum::TO_RECEIVE ?
+                $arrayTotalValue[TypeFinanceEnum::TO_RECEIVE] += $item->amount : $arrayTotalValue[TypeFinanceEnum::TO_DISCOUNT] += $item->amount;
+
             $item->catch_daily_date = null;
             $item->catch_daily_enabled = null;
             $item->catch_daily_units_id = null;
@@ -86,9 +98,8 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
                 }
             }
 
-            $arrayStatus[$item->status_id] = ($arrayStatus[$item->status_id] ?? $item->amount) + $item->amount;
+            $arrayStatus[$item->status_id] = ($arrayStatus[$item->status_id] ?? 0) + $item->amount;
         }
-
 
         return [
             'data' => $result,
@@ -98,6 +109,8 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             'value_receive' => "R$ ".FormatHelper::decimalToBr($arrayStatus[StatusEnum::RECEIVE] ?? 0),
             'value_discount' => "R$ ".FormatHelper::decimalToBr($arrayStatus[StatusEnum::DISCOUNT] ?? 0),
             'value_defeated' => "R$ ".FormatHelper::decimalToBr($arrayStatus[StatusEnum::DEFEATED] ?? 0),
+            'value_total_receive' => "R$ ".FormatHelper::decimalToBr($arrayTotalValue[TypeFinanceEnum::TO_RECEIVE] ?? 0),
+            'value_total_discount' => "R$ ".FormatHelper::decimalToBr($arrayTotalValue[TypeFinanceEnum::TO_DISCOUNT] ?? 0),
         ];
     }
 
