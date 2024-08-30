@@ -9,6 +9,7 @@ use App\Helpers\FormatHelper;
 use App\Interfaces\Catch\CatchDailyRespositoryInterface;
 use App\Models\Catch\CatchDaily;
 use App\Models\Catch\CatchsCancelled;
+use App\Models\Catch\CatchsConfiguration;
 use App\Models\Financial\FinancialAccounts;
 use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
@@ -56,20 +57,33 @@ class CatchDailyRepository implements CatchDailyRespositoryInterface
         $result = $query->get();
 
         $totalCancelled = 0;
-        foreach ($result as $item){
+        $totalCatch = 0;
+        $totalValueCatch = 0;
+        $totalValueCatchCancelled = 0;
 
+        foreach ($result as $item){
+            $catchConfiguration = CatchsConfiguration::where('catch_type_id', $item->catch_type_id)->first();
             $cancelleds = CatchsCancelled::where('catch_daily_id', $item->id)->get();
             foreach ($cancelleds as $cancelled){
                 $totalCancelled = $totalCancelled + $cancelled->quantity;
             }
 
+            $totalCatch = $item->quantity - $totalCancelled;
+
+            $totalValueCatchCancelled += $catchConfiguration->cancellation_price * $totalCancelled;
+            $totalValueCatch += $catchConfiguration->catch_price * $totalCatch;
+
             $item->total_cancelled = $totalCancelled;
             $totalCancelled = 0;
+            $totalCatch = 0;
         }
 
         return [
             'data' => $result->toArray(),
             'total' => $total,
+            'total_value_catch' => "R$ ".FormatHelper::decimalToBr($totalValueCatch),
+            'total_value_catch_cancelled' => "R$ ".FormatHelper::decimalToBr($totalValueCatchCancelled),
+            'total_value' => "R$ ".FormatHelper::decimalToBr($totalValueCatch + $totalValueCatchCancelled)
         ];
     }
 
