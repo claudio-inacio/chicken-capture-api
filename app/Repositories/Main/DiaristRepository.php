@@ -32,41 +32,55 @@ class DiaristRepository implements DiaristRepositoryInterface
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);
 
-//        if ($credential->access_group_id != AccessGroupEnum::DEVELOPER and $credential->access_group_id != AccessGroupEnum::ADMINISTRATIVE){
-//            $query->where('diarist.company_id', $credential->company_id);
-//        }
+// if ($credential->access_group_id != AccessGroupEnum::DEVELOPER && $credential->access_group_id != AccessGroupEnum::ADMINISTRATIVE) {
+//     $query->where('diarist.company_id', $credential->company_id);
+// }
 
         $selectFactory = new SelectFactory();
         $query = $selectFactory->byArray($query, $selectConfig);
 
-        $query->where('diarist.enabled', true);
-        $query->select([
-            'diarist.*',
-            'company.name as company_name',
-            'diarist_group.function_name', 'diarist_group.daily'
-        ]);
+        $query->where('diarist.enabled', true)
+            ->select([
+                'diarist.*',
+                'company.name as company_name',
+                'diarist_group.function_name',
+                'diarist_group.daily'
+            ]);
 
         $result = $query->get()->toArray();
 
-        $arrayReturn = [];
-        foreach ($result as $item){
-            if (!key_exists($item->phone_number, $arrayReturn)) {
-                $arrayReturn[$item->phone_number] = $item;
-                $arrayReturn[$item->phone_number]->total_daily = 1;
+        $arrayReturn = collect();
+        $arrayDiaristType = collect();
+
+        $diaristGroups = DiaristGroup::whereIn('id', collect($result)->pluck('diarist_group_id'))->get()->keyBy('id');
+        foreach ($result as $item) {
+            if (!$arrayReturn->has($item->phone_number)) {
+                $item->total_daily = 1;
+                $arrayReturn->put($item->phone_number, $item);
             } else {
-                $arrayReturn[$item->phone_number]->daily = $arrayReturn[$item->phone_number]->daily + $item->daily;
-                $arrayReturn[$item->phone_number]->total_daily = $arrayReturn[$item->phone_number]->total_daily + 1;
+                $arrayReturn[$item->phone_number]->daily += $item->daily;
+                $arrayReturn[$item->phone_number]->total_daily += 1;
             }
+
+            $functionName = $diaristGroups[$item->diarist_group_id]->function_name;
+            $arrayDiaristType[$functionName] = ($arrayDiaristType[$functionName] ?? 0) + $item->daily;
         }
 
-        foreach ($arrayReturn as $item){
-            if (is_numeric($item->daily))
+        $arrayReturn->transform(function ($item) {
+            if (is_numeric($item->daily)) {
                 $item->daily = FormatHelper::decimalToBr($item->daily);
-        }
+            }
+            return $item;
+        });
+
+        $arrayDiaristType->transform(function ($diaristValue) {
+            return "R$ " . FormatHelper::decimalToBr($diaristValue);
+        });
 
         return [
-            'data' => $arrayReturn,
-            'total' => count($arrayReturn),
+            'data' => $arrayReturn->values()->toArray(),
+            'total' => $arrayReturn->count(),
+            'total_values' => $arrayDiaristType->toArray(),
         ];
     }
 

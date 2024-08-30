@@ -43,7 +43,6 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             FinancialAccounts::whereId($financialAccount['id'])->update(['status_id' => StatusEnum::DEFEATED]);
         }
 
-
         $query = DB::table('financial.financial_accounts')
             ->join('main.company', 'company.id', '=', 'financial_accounts.company_id')
             ->join('authentication.credential', 'credential.id', '=', 'financial_accounts.credential_id')
@@ -64,6 +63,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
         ]);
 
         $result = $query->get()->toArray();
+        $arrayStatus = [];
         foreach ($result as $key => $item) {
             $item->catch_daily_date = null;
             $item->catch_daily_enabled = null;
@@ -85,11 +85,19 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
                     }
                 }
             }
+
+            $arrayStatus[$item->status_id] = ($arrayStatus[$item->status_id] ?? $item->amount) + $item->amount;
         }
+
 
         return [
             'data' => $result,
             'total' => $total,
+            'value_to_receive' => "R$ ".FormatHelper::decimalToBr($arrayStatus[StatusEnum::TO_RECEIVE] ?? 0),
+            'value_to_discount' => "R$ ".FormatHelper::decimalToBr($arrayStatus[StatusEnum::TO_DISCOUNT] ?? 0),
+            'value_receive' => "R$ ".FormatHelper::decimalToBr($arrayStatus[StatusEnum::RECEIVE] ?? 0),
+            'value_discount' => "R$ ".FormatHelper::decimalToBr($arrayStatus[StatusEnum::DISCOUNT] ?? 0),
+            'value_defeated' => "R$ ".FormatHelper::decimalToBr($arrayStatus[StatusEnum::DEFEATED] ?? 0),
         ];
     }
 
