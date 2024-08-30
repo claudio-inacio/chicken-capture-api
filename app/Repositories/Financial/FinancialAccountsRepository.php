@@ -49,6 +49,14 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             ->join('authentication.credential', 'credential.id', '=', 'financial_accounts.credential_id')
             ->join('authentication.person', 'person.id', '=', 'credential.person_id');
 
+        foreach ($whereCriterious as $criterious){
+            if(str_contains($criterious['field'], 'table_reference_id')){
+                if ($criterious['value'] == TableReferenceFinanceEnum::DAILY_CATCH){
+                    $query->join('catch.catch_daily', 'catch_daily.id', '=', 'financial_accounts.reference_id');
+                }
+            }
+        }
+
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);
 
