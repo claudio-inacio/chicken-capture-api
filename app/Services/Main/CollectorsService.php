@@ -126,7 +126,7 @@ class  CollectorsService
                     $arrayCollectors[$collectorGroupId] = ($arrayCollectors[$collectorGroupId] ?? 0) + $quantity;
                 }
 
-                if (key_exists($collectorGroup['id'], $arrayTeamQuantity))
+                if (key_exists($collectorGroup['id'], $arrayResult))
                     $arrayResult[$collectorGroup['id']] = $arrayCollectors[$collectorGroup['id']] - $arrayTeamQuantity[$collectorGroup['id']];
                 else {
                     if (key_exists($collectorGroup['id'], $arrayCollectors))

@@ -5,6 +5,7 @@ namespace App\Repositories\Main;
 use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
 use App\Interfaces\Main\TeamRepositoryInterface;
+use App\Models\Main\CollectorsGroup;
 use App\Models\Main\Team;
 use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
@@ -47,11 +48,16 @@ class TeamRepository implements TeamRepositoryInterface
             "person_leader.name as leader_credential_name",
             "person_driver.name as driver_credential_name",
         ]);
-
         $result = $query->get()->toArray();
 
         foreach ($result as $item){
             $item->collectors = json_decode($item->collectors, true);
+            foreach ($item->collectors as $keyCollector => $groupsCollector){
+                foreach ($groupsCollector as $keyGroup => $group) {
+                    $collectorGroup = CollectorsGroup::find($group['id']);
+                    $item->collectors[$keyCollector][$keyGroup]['function_name'] = $collectorGroup->function_name;
+                }
+            }
         }
 
         return [
