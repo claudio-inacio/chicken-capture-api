@@ -53,8 +53,10 @@ class ContractingCompanyRepository implements ContractingCompanyRepositoryInterf
     {
         try {
             $contractingCompany = ContractingCompany::where('name', $value['name'])
+                ->where('enabled', true)
                 ->where('company_id', $value['company_id'])
                 ->first();
+
             if ($contractingCompany) return ResponseService::businessError('Ja existe uma compania contratante com esse nome!');
 
             ContractingCompany::create($value);
