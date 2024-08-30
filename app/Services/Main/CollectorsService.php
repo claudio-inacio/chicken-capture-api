@@ -19,10 +19,17 @@ class  CollectorsService
     public static function verifyQuantityCollectors(array $arrayRequest, $user): array
     {
         try {
+            $arrayRequest['team_id'] ? $teamId = $arrayRequest['team_id'] : $teamId = null;
             $arrayCollectors = $arrayRequest['collectors'];
             $errors = [];
 
-            $teams = Team::where('company_id', $user->company_id)->get();
+            $teams = Team::where('company_id', $user->company_id)
+                ->where(function($query) use ($teamId) {
+                    if ($teamId != null) {
+                        $query->where('id', '<>', $teamId);
+                    }
+                })->get();
+
             $arrayCollectorsUsed = [];
             $arrayTeamQuantity = [];
 
