@@ -6,6 +6,7 @@ use App\Enum\Financial\StatusEnum;
 use App\Http\Controllers\Controller;
 use App\Interfaces\Financial\FinancialAccountsRepositoryInterface;
 use App\Services\Financial\FinancialService;
+use App\Services\ResponseService;
 use Illuminate\Http\Request;
 
 class FinancialAccountsController extends Controller
@@ -47,6 +48,13 @@ class FinancialAccountsController extends Controller
             return response()->json(['message' => 'Select config is required!!!'], 422);
         if (!$whereCriterious)
             return response()->json(['message' => 'Where config is required!!!'], 422);
+
+        $valid = false;
+        foreach ($whereCriterious as $criterious){
+            if(str_contains($criterious['field'], 'type')) $valid = true;
+        }
+
+        if ( $valid == false) return ResponseService::businessError('È obrigatorio usar a filtragem por tipo.');
 
         return response()->json($this->financialAccountsRepository->findAll($selectConfig, $whereCriterious));
     }
