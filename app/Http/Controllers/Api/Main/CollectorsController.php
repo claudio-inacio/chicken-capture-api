@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Api\Main;
 
 use App\Http\Controllers\Controller;
 use App\Interfaces\Main\CollectorsRepositoryInterface;
+use App\Models\Main\Collectors;
+use App\Models\Main\CollectorsGroup;
 use App\Services\Main\CollectorsService;
+use App\Services\ResponseService;
 use Illuminate\Http\Request;
 
 class CollectorsController extends Controller
@@ -27,6 +30,14 @@ class CollectorsController extends Controller
 
         $arrayData = $request->all();
         $arrayData['company_id'] = $request->user()->company_id;
+
+        $collectorGroup = CollectorsGroup::find($request->collectors_group_id);
+        if(!$collectorGroup) return ResponseService::invalidArguments('Grupo de coletores não encontrado!');
+
+        $collector = Collectors::where('collectors_group_id', $collectorGroup->id)->first();
+        if ($collector) return ResponseService::businessError(
+            'Já existe coletores cadastrados para esse grupo de coletor. Você pode editar a quantidade dos coletores que ja estão cadastrados!'
+        );
 
         return $this->collectorsRepository->create($arrayData);
     }
