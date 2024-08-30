@@ -41,6 +41,10 @@ class PersonRepository implements PersonRespositoryInterface
         $query->select(['person.*',
             'company_group.name as company_group_name',
             'credential.document',
+            'credential.access_group_id',
+            'credential.document',
+            'credential.id as credential_id',
+            'credential.company_id as credential_company_id',
             'company.name as company_name'
         ]);
 
@@ -87,7 +91,6 @@ class PersonRepository implements PersonRespositoryInterface
         } catch (\Exception $e){
             return ResponseService::internalServerError('Falha em atualizar registro', $e->getMessage());
         }
-
     }
 
     public function enable(int $id, bool $enabled): \Illuminate\Http\JsonResponse
