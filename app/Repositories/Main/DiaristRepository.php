@@ -66,6 +66,7 @@ class DiaristRepository implements DiaristRepositoryInterface
             $arrayDiaristType[$functionName] = ($arrayDiaristType[$functionName] ?? 0) + $item->daily;
         }
 
+        //Formatar valores de decimal para Moeda REAL
         $arrayReturn->transform(function ($item) {
             if (is_numeric($item->daily)) {
                 $item->daily = FormatHelper::decimalToBr($item->daily);
@@ -73,6 +74,7 @@ class DiaristRepository implements DiaristRepositoryInterface
             return $item;
         });
 
+        //Formatar valores de decimal para Moeda REAL
         $arrayDiaristType->transform(function ($diaristValue) {
             return "R$ " . FormatHelper::decimalToBr($diaristValue);
         });
