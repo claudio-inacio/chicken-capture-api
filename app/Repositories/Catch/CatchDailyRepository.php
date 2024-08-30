@@ -56,32 +56,34 @@ class CatchDailyRepository implements CatchDailyRespositoryInterface
 
         $result = $query->get();
 
-        $totalCancelled = 0;
+        // Pré-carregar CatchsConfiguration e CatchsCancelled para evitar consultas repetidas
+        // Etudar o que esse KeyBy() faz
+
+        $catchConfigurations = CatchsConfiguration::whereIn('catch_type_id', $result->pluck('catch_type_id'))->get()->keyBy('catch_type_id');
+        $catchCancelleds = CatchsCancelled::whereIn('catch_daily_id', $result->pluck('id'))->get()->groupBy('catch_daily_id');
+
         $totalValueCatch = 0;
         $totalValueCatchCancelled = 0;
 
-        foreach ($result as $item){
-            $catchConfiguration = CatchsConfiguration::where('catch_type_id', $item->catch_type_id)->first();
-            $cancelleds = CatchsCancelled::where('catch_daily_id', $item->id)->get();
-            foreach ($cancelleds as $cancelled){
-                $totalCancelled = $totalCancelled + $cancelled->quantity;
-            }
+        foreach ($result as $item) {
+            $catchConfiguration = $catchConfigurations->get($item->catch_type_id);
+            $cancelleds = $catchCancelleds->get($item->id, collect());
 
+            $totalCancelled = $cancelleds->sum('quantity');
             $totalCatch = $item->quantity - $totalCancelled;
 
             $totalValueCatchCancelled += $catchConfiguration->cancellation_price * $totalCancelled;
             $totalValueCatch += $catchConfiguration->catch_price * $totalCatch;
 
             $item->total_cancelled = $totalCancelled;
-            $totalCancelled = 0;
         }
 
         return [
             'data' => $result->toArray(),
             'total' => $total,
-            'total_value_catch' => "R$ ".FormatHelper::decimalToBr($totalValueCatch),
-            'total_value_catch_cancelled' => "R$ ".FormatHelper::decimalToBr($totalValueCatchCancelled),
-            'total_value' => "R$ ".FormatHelper::decimalToBr($totalValueCatch + $totalValueCatchCancelled)
+            'total_value_catch' => "R$ " . FormatHelper::decimalToBr($totalValueCatch),
+            'total_value_catch_cancelled' => "R$ " . FormatHelper::decimalToBr($totalValueCatchCancelled),
+            'total_value' => "R$ " . FormatHelper::decimalToBr($totalValueCatch + $totalValueCatchCancelled)
         ];
     }
 
