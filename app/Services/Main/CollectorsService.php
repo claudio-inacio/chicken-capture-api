@@ -38,8 +38,9 @@ class  CollectorsService
                 }
             }
 
+            $arrayGroupId = CollectorsGroup::all('id')->toArray();
             if (!empty($arrayCollectorsUsed)) {
-                $arrayCollectorsQuantity = Collectors::whereIn('collectors_group_id', array_keys($arrayCollectorsUsed))
+                $arrayCollectorsQuantity = Collectors::whereIn('collectors_group_id', $arrayGroupId)
                     ->get()
                     ->groupBy('collectors_group_id')
                     ->mapWithKeys(function ($group, $id) {
