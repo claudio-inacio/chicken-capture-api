@@ -8,6 +8,6 @@ interface PersonRespositoryInterface
     public function findAll(array $selectConfig, array $whereCriterious) : array;
     public function getById(int $id);
     public function create(array $value);
-    public function update(int $id, array $data);
+    public function update(array $data);
     public function enable(int $id, bool $enabled);
 }

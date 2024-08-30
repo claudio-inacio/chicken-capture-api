@@ -46,15 +46,16 @@ class PersonController extends Controller
 
     public function update(Request $request){
         $request->validate([
-            'name' => 'required',
-            'email' => 'required',
-            'phone_number' => 'required',
-            'access_group_id' => 'required',
-            'company_id' => 'required',
-            'person_id' => 'required'
+            'person.name' => 'required',
+            'person.email' => 'required',
+            'person.phone_number' => 'required',
+            'person.company_id' => 'required',
+            'person.person_id' => 'required',
+            'credential.document' => 'required',
+            'credential.access_group_id' => 'required',
         ]);
 
-        return $this->personRespository->update($request->person_id, $request->all());
+        return $this->personRespository->update($request->all());
     }
 
     public function enable(Request $request){

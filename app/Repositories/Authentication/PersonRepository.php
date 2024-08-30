@@ -4,6 +4,7 @@ namespace App\Repositories\Authentication;
 
 use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
+use App\Helpers\FormatHelper;
 use App\Interfaces\Authentication\PersonRespositoryInterface;
 use App\Models\Authentication\Person;
 use App\Models\Credential;
@@ -62,12 +63,26 @@ class PersonRepository implements PersonRespositoryInterface
         return Person::create($value);
     }
 
-    public function update(int $id, array $data): \Illuminate\Http\JsonResponse
+    public function update(array $data): \Illuminate\Http\JsonResponse
     {
+        $arrayCredential = $data['credential'];
+        $credentialId = $arrayCredential['credential_id'];
+        $arrayPerson = $data['person'];
+        $personId = $arrayPerson['person_id'];
+
+        $arrayCredential['document'] = FormatHelper::formatCnpjCpf($arrayCredential['document']);
+        $arrayPerson['phone_number'] = FormatHelper::removeSpecialCaracterTel($arrayPerson['phone_number']);
         try {
-            Credential::where('person_id', $data['person_id'])->update(['company_id' => $data['company_id']]);
-            unset($data['person_id'], $data['company_id']);
-            Person::whereId($id)->update($data);
+            $verifyCredential = Credential::where('document', $arrayCredential['document'])
+                ->where('id', '<>', $credentialId)
+                ->where('person_id', '<>', $personId)
+                ->first();
+
+            if ($verifyCredential) return ResponseService::invalidArguments('Ja existe uma credêncial cadastrada com esse CPF para outra pessoa!');
+
+            unset($arrayCredential['credential_id'], $arrayPerson['person_id']);
+            Credential::whereId($credentialId)->update($arrayCredential);
+            Person::whereId($personId)->update($arrayPerson);
             return ResponseService::success204();
         } catch (\Exception $e){
             return ResponseService::internalServerError('Falha em atualizar registro', $e->getMessage());
