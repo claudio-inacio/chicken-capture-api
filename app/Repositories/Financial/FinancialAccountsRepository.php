@@ -75,6 +75,8 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
         $arrayStatus = [];
         $arrayTotalValue = [];
         foreach ($result as $key => $item) {
+            $item->description_data = json_decode($item->description_data);
+
             if (!key_exists(TypeFinanceEnum::TO_RECEIVE, $arrayTotalValue)){
                 $arrayTotalValue[TypeFinanceEnum::TO_RECEIVE] = 0;
             }

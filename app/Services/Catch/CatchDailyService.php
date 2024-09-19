@@ -35,8 +35,6 @@ class CatchDailyService
             }
 
             $catchCancelled = $catchCancelled['data'];
-
-            $catchDaily->quantity = $catchDaily->quantity - $catchCancelled->quantity;
             $cancelled = $catchCancelled->quantity;
 
             $totalQuantity = $catchDaily->quantity * $catchsConfiguration->catch_price;

@@ -33,6 +33,7 @@ class CatchDailyRepository implements CatchDailyRespositoryInterface
             ->join('authentication.person', 'person.id', '=', 'credential.person_id')
             ->join('main.units', 'units.id', '=', 'catch_daily.units_id')
             ->join('main.integrated', 'integrated.id', '=', 'catch_daily.integrated_id')
+            ->join('region.city', 'city.id', '=', 'integrated.city_id')
             ->join('main.company', 'company.id', '=', 'catch_daily.company_id')
             ->join('main.team', 'team.id', '=', 'catch_daily.team_id')
             ->join('catch.catch_type', 'catch_type.id', '=', 'catch_daily.catch_type_id');
@@ -49,6 +50,10 @@ class CatchDailyRepository implements CatchDailyRespositoryInterface
             'person.name as credential_name', 'credential.document as credential_document',
             'units.name as unit_name', 'units.code as unit_code',
             'integrated.name as integrated_name',
+            'city.id as city_id',
+            'city.name as city_name',
+            'city.uf as city_uf',
+            'city.code as city_code',
             'company.name as company_name',
             'team.name as team_name',
             'catch_type.name as catch_type_name'

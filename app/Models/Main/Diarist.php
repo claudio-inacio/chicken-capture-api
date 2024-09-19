@@ -13,5 +13,5 @@ class Diarist extends Model
     protected $table = 'main.diarist';
 
     protected $fillable = ['id', 'name', 'document', 'phone_number', 'diarist_group_id',
-        'company_id', 'enabled', 'daily', 'date', 'created_at', 'updated_at'];
+        'company_id', 'enabled', 'daily', 'date', 'team_id', 'created_at', 'updated_at'];
 }

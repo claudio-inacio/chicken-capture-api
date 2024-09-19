@@ -27,6 +27,7 @@ class DiaristRepository implements DiaristRepositoryInterface
     {
         $query = DB::table('main.diarist')
             ->join('main.diarist_group', 'diarist_group.id', '=', 'diarist.diarist_group_id')
+            ->join('main.team', 'team.id', '=', 'diarist.team_id')
             ->join('main.company', 'company.id', '=', 'diarist.company_id');
 
         $whereFactory = new WhereFactory();
@@ -42,6 +43,7 @@ class DiaristRepository implements DiaristRepositoryInterface
         $query->where('diarist.enabled', true)
             ->select([
                 'diarist.*',
+                'team.name as team_name',
                 'company.name as company_name',
                 'diarist_group.function_name',
                 'diarist_group.daily'
@@ -169,7 +171,14 @@ class DiaristRepository implements DiaristRepositoryInterface
             $document = $diarist->document ?? 'NAO CONTEM!';
             $phoneNumber = $diarist->phone_number ?? 'NAO CONTEM!';
             FinancialAccounts::create([
-                'description' => "Cadastro de diarista. Nome: {$diarist->name}, CPF: {$document}, CELULAR: {$phoneNumber}, FUNÇÃO: {$diaristGroup->function_name}. ",
+                'description' => "Cadastro de diarista.",
+                'description_data' => json_encode([
+                    'name' => $diarist->name,
+                    'document' => $document,
+                    'phone_number' => $phoneNumber,
+                    'function' => $diaristGroup->function_name,
+                    'date' => $diarist->date
+                ]),
                 'amount' => $arrayData['daily'],
                 'due_date' => (new \DateTime($arrayData['date']))->format('Y-m-d'). " 20:00:00",
                 'type' => TypeFinanceEnum::TO_DISCOUNT,
