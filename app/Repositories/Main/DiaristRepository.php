@@ -92,6 +92,7 @@ class DiaristRepository implements DiaristRepositoryInterface
     {
         $query = DB::table('main.diarist')
             ->join('main.diarist_group', 'diarist_group.id', '=', 'diarist.diarist_group_id')
+            ->join('main.team', 'team.id', '=', 'diarist.team_id')
             ->join('main.company', 'company.id', '=', 'diarist.company_id')
             ->whereBetween('date', [$arrayData['start_date'], $arrayData['end_date']])
             ->where(function($query) use ($arrayData) {
@@ -108,6 +109,7 @@ class DiaristRepository implements DiaristRepositoryInterface
         $query->select([
             'diarist.*',
             'company.name as company_name',
+            'team.name as team_name',
             'diarist_group.function_name as diarist_group_function_name', 'diarist_group.daily as diarist_group_daily'
         ]);
 
