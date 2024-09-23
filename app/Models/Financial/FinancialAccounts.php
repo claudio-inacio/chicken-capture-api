@@ -13,5 +13,6 @@ class FinancialAccounts extends Model
     protected $table = 'financial.financial_accounts';
 
     protected $fillable = ['id', 'description', 'amount', 'due_date', 'finished_data', 'type', 'credential_id',
-        'status_id', 'company_id', 'reference_id', 'table_reference_id', 'description_data', 'created_at', 'updated_at'];
+        'status_id', 'company_id', 'reference_id', 'table_reference_id', 'description_data', 'team_id',
+        'created_at', 'updated_at'];
 }
