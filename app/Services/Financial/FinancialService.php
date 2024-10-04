@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 
 class FinancialService
 {
-    public static function postAccountReceivable(float $value, int $credentialId, int $companyId, int $referenceId, int $tableId): array
+    public static function postAccountReceivable(float $value, int $credentialId, int $companyId, int $referenceId, int $tableId, int $teamId): array
     {
         try {
             $days = cal_days_in_month(CAL_GREGORIAN, date('m'), date('Y'));
@@ -32,6 +32,7 @@ class FinancialService
                 'type' => TypeFinanceEnum::TO_RECEIVE,
                 'credential_id' => $credentialId,
                 'company_id' => $companyId,
+                'team_id' => $teamId
             ]);
 
             return [

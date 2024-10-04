@@ -41,7 +41,8 @@ class CatchDailyService
             $totalValue = ($cancelled * $catchsConfiguration->cancellation_price) + $totalQuantity;
 
             $result = FinancialService::postAccountReceivable(
-                $totalValue, $arrayData['credential_id'], $arrayData['company_id'], $catchDaily->id, TableReferenceFinanceEnum::DAILY_CATCH
+                $totalValue, $arrayData['credential_id'], $arrayData['company_id'],
+                $catchDaily->id, TableReferenceFinanceEnum::DAILY_CATCH, $arrayData['team_id']
             );
 
             if(!$result['success']){
