@@ -187,14 +187,11 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
     public function generalReport(array $selectConfig, array $whereCriterious): array
     {
         $dateNow = Carbon::now()->format('Y-m-d');
-
-// Atualizar o status das contas financeiras
         FinancialAccounts::where('status_id', '<>', StatusEnum::DEFEATED)
             ->where('due_date', '<', $dateNow)
             ->whereNull('finished_data')
             ->update(['status_id' => StatusEnum::DEFEATED]);
 
-// Construir query com agrupamento por centro de custo
         $query = DB::table('financial.financial_accounts')
             ->join('financial.cost_center', 'cost_center.id', '=', 'financial_accounts.cost_center_id');
 
@@ -207,13 +204,11 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             )
             ->groupBy('cost_center.name', 'financial_accounts.status_id');
 
-// Aplicar filtros e critérios adicionais (se necessário)
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);
 
         $result = $query->get();
 
-// Processar o resultado para despesas e receitas
         $despesas = [];
         $receitas = [];
         $cancelados = [];
@@ -231,7 +226,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
                 default => 'desconhecido',
             };
 
-            // Classificar por status (despesas ou receitas)
+            // Classificar por status (despesas, receitas ou cancelados)
             if ($item->status_id === StatusEnum::DISCOUNT || $item->status_id === StatusEnum::TO_DISCOUNT) {
                 $despesas[] = [
                     'nome' => $item->cost_center_name,
@@ -256,10 +251,8 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             }
         }
 
-// Calcular lucro
         $lucro = $totalReceita - $totalDespesa;
 
-// Formatar o retorno
         return [
             'despesas' => $despesas,
             'receitas' => $receitas,
