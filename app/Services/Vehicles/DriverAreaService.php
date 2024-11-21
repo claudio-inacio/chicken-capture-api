@@ -3,6 +3,7 @@
 namespace App\Services\Vehicles;
 
 use App\Enum\Authentication\AccessGroupEnum;
+use App\Enum\Financial\CostCenterIdEnum;
 use App\Enum\Financial\StatusEnum;
 use App\Enum\Financial\TypeFinanceEnum;
 use App\Helpers\FormatHelper;
@@ -117,6 +118,7 @@ class DriverAreaService
             if (!$maintenance)
                 FinancialAccounts::create([
                     'description' => 'Despesas com manuntencao',
+                    'cost_center_id' => CostCenterIdEnum::VEICULO,
                     'amount' =>  $arrayData['maintenance_expenses'],
                     'type' => TypeFinanceEnum::TO_DISCOUNT,
                     'status_id' => StatusEnum::TO_DISCOUNT,
@@ -133,6 +135,7 @@ class DriverAreaService
             if (!$fuel)
                 FinancialAccounts::create([
                     'description' => 'Despesas com combustivel',
+                    'cost_center_id' => CostCenterIdEnum::VEICULO,
                     'amount' =>  $arrayData['total_supply_value'],
                     'type' => TypeFinanceEnum::TO_DISCOUNT,
                     'status_id' => StatusEnum::TO_DISCOUNT,

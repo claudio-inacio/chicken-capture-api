@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Main;
 
+use App\Enum\Financial\CostCenterIdEnum;
 use App\Enum\Financial\StatusEnum;
 use App\Enum\Financial\TableReferenceFinanceEnum;
 use App\Enum\Financial\TypeFinanceEnum;
@@ -174,6 +175,7 @@ class DiaristRepository implements DiaristRepositoryInterface
             $phoneNumber = $diarist->phone_number ?? 'NAO CONTEM!';
             FinancialAccounts::create([
                 'description' => "Cadastro de diarista.",
+                'cost_center_id' => CostCenterIdEnum::DIARIA,
                 'description_data' => json_encode([
                     'name' => $diarist->name,
                     'document' => $document,

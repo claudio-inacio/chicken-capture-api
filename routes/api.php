@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\Catch\CatchDailyController;
 use App\Http\Controllers\Api\Catch\CatchCancelledController;
 use App\Http\Controllers\Api\Catch\CatchConfigurationController;
 
+use App\Http\Controllers\Api\Financial\CostCenterController;
 use App\Http\Controllers\Api\Main\ContractingCompanyController;
 use App\Http\Controllers\Api\Main\IntegratedController;
 use App\Http\Controllers\Api\Main\UnitsController;
@@ -138,9 +139,16 @@ Route::group(['middleware' => ['authJwt']], function (){
     Route::put('/financial/financial-accounts', [FinancialAccountsController::class, 'update']);
     Route::put('/financial/financial-accounts/enable', [FinancialAccountsController::class, 'enable']);
     Route::get('/financial/financial-accounts/analytic', [FinancialAccountsController::class, 'analytic']);
+    Route::get('/financial/financial-accounts/general-report', [FinancialAccountsController::class, 'generalReport']);
 
     Route::post('/financial/monthly-closing-reports', [MonthlyClosingReportsController::class, 'register']);
     Route::get('/financial/monthly-closing-reports', [MonthlyClosingReportsController::class, 'list']);
+
+    Route::post('/financial/cost-center', [CostCenterController::class, 'register']);
+    Route::get('/financial/cost-center', [CostCenterController::class, 'list']);
+    Route::put('/financial/cost-center', [CostCenterController::class, 'update']);
+    Route::put('/financial/cost-center/enable', [CostCenterController::class, 'enable']);
+
 
     ################################## REGION ############################################
     Route::get('/region/city', [CityController::class, 'list']);

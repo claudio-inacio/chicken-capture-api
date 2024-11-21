@@ -27,7 +27,8 @@ class FinancialAccountsController extends Controller
             'amount' => 'required',
             'due_date' => 'required',
             'type' => 'required',
-            'status_id' => 'required'
+            'status_id' => 'required',
+            'cost_center_id' => 'required'
         ]);
 
         if ($request->status_id == StatusEnum::DISCOUNT){
@@ -90,5 +91,16 @@ class FinancialAccountsController extends Controller
         ]);
 
         return FinancialService::analytics($request->all(), $request->user());
+    }
+
+    public function generalReport(Request $request){
+        $whereCriterious = $request->where ?? false;
+        $selectConfig = $request->selectConfig ?? false;
+        if (!$selectConfig)
+            return response()->json(['message' => 'Select config is required!!!'], 422);
+        if (!$whereCriterious)
+            return response()->json(['message' => 'Where config is required!!!'], 422);
+
+        return response()->json($this->financialAccountsRepository->generalReport($selectConfig, $whereCriterious));
     }
 }

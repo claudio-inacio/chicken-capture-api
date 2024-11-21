@@ -13,6 +13,7 @@ use App\Models\Catch\CatchDaily;
 use App\Models\Financial\FinancialAccounts;
 use App\Models\Main\Units;
 use App\Services\ResponseService;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
@@ -40,7 +41,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             ->get()
             ->toarray();
 
-        foreach ($financialAccounts as $financialAccount){
+        foreach ($financialAccounts as $financialAccount) {
             FinancialAccounts::whereId($financialAccount['id'])->update(['status_id' => StatusEnum::DEFEATED]);
         }
 
@@ -50,9 +51,9 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             ->join('main.team', 'team.id', '=', 'financial_accounts.team_id')
             ->join('authentication.person', 'person.id', '=', 'credential.person_id');
 
-        foreach ($whereCriterious as $criterious){
-            if(str_contains($criterious['field'], 'table_reference_id')){
-                if ($criterious['value'] == TableReferenceFinanceEnum::DAILY_CATCH){
+        foreach ($whereCriterious as $criterious) {
+            if (str_contains($criterious['field'], 'table_reference_id')) {
+                if ($criterious['value'] == TableReferenceFinanceEnum::DAILY_CATCH) {
                     $query->join('catch.catch_daily', 'catch_daily.id', '=', 'financial_accounts.reference_id');
                 }
             }
@@ -79,10 +80,10 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
         foreach ($result as $key => $item) {
             $item->description_data = json_decode($item->description_data);
 
-            if (!key_exists(TypeFinanceEnum::TO_RECEIVE, $arrayTotalValue)){
+            if (!key_exists(TypeFinanceEnum::TO_RECEIVE, $arrayTotalValue)) {
                 $arrayTotalValue[TypeFinanceEnum::TO_RECEIVE] = 0;
             }
-            if (!key_exists(TypeFinanceEnum::TO_DISCOUNT, $arrayTotalValue)){
+            if (!key_exists(TypeFinanceEnum::TO_DISCOUNT, $arrayTotalValue)) {
                 $arrayTotalValue[TypeFinanceEnum::TO_DISCOUNT] = 0;
             }
 
@@ -117,13 +118,13 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
         return [
             'data' => $result,
             'total' => $total,
-            'value_to_receive' => "R$ ".FormatHelper::decimalToBr($arrayStatus[StatusEnum::TO_RECEIVE] ?? 0),
-            'value_to_discount' => "R$ ".FormatHelper::decimalToBr($arrayStatus[StatusEnum::TO_DISCOUNT] ?? 0),
-            'value_receive' => "R$ ".FormatHelper::decimalToBr($arrayStatus[StatusEnum::RECEIVE] ?? 0),
-            'value_discount' => "R$ ".FormatHelper::decimalToBr($arrayStatus[StatusEnum::DISCOUNT] ?? 0),
-            'value_defeated' => "R$ ".FormatHelper::decimalToBr($arrayStatus[StatusEnum::DEFEATED] ?? 0),
-            'value_total_receive' => "R$ ".FormatHelper::decimalToBr($arrayTotalValue[TypeFinanceEnum::TO_RECEIVE] ?? 0),
-            'value_total_discount' => "R$ ".FormatHelper::decimalToBr($arrayTotalValue[TypeFinanceEnum::TO_DISCOUNT] ?? 0),
+            'value_to_receive' => "R$ " . FormatHelper::decimalToBr($arrayStatus[StatusEnum::TO_RECEIVE] ?? 0),
+            'value_to_discount' => "R$ " . FormatHelper::decimalToBr($arrayStatus[StatusEnum::TO_DISCOUNT] ?? 0),
+            'value_receive' => "R$ " . FormatHelper::decimalToBr($arrayStatus[StatusEnum::RECEIVE] ?? 0),
+            'value_discount' => "R$ " . FormatHelper::decimalToBr($arrayStatus[StatusEnum::DISCOUNT] ?? 0),
+            'value_defeated' => "R$ " . FormatHelper::decimalToBr($arrayStatus[StatusEnum::DEFEATED] ?? 0),
+            'value_total_receive' => "R$ " . FormatHelper::decimalToBr($arrayTotalValue[TypeFinanceEnum::TO_RECEIVE] ?? 0),
+            'value_total_discount' => "R$ " . FormatHelper::decimalToBr($arrayTotalValue[TypeFinanceEnum::TO_DISCOUNT] ?? 0),
         ];
     }
 
@@ -174,5 +175,93 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
         } catch (Exception $e) {
             return ResponseService::internalServerError('Falha Ativar/Desativar conta', $e->getMessage());
         }
+    }
+
+    public function generalReport(array $selectConfig, array $whereCriterious): array
+    {
+        $dateNow = Carbon::now()->format('Y-m-d');
+
+// Atualizar o status das contas financeiras
+        FinancialAccounts::where('status_id', '<>', StatusEnum::DEFEATED)
+            ->where('due_date', '<', $dateNow)
+            ->whereNull('finished_data')
+            ->update(['status_id' => StatusEnum::DEFEATED]);
+
+// Construir query com agrupamento por centro de custo
+        $query = DB::table('financial.financial_accounts')
+            ->join('financial.cost_center', 'cost_center.id', '=', 'financial_accounts.cost_center_id');
+
+        $total = $query->count('financial_accounts.id');
+
+        $query->select(
+                'cost_center.name as cost_center_name',
+                'financial_accounts.status_id',
+                DB::raw('SUM(financial_accounts.amount) as total_amount')
+            )
+            ->groupBy('cost_center.name', 'financial_accounts.status_id');
+
+// Aplicar filtros e critérios adicionais (se necessário)
+        $whereFactory = new WhereFactory();
+        $query = $whereFactory->byArray($query, $whereCriterious);
+
+        $result = $query->get();
+
+// Processar o resultado para despesas e receitas
+        $despesas = [];
+        $receitas = [];
+        $cancelados = [];
+        $totalReceita = 0;
+        $totalDespesa = 0;
+        $totalCancelados = 0 ;
+
+        foreach ($result as $item) {
+            $statusName = match ($item->status_id) {
+                StatusEnum::TO_RECEIVE => 'a receber',
+                StatusEnum::TO_DISCOUNT => 'a descontar',
+                StatusEnum::RECEIVE => 'recebido',
+                StatusEnum::DISCOUNT => 'descontado',
+                StatusEnum::DEFEATED => 'cancelado',
+                default => 'desconhecido',
+            };
+
+            // Classificar por status (despesas ou receitas)
+            if ($item->status_id === StatusEnum::DISCOUNT || $item->status_id === StatusEnum::TO_DISCOUNT) {
+                $despesas[] = [
+                    'nome' => $item->cost_center_name,
+                    'valor' => $item->total_amount,
+                    'status' => $statusName,
+                ];
+                $totalDespesa += $item->total_amount;
+            } elseif ($item->status_id === StatusEnum::RECEIVE || $item->status_id === StatusEnum::TO_RECEIVE) {
+                $receitas[] = [
+                    'nome' => $item->cost_center_name,
+                    'valor' => $item->total_amount,
+                    'status' => $statusName,
+                ];
+                $totalReceita += $item->total_amount;
+            } elseif ($item->status_id === StatusEnum::DEFEATED) {
+                $cancelados[] = [
+                    'nome' => $item->cost_center_name,
+                    'valor' => $item->total_amount,
+                    'status' => $statusName,
+                ];
+                $totalCancelados += $item->total_amount;
+            }
+        }
+
+// Calcular lucro
+        $lucro = $totalReceita - $totalDespesa;
+
+// Formatar o retorno
+        return [
+            'despesas' => $despesas,
+            'receitas' => $receitas,
+            'canceladas' => $cancelados,
+            'total_receita' => $totalReceita,
+            'total_despesa' => $totalDespesa,
+            'total_canceladas' => $totalCancelados,
+            'lucro' => $lucro,
+            'total_registros_calculados' => $total,
+        ];
     }
 }

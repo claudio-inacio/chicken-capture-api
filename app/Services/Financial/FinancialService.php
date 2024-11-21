@@ -2,6 +2,7 @@
 
 namespace App\Services\Financial;
 
+use App\Enum\Financial\CostCenterIdEnum;
 use App\Enum\Financial\StatusEnum;
 use App\Enum\Financial\TableReferenceFinanceEnum;
 use App\Enum\Financial\TypeFinanceEnum;
@@ -24,6 +25,7 @@ class FinancialService
 
             FinancialAccounts::create([
                 'description' => 'Apanha Diária',
+                'cost_center_id' => CostCenterIdEnum::APANHAS,
                 'amount' => $value,
                 'due_date' => date('Y-m') . '-' . $day,
                 'reference_id' => $referenceId,
@@ -100,6 +102,7 @@ class FinancialService
 
             FinancialAccounts::create([
                 'description' => 'Despesas com manuntencao',
+                'cost_center_id' => CostCenterIdEnum::VEICULO,
                 'amount' => FormatHelper::brlTodecimal($arrayRequest['maintenance_expenses']),
                 'type' => TypeFinanceEnum::TO_DISCOUNT,
                 'status_id' => StatusEnum::TO_DISCOUNT,
@@ -147,6 +150,7 @@ class FinancialService
 
             FinancialAccounts::create([
                 'description' => 'Despesas com combustivel',
+                'cost_center_id' => CostCenterIdEnum::VEICULO,
                 'amount' => FormatHelper::brlTodecimal($arrayRequest['total_supply_value']),
                 'type' => TypeFinanceEnum::TO_DISCOUNT,
                 'status_id' => StatusEnum::TO_DISCOUNT,
