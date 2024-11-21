@@ -16,6 +16,7 @@ use App\Services\ResponseService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use JetBrains\PhpStorm\ArrayShape;
 
 class FinancialAccountsRepository implements FinancialAccountsRepositoryInterface
 {
@@ -32,6 +33,9 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
     /**
      * @throws Exception
      */
+    #[ArrayShape(['data' => "mixed", 'total' => "int", 'value_to_receive' => "string", 'value_to_discount' => "string",
+        'value_receive' => "string", 'value_discount' => "string", 'value_defeated' => "string",
+        'value_total_receive' => "string", 'value_total_discount' => "string"])]
     public function findAll($selectConfig, array $whereCriterious): array
     {
         $dateNow = (new \DateTime(now()))->format('Y-m-d');
@@ -177,6 +181,9 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
         }
     }
 
+    #[ArrayShape(['despesas' => "array", 'receitas' => "array", 'canceladas' => "array", 'total_receita' => "mixed",
+        'total_despesa' => "mixed", 'total_canceladas' => "mixed", 'lucro' => "mixed",
+        'total_registros_calculados' => "int"])]
     public function generalReport(array $selectConfig, array $whereCriterious): array
     {
         $dateNow = Carbon::now()->format('Y-m-d');
