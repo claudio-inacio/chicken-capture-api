@@ -69,6 +69,8 @@ class CatchDailyRepository implements CatchDailyRespositoryInterface
 
         $totalValueCatch = 0;
         $totalValueCatchCancelled = 0;
+        $qtdCatch = 0;
+        $qtdCatchCancelled = 0;
 
         foreach ($result as $item) {
             $catchConfiguration = $catchConfigurations->get($item->catch_type_id);
@@ -76,6 +78,8 @@ class CatchDailyRepository implements CatchDailyRespositoryInterface
 
             $totalCancelled = $cancelleds->sum('quantity');
             $totalCatch = $item->quantity - $totalCancelled;
+            $qtdCatch = $qtdCatch + $totalCatch;
+            $qtdCatchCancelled = $qtdCatchCancelled + $totalCancelled;
 
             $totalValueCatchCancelled += $catchConfiguration->cancellation_price * $totalCancelled;
             $totalValueCatch += $catchConfiguration->catch_price * $totalCatch;
@@ -86,6 +90,8 @@ class CatchDailyRepository implements CatchDailyRespositoryInterface
         return [
             'data' => $result->toArray(),
             'total' => $total,
+            'qtd_apanhas' => $qtdCatch,
+            'qtd_apanhas_canceladas' => $qtdCatchCancelled,
             'total_value_catch' => "R$ " . FormatHelper::decimalToBr($totalValueCatch),
             'total_value_catch_cancelled' => "R$ " . FormatHelper::decimalToBr($totalValueCatchCancelled),
             'total_value' => "R$ " . FormatHelper::decimalToBr($totalValueCatch + $totalValueCatchCancelled)
