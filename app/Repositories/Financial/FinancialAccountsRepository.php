@@ -143,6 +143,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
     public function create(array $value): \Illuminate\Http\JsonResponse
     {
         $value['due_date'] = FormatHelper::dateToUsTimeStamp($value['due_date']);
+        $value['amount'] = FormatHelper::moneyToUS($value['amount']);
 
         try {
             if ($value['status_id'] != StatusEnum::DISCOUNT) {

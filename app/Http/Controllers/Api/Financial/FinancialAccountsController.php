@@ -28,6 +28,8 @@ class FinancialAccountsController extends Controller
             'due_date' => 'required',
             'type' => 'required',
             'status_id' => 'required',
+            'reference_id' => 'required',
+            'table_reference_id' => 'required',
             'cost_center_id' => 'required'
         ]);
 
