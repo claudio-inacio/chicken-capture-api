@@ -53,6 +53,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             ->join('main.company', 'company.id', '=', 'financial_accounts.company_id')
             ->join('authentication.credential', 'credential.id', '=', 'financial_accounts.credential_id')
             ->join('main.team', 'team.id', '=', 'financial_accounts.team_id')
+            ->join('financial.cost_center', 'cost_center.id', '=', 'financial_accounts.cost_center_id')
             ->join('authentication.person', 'person.id', '=', 'credential.person_id');
 
         foreach ($whereCriterious as $criterious) {
@@ -75,7 +76,8 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             'credential.document as credential_document',
             'person.name as credential_name',
             'company.name as company_name',
-            'team.name as team_name'
+            'team.name as team_name',
+            'cost_center.name as cost_center_name',
         ]);
 
         $result = $query->get()->toArray();
