@@ -201,10 +201,10 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
         $total = $query->count('financial_accounts.id');
 
         $query->select(
-                'cost_center.name as cost_center_name',
-                'financial_accounts.status_id',
-                DB::raw('SUM(financial_accounts.amount) as total_amount')
-            )
+            'cost_center.name as cost_center_name',
+            'financial_accounts.status_id',
+            DB::raw('SUM(financial_accounts.amount) as total_amount')
+        )
             ->groupBy('cost_center.name', 'financial_accounts.status_id');
 
         $whereFactory = new WhereFactory();
@@ -212,59 +212,75 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
 
         $result = $query->get();
 
-        $despesas = [];
-        $receitas = [];
-        $cancelados = [];
+// Inicializar centros de custo com valores padrão
+        $defaultStatuses = [
+            'a_pagar' => ['status' => 'a pagar', 'valor' => 0],
+            'a_receber' => ['status' => 'a receber', 'valor' => 0],
+            'pago' => ['status' => 'pago', 'valor' => 0],
+            'cancelado' => ['status' => 'cancelado', 'valor' => 0],
+        ];
+
+        $response = [];
         $totalReceita = 0;
         $totalDespesa = 0;
-        $totalCancelados = 0 ;
+        $totalCancelados = 0;
 
+// Processar resultados
         foreach ($result as $item) {
-            $statusName = match ($item->status_id) {
-                StatusEnum::TO_RECEIVE => 'a receber',
-                StatusEnum::TO_DISCOUNT => 'a descontar',
-                StatusEnum::RECEIVE => 'recebido',
-                StatusEnum::DISCOUNT => 'descontado',
+            $costCenterName = $item->cost_center_name;
+            $statusKey = match ($item->status_id) {
+                StatusEnum::TO_RECEIVE => 'a_receber',
+                StatusEnum::TO_DISCOUNT => 'a_pagar',
+                StatusEnum::RECEIVE => 'pago',
+                StatusEnum::DISCOUNT => 'pago',
                 StatusEnum::DEFEATED => 'cancelado',
                 default => 'desconhecido',
             };
 
-            // Classificar por status (despesas, receitas ou cancelados)
-            if ($item->status_id === StatusEnum::DISCOUNT || $item->status_id === StatusEnum::TO_DISCOUNT) {
-                $despesas[] = [
-                    'nome' => $item->cost_center_name,
-                    'valor' => $item->total_amount,
-                    'status' => $statusName,
-                ];
+            if (!isset($response[$costCenterName])) {
+                $response[$costCenterName] = [];
+            }
+
+            $response[$costCenterName][$statusKey] = [
+                'nome' => $costCenterName,
+                'status' => $statusKey,
+                'valor' => number_format($item->total_amount, 2, ',', '.'),
+            ];
+
+            // Somatórios
+            if ($statusKey === 'a_pagar') {
                 $totalDespesa += $item->total_amount;
-            } elseif ($item->status_id === StatusEnum::RECEIVE || $item->status_id === StatusEnum::TO_RECEIVE) {
-                $receitas[] = [
-                    'nome' => $item->cost_center_name,
-                    'valor' => $item->total_amount,
-                    'status' => $statusName,
-                ];
+            } elseif ($statusKey === 'a_receber') {
                 $totalReceita += $item->total_amount;
-            } elseif ($item->status_id === StatusEnum::DEFEATED) {
-                $cancelados[] = [
-                    'nome' => $item->cost_center_name,
-                    'valor' => $item->total_amount,
-                    'status' => $statusName,
-                ];
+            } elseif ($statusKey === 'cancelado') {
                 $totalCancelados += $item->total_amount;
+            }
+        }
+
+// Garantir objetos com valores zerados para centros de custo sem dados
+        foreach ($response as $costCenterName => &$statuses) {
+            foreach ($defaultStatuses as $key => $default) {
+                if (!isset($statuses[$key])) {
+                    $statuses[$key] = [
+                        'nome' => $costCenterName,
+                        'status' => $default['status'],
+                        'valor' => '0',
+                    ];
+                }
             }
         }
 
         $lucro = $totalReceita - $totalDespesa;
 
-        return [
-            'despesas' => $despesas,
-            'receitas' => $receitas,
-            'canceladas' => $cancelados,
-            'total_receita' => $totalReceita,
-            'total_despesa' => $totalDespesa,
-            'total_canceladas' => $totalCancelados,
-            'lucro' => $lucro,
+// Adiciona os totais gerais no retorno
+        $response['totais'] = [
+            'total_receita' => number_format($totalReceita, 2, ',', '.'),
+            'total_despesa' => number_format($totalDespesa, 2, ',', '.'),
+            'total_canceladas' => number_format($totalCancelados, 2, ',', '.'),
+            'lucro' => number_format($lucro, 2, ',', '.'),
             'total_registros_calculados' => $total,
         ];
+
+        return $response;
     }
 }
