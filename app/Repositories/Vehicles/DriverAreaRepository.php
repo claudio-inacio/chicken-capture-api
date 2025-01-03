@@ -29,7 +29,7 @@ class DriverAreaRepository implements DriverAreaRepositoryInterface
     {
         $query = DB::table('vehicles.driver_area')
             ->join('authentication.credential', 'credential.id', '=', 'driver_area.credential_id')
-            ->join('vehicles.vehicle', 'vehicle.id', '=', 'driver_area.vehicles')
+            ->join('vehicles.vehicle', 'vehicle.id', '=', 'driver_area.vehicle_id')
             ->join('main.company', 'company.id', '=', 'driver_area.company_id');
 
         $whereFactory = new WhereFactory();

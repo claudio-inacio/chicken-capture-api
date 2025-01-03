@@ -52,7 +52,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
         $query = DB::table('financial.financial_accounts')
             ->join('main.company', 'company.id', '=', 'financial_accounts.company_id')
             ->join('authentication.credential', 'credential.id', '=', 'financial_accounts.credential_id')
-            ->join('main.team', 'team.id', '=', 'financial_accounts.team_id')
+            ->leftJoin('main.team', 'team.id', '=', 'financial_accounts.team_id')
             ->join('financial.cost_center', 'cost_center.id', '=', 'financial_accounts.cost_center_id')
             ->join('authentication.person', 'person.id', '=', 'credential.person_id');
 
