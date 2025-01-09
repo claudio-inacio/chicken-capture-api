@@ -1,6 +1,8 @@
 <?php
 namespace App\Interfaces\Main;
 
+use App\Models\Credential;
+
 interface DiaristRepositoryInterface
 {
     public function getAll();

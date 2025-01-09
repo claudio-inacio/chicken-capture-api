@@ -63,6 +63,14 @@ class VehiclesRepository implements VehiclesRepositoryInterface
                 ->first();
 
             if ($vehicle) return ResponseService::businessError('Veiculo ja cadastrado no sistema!');
+
+            $verifyDriver = Vehicle::where('motorista_credential_id', $value['motorista_credential_id'])->first();
+            if ($verifyDriver){
+                return ResponseService::businessError(
+                    "Esse motorista ja tem um veiculo cadastrado para ele. Veiculo: $verifyDriver->name, Placa: $verifyDriver->plate_number"
+                );
+            }
+
             Vehicle::create($value);
             return ResponseService::success204();
         } catch (\Exception $e){
@@ -80,6 +88,13 @@ class VehiclesRepository implements VehiclesRepositoryInterface
                 ->first();
 
             if ($vehicle) return ResponseService::businessError('Veiculo ja cadastrado no sistema!');
+
+            $verifyDriver = Vehicle::where('motorista_credential_id', $data['motorista_credential_id'])->first();
+            if ($verifyDriver){
+                return ResponseService::businessError(
+                    "Esse motorista ja tem um veiculo cadastrado para ele. Veiculo: $verifyDriver->name, Placa: $verifyDriver->plate_number"
+                );
+            }
 
             Vehicle::whereId($id)->update($data);
             return ResponseService::success204();

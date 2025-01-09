@@ -2,11 +2,13 @@
 
 namespace App\Repositories\Authentication;
 
+use App\Enum\Authentication\AccessGroupEnum;
 use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
 use App\Interfaces\Authentication\CredentialRepositoryInterface;
 use App\Models\Credential;
 use Illuminate\Support\Facades\DB;
+use JetBrains\PhpStorm\ArrayShape;
 
 class CredentialRepository implements CredentialRepositoryInterface
 {
@@ -39,6 +41,53 @@ class CredentialRepository implements CredentialRepositoryInterface
         return  [
             'data' => $query->get()->toArray(),
             'total' => $total,
+        ];
+    }
+
+    #[ArrayShape(['data' => "mixed", 'total' => "int"])]
+    public function listAvailableDriver(Credential $credential): array
+    {
+        $query = DB::table('authentication.credential')
+            ->join('authentication.person', 'person.id', '=', 'credential.person_id')
+            ->leftJoin('main.team', 'credential.id', '=', 'team.motorista_credential_id')
+            ->join('main.company', 'company.id', '=', 'credential.company_id')
+            ->join('main.company_group', 'company_group.id', '=', 'person.company_group_id');
+
+        // Adicionando filtro para restringir por empresa, se necessário
+        if ($credential->access_group_id != AccessGroupEnum::DEVELOPER && $credential->access_group_id != AccessGroupEnum::ADMINISTRATIVE) {
+            $query->where('credential.company_id', $credential->company_id);
+        }
+
+        // Subquery para filtrar diaristas que não têm seu ID presente em team.motorista_credential_id
+        $subquery = DB::table('main.team')
+            ->select('motorista_credential_id')
+            ->whereNotNull('motorista_credential_id');
+
+        // Filtro para excluir diaristas presentes na subquery
+        $query->whereNotIn('credential.id', $subquery);
+
+        // Filtrar apenas diaristas do grupo MOTORISTA
+        $query->where('credential.access_group_id', AccessGroupEnum::DRIVER);
+
+        // Contar o total antes de adicionar o filtro 'enabled'
+        $total = $query->count('credential.id');
+
+        // Filtrar por diaristas habilitados e selecionar as colunas necessárias
+        $query->where('person.enabled', true)
+            ->select([
+                'credential.*',
+                'person.*',
+                'team.name as team_name',
+                'company_group.name as company_group_name',
+                'company.name as company_name',
+            ]);
+
+        // Obter os resultados
+        $result = $query->get()->toArray();
+
+        return [
+            'data' => $result,
+            'total' => $total
         ];
     }
 

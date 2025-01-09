@@ -8,6 +8,7 @@ use App\Enum\Financial\TableReferenceFinanceEnum;
 use App\Enum\Financial\TypeFinanceEnum;
 use App\Helpers\FormatHelper;
 use App\Models\Financial\FinancialAccounts;
+use App\Models\Main\Team;
 use App\Services\ResponseService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -78,7 +79,7 @@ class FinancialService
         }
     }
 
-    public static function saveMaintenanceFinance(array $arrayRequest, int $referenceId): array
+    public static function saveMaintenanceFinance(array $arrayRequest, int $referenceId, Team $team): array
     {
         DB::beginTransaction();
         try {
@@ -111,6 +112,7 @@ class FinancialService
                 'due_date' => now(),
                 'credential_id' => $arrayRequest['credential_id'],
                 'company_id' => $arrayRequest['company_id'],
+                'team_id' => $team->id
             ]);
             DB::commit();
             return [
@@ -126,7 +128,7 @@ class FinancialService
         }
     }
 
-    public static function saveFuelFinance(array $arrayRequest, int $referenceId): array
+    public static function saveFuelFinance(array $arrayRequest, int $referenceId, Team $team): array
     {
         DB::beginTransaction();
         try {
@@ -159,6 +161,7 @@ class FinancialService
                 'due_date' => now(),
                 'credential_id' => $arrayRequest['credential_id'],
                 'company_id' => $arrayRequest['company_id'],
+                'team_id' => $team->id
             ]);
             DB::commit();
             return [
