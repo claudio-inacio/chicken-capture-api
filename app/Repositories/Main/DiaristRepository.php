@@ -31,7 +31,7 @@ class DiaristRepository implements DiaristRepositoryInterface
     {
         $query = DB::table('main.diarist')
             ->join('main.diarist_group', 'diarist_group.id', '=', 'diarist.diarist_group_id')
-            ->join('main.team', 'team.id', '=', 'diarist.team_id')
+            ->leftJoin('main.team', 'team.id', '=', 'diarist.team_id')
             ->join('main.company', 'company.id', '=', 'diarist.company_id');
 
         $whereFactory = new WhereFactory();
@@ -99,7 +99,7 @@ class DiaristRepository implements DiaristRepositoryInterface
     {
         $query = DB::table('main.diarist')
             ->join('main.diarist_group', 'diarist_group.id', '=', 'diarist.diarist_group_id')
-            ->join('main.team', 'team.id', '=', 'diarist.team_id')
+            ->leftJoin('main.team', 'team.id', '=', 'diarist.team_id')
             ->join('main.company', 'company.id', '=', 'diarist.company_id')
             ->join('financial.financial_accounts', 'financial_accounts.reference_id', '=', 'diarist.id')
             ->where('financial_accounts.table_reference_id', TableReferenceFinanceEnum::DIARIST)

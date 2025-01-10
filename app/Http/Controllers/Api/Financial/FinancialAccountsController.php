@@ -30,7 +30,9 @@ class FinancialAccountsController extends Controller
             'status_id' => 'required',
             'reference_id' => 'required',
             'table_reference_id' => 'required',
-            'cost_center_id' => 'required'
+            'cost_center_id' => 'required',
+            'proof_of_payment' => 'required',
+            'status_proof_of_payment' => 'required'
         ]);
 
         if ($request->status_id == StatusEnum::DISCOUNT){
@@ -41,7 +43,13 @@ class FinancialAccountsController extends Controller
         $arrayData['company_id'] = $request->user()->company_id;
         $arrayData['credential_id'] = $request->user()->id;
 
-        return $this->financialAccountsRepository->create($arrayData);
+        unset($arrayData['proof_of_payment'], $arrayData['status_proof_of_payment'], $arrayData['observation_proof_of_payment']);
+
+        $paymentData['proof_of_payment'] = $request->proof_of_payment;
+        $paymentData['status_proof_of_payment'] = $request->status_proof_of_payment;
+        $paymentData['observation_proof_of_payment'] = $request->observation_proof_of_payment ?? null;
+
+        return $this->financialAccountsRepository->create($arrayData, $paymentData);
     }
 
     public function list(Request $request){
@@ -72,9 +80,20 @@ class FinancialAccountsController extends Controller
             'financial_accounts_id' => 'required',
             'table_reference_id' => 'required',
             'reference_id' => 'required',
+            'proof_of_payment' => 'required',
+            'status_proof_of_payment' => 'required'
         ]);
 
-        return $this->financialAccountsRepository->update($request->financial_accounts_id, $request->all());
+        $arrayData = $request->all();
+        $arrayData['credential_id'] = $request->user()->id;
+
+        unset($arrayData['proof_of_payment'], $arrayData['status_proof_of_payment'], $arrayData['observation_proof_of_payment']);
+
+        $paymentData['proof_of_payment'] = $request->proof_of_payment;
+        $paymentData['status_proof_of_payment'] = $request->status_proof_of_payment;
+        $paymentData['observation_proof_of_payment'] = $request->observation_proof_of_payment ?? null;
+
+        return $this->financialAccountsRepository->update($request->financial_accounts_id, $arrayData, $paymentData);
     }
 
     public function enable(Request $request){

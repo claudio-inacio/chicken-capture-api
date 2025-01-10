@@ -11,8 +11,10 @@ use App\Helpers\FormatHelper;
 use App\Interfaces\Financial\FinancialAccountsRepositoryInterface;
 use App\Models\Catch\CatchDaily;
 use App\Models\Financial\FinancialAccounts;
+use App\Models\Financial\ProofOfPayment;
 use App\Models\Main\Units;
 use App\Services\ResponseService;
+use App\Services\Upload\UploadBase64Service;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -140,36 +142,59 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
         return FinancialAccounts::where('id', $id)->get();
     }
 
-    public function create(array $value): \Illuminate\Http\JsonResponse
+    /**
+     * @throws Exception
+     */
+    public function create(array $arrayData, array $paymentData): \Illuminate\Http\JsonResponse
     {
-        $value['due_date'] = FormatHelper::dateToUsTimeStamp($value['due_date']);
-        $value['amount'] = FormatHelper::moneyToUS($value['amount']);
+        $arrayData['due_date'] = FormatHelper::dateToUsTimeStamp($arrayData['due_date']);
+        $arrayData['amount'] = FormatHelper::moneyToUS($arrayData['amount']);
 
         try {
-            if ($value['status_id'] != StatusEnum::DISCOUNT) {
-                unset($value['finished_data']);
+            DB::beginTransaction();
+            if ($arrayData['status_id'] != StatusEnum::DISCOUNT) {
+                unset($arrayData['finished_data']);
             }
-            FinancialAccounts::create($value);
+            $financialAccount = FinancialAccounts::create($arrayData);
+
+            $upload = UploadBase64Service::uploadProofPayment($paymentData, $arrayData['credential_id'], $financialAccount);
+            if (!$upload['success']) {
+                DB::rollBack();
+                return ResponseService::businessError($upload['message'], $upload['error']);
+            }
+
+            DB::commit();
             return ResponseService::success204();
         } catch (Exception $e) {
+            DB::rollBack();
             return ResponseService::internalServerError('Falha em registrar conta', $e->getMessage());
         }
     }
 
-    public function update(int $id, array $data): \Illuminate\Http\JsonResponse
+    public function update(int $id, array $data, array $paymentData): \Illuminate\Http\JsonResponse
     {
         $data['due_date'] = FormatHelper::dateToUsTimeStamp($data['due_date']);
         unset($data['financial_accounts_id']);
         try {
+            DB::beginTransaction();
             if ($data['table_reference_id'] == TableReferenceFinanceEnum::DAILY_CATCH) {
                 if (!empty($data['finished_data'])) {
                     CatchDaily::whereId($data['reference_id'])->update(['received' => true]);
                 }
             }
 
-            FinancialAccounts::whereId($id)->update($data);
+            $financialAccount = FinancialAccounts::create($data);
+
+            $upload = UploadBase64Service::uploadProofPayment($paymentData, $data['credential_id'], $financialAccount);
+            if (!$upload['success']) {
+                DB::rollBack();
+                return ResponseService::businessError($upload['message'], $upload['error']);
+            }
+
+            DB::commit();
             return ResponseService::success204();
         } catch (Exception $e) {
+            DB::rollBack();
             return ResponseService::internalServerError('Falha em alterar conta', $e->getMessage());
         }
     }

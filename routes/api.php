@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Catch\CatchCancelledController;
 use App\Http\Controllers\Api\Catch\CatchConfigurationController;
 
 use App\Http\Controllers\Api\Financial\CostCenterController;
+use App\Http\Controllers\Api\Financial\ProofOfPaymentController;
 use App\Http\Controllers\Api\Main\ContractingCompanyController;
 use App\Http\Controllers\Api\Main\IntegratedController;
 use App\Http\Controllers\Api\Main\UnitsController;
@@ -149,6 +150,9 @@ Route::group(['middleware' => ['authJwt']], function (){
     Route::get('/financial/cost-center', [CostCenterController::class, 'list']);
     Route::put('/financial/cost-center', [CostCenterController::class, 'update']);
     Route::put('/financial/cost-center/enable', [CostCenterController::class, 'enable']);
+
+    Route::post('/financial/proof-payment', [ProofOfPaymentController::class, 'create']);
+    Route::get('/financial/proof-payment', [ProofOfPaymentController::class, 'list']);
 
     ################################## REGION ############################################
     Route::get('/region/city', [CityController::class, 'list']);

@@ -50,7 +50,10 @@ class CatchConfigurationController extends Controller
             'catchs_configuration_id' => 'required'
         ]);
 
-        return $this->catchsConfigurationRespository->update($request->catchs_configuration_id, $request->all());
+        $arrayData = $request->all();
+        $arrayData['company_id'] = $request->user()->company_id;
+
+        return $this->catchsConfigurationRespository->update($request->catchs_configuration_id, $arrayData);
     }
 
     public function enable(Request $request){
