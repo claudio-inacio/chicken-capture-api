@@ -65,7 +65,8 @@ class TeamController extends Controller
             'default_unit_id' => 'required',
             'collectors' => 'required',
             'contracting_company_id' => 'required',
-            'team_id' => 'required'
+            'team_id' => 'required',
+            'driver_credential_id' => 'required'
         ]);
 
         $arrayData = $request->all();
