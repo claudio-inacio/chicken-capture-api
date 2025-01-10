@@ -26,6 +26,8 @@ class VehiclesRepository implements VehiclesRepositoryInterface
     {
         $query = DB::table('vehicles.vehicle')
             ->join('main.company', 'company.id', '=', 'vehicle.company_id')
+            ->join('authentication.credential', 'credential.id', '=', 'vehicle.motorista_credential_id')
+            ->join('authentication.person', 'person.id', '=', 'credential.person_id')
             ->join('main.units', 'units.id', '=', 'vehicle.unit_id');
 
         $whereFactory = new WhereFactory();
@@ -37,6 +39,7 @@ class VehiclesRepository implements VehiclesRepositoryInterface
         $query = $selectFactory->byArray($query, $selectConfig);
         $query->select([
             'vehicle.*',
+            'person.name as motorista_credential_name',
             'company.name as company_name',
             'units.name as unit_name', 'units.code as unit_code'
         ]);
