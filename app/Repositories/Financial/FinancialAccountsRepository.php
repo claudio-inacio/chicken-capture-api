@@ -136,6 +136,133 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
         ];
     }
 
+    /**
+     * @throws Exception
+     */
+    #[ArrayShape(['data' => "mixed", 'total' => "int", 'value_to_receive' => "string", 'value_to_discount' => "string",
+        'value_receive' => "string", 'value_discount' => "string", 'value_defeated' => "string",
+        'value_total_receive' => "string", 'value_total_discount' => "string"])]
+    public function findAllDownload($selectConfig, array $whereCriterious): array
+    {
+        $dateNow = (new \DateTime(now()))->format('Y-m-d');
+        $financialAccounts = FinancialAccounts::where('status_id', '<>', StatusEnum::DEFEATED)
+            ->where('due_date', '<', $dateNow)
+            ->where('finished_data', null)
+            ->get()
+            ->toarray();
+
+        foreach ($financialAccounts as $financialAccount) {
+            FinancialAccounts::whereId($financialAccount['id'])->update(['status_id' => StatusEnum::DEFEATED]);
+        }
+
+        $query = DB::table('financial.financial_accounts')
+            ->join('main.company', 'company.id', '=', 'financial_accounts.company_id')
+            ->join('authentication.credential', 'credential.id', '=', 'financial_accounts.credential_id')
+            ->leftJoin('main.team', 'team.id', '=', 'financial_accounts.team_id')
+            ->join('financial.cost_center', 'cost_center.id', '=', 'financial_accounts.cost_center_id')
+            ->join('authentication.person', 'person.id', '=', 'credential.person_id');
+
+        foreach ($whereCriterious as $criterious) {
+            if (str_contains($criterious['field'], 'table_reference_id')) {
+                if ($criterious['value'] == TableReferenceFinanceEnum::DAILY_CATCH) {
+                    $query->join('catch.catch_daily', 'catch_daily.id', '=', 'financial_accounts.reference_id');
+                }
+            }
+        }
+
+        $whereFactory = new WhereFactory();
+        $query = $whereFactory->byArray($query, $whereCriterious);
+
+        $total = $query->count('financial_accounts.id');
+
+        $selectFactory = new SelectFactory();
+        $query = $selectFactory->byArray($query, $selectConfig);
+        $query->select([
+            'financial_accounts.description',
+            'financial_accounts.amount',
+            'financial_accounts.due_date',
+            'financial_accounts.finished_data',
+            'financial_accounts.type',
+            'financial_accounts.status_id',
+            'financial_accounts.reference_id',
+            'financial_accounts.table_reference_id',
+            'credential.document as credential_document',
+            'person.name as credential_name',
+            'company.name as company_name',
+            'team.name as team_name',
+            'cost_center.name as cost_center_name',
+        ]);
+
+        $result = $query->get()->toArray();
+        $arrayStatus = [];
+        $arrayTotalValue = [];
+        foreach ($result as $key => $item) {
+            if (!key_exists(TypeFinanceEnum::TO_RECEIVE, $arrayTotalValue)) {
+                $arrayTotalValue[TypeFinanceEnum::TO_RECEIVE] = 0;
+            }
+            if (!key_exists(TypeFinanceEnum::TO_DISCOUNT, $arrayTotalValue)) {
+                $arrayTotalValue[TypeFinanceEnum::TO_DISCOUNT] = 0;
+            }
+
+            $item->type == TypeFinanceEnum::TO_RECEIVE ?
+                $arrayTotalValue[TypeFinanceEnum::TO_RECEIVE] += $item->amount : $arrayTotalValue[TypeFinanceEnum::TO_DISCOUNT] += $item->amount;
+
+            if ($item->type == TypeFinanceEnum::TO_RECEIVE) $item->type = 'RECEITA';
+            if ($item->type == TypeFinanceEnum::TO_DISCOUNT) $item->type = 'DESPESA';
+
+            $item->catch_daily_date = null;
+            $item->catch_daily_enabled = null;
+            $item->catch_daily_units_id = null;
+            $item->catch_daily_units_name = null;
+
+            if ($item->table_reference_id == TableReferenceFinanceEnum::DAILY_CATCH) {
+                $catch = CatchDaily::find($item->reference_id);
+
+                if ($catch) {
+                    $item->catch_daily_date = (new \DateTime($catch->date))->format('d/m/Y');
+                    $item->catch_daily_enabled = $catch->enabled;
+                    $item->code = $catch->code;
+
+                    $unit = Units::find($catch->units_id);
+
+                    if ($unit) {
+                        $item->catch_daily_units_id = $unit->id;
+                        $item->catch_daily_units_name = $unit->name;
+                    }
+                }
+            }
+
+            if ($item->table_reference_id == TableReferenceFinanceEnum::DAILY_CATCH) $item->table_reference_id = "APANHA DIARIA";
+            if ($item->table_reference_id == TableReferenceFinanceEnum::MAINTENANCE) $item->table_reference_id = "MANUNTENCAO";
+            if ($item->table_reference_id == TableReferenceFinanceEnum::FUEL) $item->table_reference_id = "COMBUSTIVEL";
+            if ($item->table_reference_id == TableReferenceFinanceEnum::DIARIST) $item->table_reference_id = "DIARIA";
+
+            $arrayStatus[$item->status_id] = ($arrayStatus[$item->status_id] ?? 0) + $item->amount;
+
+            if ($item->status_id == StatusEnum::TO_RECEIVE) $item->status_id = "A RECEBER";
+            if ($item->status_id == StatusEnum::TO_DISCOUNT) $item->status_id = "A PAGAR";
+            if ($item->status_id == StatusEnum::RECEIVE) $item->status_id = "RECEBIDO";
+            if ($item->status_id == StatusEnum::DISCOUNT) $item->status_id = "DESCONTADO";
+            if ($item->status_id == StatusEnum::DEFEATED) $item->status_id = "CANCELADO";
+
+            $item->amount = "R$ ".FormatHelper::decimalToBr($item->amount);
+            $item->due_date = FormatHelper::dateToBr($item->due_date);
+            $item->finished_data ? $item->finished_data = FormatHelper::dateToBr($item->finished_data) : $item->finished_data = null;
+        }
+
+        return [
+            'data' => $result,
+            'total' => $total,
+            'value_to_receive' => "R$ " . FormatHelper::decimalToBr($arrayStatus[StatusEnum::TO_RECEIVE] ?? 0),
+            'value_to_discount' => "R$ " . FormatHelper::decimalToBr($arrayStatus[StatusEnum::TO_DISCOUNT] ?? 0),
+            'value_receive' => "R$ " . FormatHelper::decimalToBr($arrayStatus[StatusEnum::RECEIVE] ?? 0),
+            'value_discount' => "R$ " . FormatHelper::decimalToBr($arrayStatus[StatusEnum::DISCOUNT] ?? 0),
+            'value_defeated' => "R$ " . FormatHelper::decimalToBr($arrayStatus[StatusEnum::DEFEATED] ?? 0),
+            'value_total_receive' => "R$ " . FormatHelper::decimalToBr($arrayTotalValue[TypeFinanceEnum::TO_RECEIVE] ?? 0),
+            'value_total_discount' => "R$ " . FormatHelper::decimalToBr($arrayTotalValue[TypeFinanceEnum::TO_DISCOUNT] ?? 0),
+        ];
+    }
+
 
     public function getById(int $id)
     {

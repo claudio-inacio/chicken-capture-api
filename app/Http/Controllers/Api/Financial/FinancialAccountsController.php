@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Financial;
 use App\Enum\Financial\StatusEnum;
 use App\Http\Controllers\Controller;
 use App\Interfaces\Financial\FinancialAccountsRepositoryInterface;
+use App\Services\GenerateExcelService;
 use App\Services\Financial\FinancialService;
 use App\Services\ResponseService;
 use Illuminate\Http\Request;
@@ -69,6 +70,35 @@ class FinancialAccountsController extends Controller
         if ( $valid == false) return ResponseService::businessError('È obrigatorio usar a filtragem por tipo.');
 
         return response()->json($this->financialAccountsRepository->findAll($selectConfig, $whereCriterious));
+    }
+
+    public function download(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $whereCriterious = $request->where ?? false;
+        $selectConfig = $request->selectConfig ?? false;
+        if (!$selectConfig)
+            return response()->json(['message' => 'Select config is required!!!'], 422);
+        if (!$whereCriterious)
+            return response()->json(['message' => 'Where config is required!!!'], 422);
+
+        $valid = false;
+        foreach ($whereCriterious as $criterious){
+            if(str_contains($criterious['field'], 'type')) $valid = true;
+        }
+
+        if ( $valid == false) return ResponseService::businessError('È obrigatorio usar a filtragem por tipo.');
+
+        $response = $this->financialAccountsRepository->findAllDownload($selectConfig, $whereCriterious);
+
+        $header = [
+            'DESCRICAO', 'VALOR', 'DATA_CADASTRO', 'DATA_PAGAMENTO', 'TIPO', 'STATUS', 'ID_REFERENCIA_DA_DESPESA',
+            'REFERENCIA_DA_DESPESA', 'CPF_USUARIO', 'NOME_USUARIO', "NOME_COMPANIA", "TIME", "CENTRO_DE_CUSTO",
+            "DATA_DA_APANHA", 'APANHA_ATIVA', 'ID_UNIDADE_APANHA', "NOME_UNIDADE_APANHA", "CODIGO"
+        ];
+
+        $filePath = GenerateExcelService::csv($header, $response['data']);
+
+        return response()->json(['url' => $filePath]);
     }
 
     public function update(Request $request){

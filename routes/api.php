@@ -138,6 +138,7 @@ Route::group(['middleware' => ['authJwt']], function (){
     #################################### FINANCIAL #########################################
     Route::post('/financial/financial-accounts', [FinancialAccountsController::class, 'register']);
     Route::get('/financial/financial-accounts', [FinancialAccountsController::class, 'list']);
+    Route::get('/financial/financial-accounts/download', [FinancialAccountsController::class, 'download']);
     Route::put('/financial/financial-accounts', [FinancialAccountsController::class, 'update']);
     Route::put('/financial/financial-accounts/enable', [FinancialAccountsController::class, 'enable']);
     Route::get('/financial/financial-accounts/analytic', [FinancialAccountsController::class, 'analytic']);
