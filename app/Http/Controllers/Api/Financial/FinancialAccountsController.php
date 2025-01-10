@@ -52,7 +52,8 @@ class FinancialAccountsController extends Controller
         return $this->financialAccountsRepository->create($arrayData, $paymentData);
     }
 
-    public function list(Request $request){
+    public function list(Request $request): \Illuminate\Http\JsonResponse
+    {
         $whereCriterious = $request->where ?? false;
         $selectConfig = $request->selectConfig ?? false;
         if (!$selectConfig)
@@ -105,7 +106,8 @@ class FinancialAccountsController extends Controller
         return $this->financialAccountsRepository->enable($request->financial_accounts_id, $request->enabled);
     }
 
-    public function analytic(Request $request){
+    public function analytic(Request $request): \Illuminate\Http\JsonResponse
+    {
         $request->validate([
             'start_date' => 'required',
             'end_date' => 'required'
@@ -114,7 +116,8 @@ class FinancialAccountsController extends Controller
         return FinancialService::analytics($request->all(), $request->user());
     }
 
-    public function generalReport(Request $request){
+    public function generalReport(Request $request): \Illuminate\Http\JsonResponse
+    {
         $whereCriterious = $request->where ?? false;
         $selectConfig = $request->selectConfig ?? false;
         if (!$selectConfig)

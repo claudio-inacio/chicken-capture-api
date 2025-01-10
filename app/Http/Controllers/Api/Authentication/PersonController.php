@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Authentication;
 
+use App\Enum\Authentication\AccessGroupEnum;
 use App\Http\Controllers\Controller;
 use App\Interfaces\Authentication\PersonRespositoryInterface;
 use App\Services\Authentication\PersonService;
@@ -30,6 +31,11 @@ class PersonController extends Controller
             'company_id' => 'required',
         ]);
 
+        if ($request->access_group_id == AccessGroupEnum::DRIVER ||
+            $request->access_group_id == AccessGroupEnum::FINANCIAL ||
+            $request->access_group_id == AccessGroupEnum::LEADER
+        ) $request->validate(['salary' => 'required']);
+
         return PersonService::create($request->all(), $request->user());
     }
 
@@ -54,6 +60,15 @@ class PersonController extends Controller
             'credential.document' => 'required',
             'credential.access_group_id' => 'required',
         ]);
+
+        $arrayData = $request->all();
+
+        $accessGroupId = $arrayData['credential']['access_group_id'];
+
+        if ($accessGroupId == AccessGroupEnum::DRIVER ||
+            $accessGroupId == AccessGroupEnum::FINANCIAL ||
+            $accessGroupId == AccessGroupEnum::LEADER
+        ) $request->validate(['person.salary' => 'required']);
 
         return $this->personRespository->update($request->all());
     }

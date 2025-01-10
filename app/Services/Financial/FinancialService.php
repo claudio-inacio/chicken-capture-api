@@ -187,6 +187,7 @@ class FinancialService
             $financialAccountsToReceive = FinancialAccounts::whereBetween('due_date', [$startDate, $endDate])
                 ->where('type', TypeFinanceEnum::TO_RECEIVE)
                 ->where('enabled', true)
+                ->where('finished_data', null)
                 ->where('company_id', $user->company_id)
                 ->get();
 
@@ -201,10 +202,30 @@ class FinancialService
                 ];
             });
 
+            // Obter contas financeiras recebidas
+            $financialAccountsReceive = FinancialAccounts::whereBetween('due_date', [$startDate, $endDate])
+                ->where('type', TypeFinanceEnum::TO_RECEIVE)
+                ->where('enabled', true)
+                ->where('finished_data', '<>', null)
+                ->where('company_id', $user->company_id)
+                ->get();
+
+            $receiveValue = $financialAccountsReceive->sum('amount');
+            $receiveDescriptions = $financialAccountsReceive->map(function ($item) {
+                return [
+                    'description' => $item->description,
+                    'value' => FormatHelper::decimalToBr($item->amount),
+                    'due_date' => $item->due_date,
+                    'finished_data' => $item->finished_data,
+                    'status_id' => $item->status_id,
+                ];
+            });
+
             // Obter contas financeiras a descontar
             $financialAccountsToDiscount = FinancialAccounts::whereBetween('due_date', [$startDate, $endDate])
                 ->where('type', TypeFinanceEnum::TO_DISCOUNT)
                 ->where('enabled', true)
+                ->where('finished_data', null)
                 ->where('company_id', $user->company_id)
                 ->get();
 
@@ -219,7 +240,30 @@ class FinancialService
                 ];
             });
 
+            // Obter contas financeiras descontadas
+            $financialAccountsDiscount = FinancialAccounts::whereBetween('due_date', [$startDate, $endDate])
+                ->where('type', TypeFinanceEnum::TO_DISCOUNT)
+                ->where('enabled', true)
+                ->where('finished_data', '<>', null)
+                ->where('company_id', $user->company_id)
+                ->get();
+
+            $discountValue = $financialAccountsDiscount->sum('amount');
+            $discountDescriptions = $financialAccountsDiscount->map(function ($item) {
+                return [
+                    'description' => $item->description,
+                    'value' => FormatHelper::decimalToBr($item->amount),
+                    'due_date' => $item->due_date,
+                    'finished_data' => $item->finished_data,
+                    'status_id' => $item->status_id,
+                ];
+            });
+
             $analyticFinancialAccounts = [
+                'receive' => [
+                    'details' => $receiveDescriptions,
+                    'total' => FormatHelper::decimalToBr($receiveValue)
+                ],
                 'to_receive' => [
                     'details' => $toReceiveDescriptions,
                     'total' => FormatHelper::decimalToBr($toReceiveValue),
@@ -228,7 +272,12 @@ class FinancialService
                     'details' => $toDiscountDescriptions,
                     'total' => FormatHelper::decimalToBr($toDiscountValue),
                 ],
-                'finance_income' => FormatHelper::decimalToBr($toReceiveValue - $toDiscountValue)
+                'discount' => [
+                    'details' => $discountDescriptions,
+                    'total' => FormatHelper::decimalToBr($discountValue),
+                ],
+                'finance_income_to_receive' => FormatHelper::decimalToBr($toReceiveValue - $toDiscountValue),
+                'finance_income_receive' => FormatHelper::decimalToBr($receiveValue - $discountValue)
             ];
 
             return ResponseService::success('Sucesso em listar analítico de finanças', $analyticFinancialAccounts);
