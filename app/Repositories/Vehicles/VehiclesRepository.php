@@ -92,7 +92,9 @@ class VehiclesRepository implements VehiclesRepositoryInterface
 
             if ($vehicle) return ResponseService::businessError('Veiculo ja cadastrado no sistema!');
 
-            $verifyDriver = Vehicle::where('motorista_credential_id', $data['motorista_credential_id'])->first();
+            $verifyDriver = Vehicle::where('motorista_credential_id', $data['motorista_credential_id'])
+                ->where('id', '<>', $id)
+                ->first();
             if ($verifyDriver){
                 return ResponseService::businessError(
                     "Esse motorista ja tem um veiculo cadastrado para ele. Veiculo: $verifyDriver->name, Placa: $verifyDriver->plate_number"
