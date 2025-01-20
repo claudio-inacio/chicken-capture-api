@@ -36,7 +36,7 @@ class FinancialAccountsController extends Controller
             'status_proof_of_payment' => 'required'
         ]);
 
-        if ($request->status_id == StatusEnum::DISCOUNT){
+        if ($request->status_id == StatusEnum::DISCOUNT || $request->status_id == StatusEnum::RECEIVE){
             $request->validate(['finished_data' => 'required']);
         }
 
