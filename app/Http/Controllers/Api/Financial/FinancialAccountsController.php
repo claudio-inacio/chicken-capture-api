@@ -32,8 +32,6 @@ class FinancialAccountsController extends Controller
             'reference_id' => 'required',
             'table_reference_id' => 'required',
             'cost_center_id' => 'required',
-            'proof_of_payment' => 'required',
-            'status_proof_of_payment' => 'required'
         ]);
 
         if ($request->status_id == StatusEnum::DISCOUNT || $request->status_id == StatusEnum::RECEIVE){
@@ -46,8 +44,8 @@ class FinancialAccountsController extends Controller
 
         unset($arrayData['proof_of_payment'], $arrayData['status_proof_of_payment'], $arrayData['observation_proof_of_payment']);
 
-        $paymentData['proof_of_payment'] = $request->proof_of_payment;
-        $paymentData['status_proof_of_payment'] = $request->status_proof_of_payment;
+        $paymentData['proof_of_payment'] = $request->proof_of_payment ?? null;
+        $paymentData['status_proof_of_payment'] = $request->status_proof_of_payment ?? null;
         $paymentData['observation_proof_of_payment'] = $request->observation_proof_of_payment ?? null;
 
         return $this->financialAccountsRepository->create($arrayData, $paymentData);
@@ -111,8 +109,6 @@ class FinancialAccountsController extends Controller
             'financial_accounts_id' => 'required',
             'table_reference_id' => 'required',
             'reference_id' => 'required',
-            'proof_of_payment' => 'required',
-            'status_proof_of_payment' => 'required'
         ]);
 
         $arrayData = $request->all();
@@ -120,8 +116,8 @@ class FinancialAccountsController extends Controller
 
         unset($arrayData['proof_of_payment'], $arrayData['status_proof_of_payment'], $arrayData['observation_proof_of_payment']);
 
-        $paymentData['proof_of_payment'] = $request->proof_of_payment;
-        $paymentData['status_proof_of_payment'] = $request->status_proof_of_payment;
+        $paymentData['proof_of_payment'] = $request->proof_of_payment ?? null;
+        $paymentData['status_proof_of_payment'] = $request->status_proof_of_payment ?? null;
         $paymentData['observation_proof_of_payment'] = $request->observation_proof_of_payment ?? null;
 
         return $this->financialAccountsRepository->update($request->financial_accounts_id, $arrayData, $paymentData);

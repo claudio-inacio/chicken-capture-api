@@ -284,10 +284,12 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             }
             $financialAccount = FinancialAccounts::create($arrayData);
 
-            $upload = UploadBase64Service::uploadProofPayment($paymentData, $arrayData['credential_id'], $financialAccount);
-            if (!$upload['success']) {
-                DB::rollBack();
-                return ResponseService::businessError($upload['message'], $upload['error']);
+            if ($paymentData['proof_of_payment']) {
+                $upload = UploadBase64Service::uploadProofPayment($paymentData, $arrayData['credential_id'], $financialAccount);
+                if (!$upload['success']) {
+                    DB::rollBack();
+                    return ResponseService::businessError($upload['message'], $upload['error']);
+                }
             }
 
             DB::commit();
@@ -312,10 +314,12 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
 
             $financialAccount = FinancialAccounts::create($data);
 
-            $upload = UploadBase64Service::uploadProofPayment($paymentData, $data['credential_id'], $financialAccount);
-            if (!$upload['success']) {
-                DB::rollBack();
-                return ResponseService::businessError($upload['message'], $upload['error']);
+            if ($paymentData['proof_of_payment']) {
+                $upload = UploadBase64Service::uploadProofPayment($paymentData, $data['credential_id'], $financialAccount);
+                if (!$upload['success']) {
+                    DB::rollBack();
+                    return ResponseService::businessError($upload['message'], $upload['error']);
+                }
             }
 
             DB::commit();
