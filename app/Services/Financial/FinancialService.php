@@ -110,6 +110,7 @@ class FinancialService
                 'reference_id' => $referenceId,
                 'table_reference_id' => TableReferenceFinanceEnum::MAINTENANCE,
                 'due_date' => now(),
+                'vehicle_id' => $arrayRequest['vehicle_id'],
                 'credential_id' => $arrayRequest['credential_id'],
                 'company_id' => $arrayRequest['company_id'],
                 'team_id' => $team->id
@@ -159,6 +160,7 @@ class FinancialService
                 'reference_id' => $referenceId,
                 'table_reference_id' => TableReferenceFinanceEnum::FUEL,
                 'due_date' => now(),
+                'vehicle_id' => $arrayRequest['vehicle_id'],
                 'credential_id' => $arrayRequest['credential_id'],
                 'company_id' => $arrayRequest['company_id'],
                 'team_id' => $team->id

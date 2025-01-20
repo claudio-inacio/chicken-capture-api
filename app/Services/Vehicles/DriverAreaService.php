@@ -125,6 +125,7 @@ class DriverAreaService
                     'type' => TypeFinanceEnum::TO_DISCOUNT,
                     'status_id' => StatusEnum::TO_DISCOUNT,
                     'due_date' => now(),
+                    'vehicle_id' => $arrayData['vehicle_id'],
                     'credential_id' => $driverArea->credential_id,
                     'company_id' => $driverArea->company_id,
                 ]);
