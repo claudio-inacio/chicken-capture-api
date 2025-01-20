@@ -16,6 +16,7 @@ use App\Models\Financial\FinancialAccounts;
 use App\Models\Main\Diarist;
 use App\Models\Main\DiaristGroup;
 use App\Services\ResponseService;
+use App\Services\Upload\UploadBase64Service;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -195,7 +196,7 @@ class DiaristRepository implements DiaristRepositoryInterface
 
             $document = $diarist->document ?? 'NAO CONTEM!';
             $phoneNumber = $diarist->phone_number ?? 'NAO CONTEM!';
-            FinancialAccounts::create([
+            $financialAccount = FinancialAccounts::create([
                 'description' => "Cadastro de diarista.",
                 'cost_center_id' => CostCenterIdEnum::DIARIA,
                 'description_data' => json_encode([
@@ -214,6 +215,18 @@ class DiaristRepository implements DiaristRepositoryInterface
                 'table_reference_id' => TableReferenceFinanceEnum::DIARIST,
                 'status_id' => StatusEnum::TO_DISCOUNT
             ]);
+
+            if ($arrayData['paid'] == 'sim') {
+                $paymentData['proof_of_payment'] = $arrayData['proof_of_payment'];
+                $paymentData['status_proof_of_payment'] = $arrayData['status_proof_of_payment'];
+                $paymentData['observation_proof_of_payment'] = $arrayData['observation_proof_of_payment'] ?? null;
+
+                $upload = UploadBase64Service::uploadProofPayment($paymentData, $arrayData['credential_id'], $financialAccount);
+                if (!$upload['success']) {
+                    DB::rollBack();
+                    return ResponseService::businessError($upload['message'], $upload['error']);
+                }
+            }
 
             DB::commit();
             return ResponseService::success204();

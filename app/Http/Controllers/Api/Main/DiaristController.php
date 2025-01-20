@@ -29,10 +29,17 @@ class DiaristController extends Controller
             'phone_number' => 'required',
             'diarist_group_id' => 'required',
             'date' => 'required',
+            'paid' => 'required'
         ]);
+
+        if ($request->paid == 'sim'){
+            $request->validate(['proof_of_payment' => 'required']);
+            $request->validate(['status_proof_of_payment' => 'required']);
+        }
 
         $arrayData = $request->all();
         $arrayData['company_id'] = $request->user()->company_id;
+        $arrayData['credential_id'] = $request->user()->id;
         $arrayData['phone_number'] = FormatHelper::removeSpecialCaracterTel($arrayData['phone_number']);
         $arrayData['date'] = (new \DateTime($arrayData['date']))->format('Y-m-d');
         $request->daily ? $arrayData['daily'] = FormatHelper::brlTodecimal($request->daily) : $arrayData['daily'] = 0;
