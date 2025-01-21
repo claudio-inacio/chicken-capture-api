@@ -207,7 +207,7 @@ class DiaristRepository implements DiaristRepositoryInterface
 
             $statusId = StatusEnum::TO_DISCOUNT;
             $finishedDate = null;
-            if ($arrayData['paid'] == 'sim'){
+            if (strtolower($arrayData['paid']) == 'sim'){
                 $statusId = StatusEnum::DISCOUNT;
                 $finishedDate = now();
             }
@@ -235,7 +235,7 @@ class DiaristRepository implements DiaristRepositoryInterface
                 'finished_data' => $finishedDate
             ]);
 
-            if ($arrayData['paid'] == 'sim') {
+            if (strtolower($arrayData['paid']) == 'sim') {
                 $paymentData['proof_of_payment'] = $arrayData['proof_of_payment'];
                 $paymentData['status_proof_of_payment'] = $arrayData['status_proof_of_payment'] ?? null;
                 $paymentData['observation_proof_of_payment'] = $arrayData['observation_proof_of_payment'] ?? null;
@@ -293,7 +293,7 @@ class DiaristRepository implements DiaristRepositoryInterface
 
             $statusId = StatusEnum::TO_DISCOUNT;
             $finishedDate = null;
-            if ($arrayData['paid'] == 'sim'){
+            if (strtolower($arrayData['paid']) == 'sim'){
                 $statusId = StatusEnum::DISCOUNT;
                 $finishedDate = now();
             }
@@ -318,7 +318,7 @@ class DiaristRepository implements DiaristRepositoryInterface
                 'finished_data' => $finishedDate
             ]);
 
-            if ($arrayData['paid'] == 'sim') {
+            if (strtolower($arrayData['paid']) == 'sim') {
                 $paymentData['proof_of_payment'] = $arrayData['proof_of_payment'];
                 $paymentData['status_proof_of_payment'] = $arrayData['status_proof_of_payment'] ?? null;
                 $paymentData['observation_proof_of_payment'] = $arrayData['observation_proof_of_payment'] ?? null;
