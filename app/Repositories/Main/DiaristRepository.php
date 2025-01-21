@@ -237,7 +237,7 @@ class DiaristRepository implements DiaristRepositoryInterface
 
             if ($arrayData['paid'] == 'sim') {
                 $paymentData['proof_of_payment'] = $arrayData['proof_of_payment'];
-                $paymentData['status_proof_of_payment'] = $arrayData['status_proof_of_payment'];
+                $paymentData['status_proof_of_payment'] = $arrayData['status_proof_of_payment'] ?? null;
                 $paymentData['observation_proof_of_payment'] = $arrayData['observation_proof_of_payment'] ?? null;
 
                 $upload = UploadBase64Service::uploadProofPayment($paymentData, $arrayData['credential_id'], $financialAccount);
@@ -320,7 +320,7 @@ class DiaristRepository implements DiaristRepositoryInterface
 
             if ($arrayData['paid'] == 'sim') {
                 $paymentData['proof_of_payment'] = $arrayData['proof_of_payment'];
-                $paymentData['status_proof_of_payment'] = $arrayData['status_proof_of_payment'];
+                $paymentData['status_proof_of_payment'] = $arrayData['status_proof_of_payment'] ?? null;
                 $paymentData['observation_proof_of_payment'] = $arrayData['observation_proof_of_payment'] ?? null;
 
                 $upload = UploadBase64Service::uploadProofPayment($paymentData, $arrayData['credential_id'], $financialAccount);
