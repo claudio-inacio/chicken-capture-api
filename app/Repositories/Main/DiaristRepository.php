@@ -4,6 +4,7 @@ namespace App\Repositories\Main;
 
 use App\Enum\Authentication\AccessGroupEnum;
 use App\Enum\Financial\CostCenterIdEnum;
+use App\Enum\Financial\ProofOfPaymentStatusEnum;
 use App\Enum\Financial\StatusEnum;
 use App\Enum\Financial\TableReferenceFinanceEnum;
 use App\Enum\Financial\TypeFinanceEnum;
@@ -103,6 +104,7 @@ class DiaristRepository implements DiaristRepositoryInterface
             ->leftJoin('main.team', 'team.id', '=', 'diarist.team_id')
             ->join('main.company', 'company.id', '=', 'diarist.company_id')
             ->join('financial.financial_accounts', 'financial_accounts.reference_id', '=', 'diarist.id')
+            ->leftJoin('financial.proof_of_payment', 'proof_of_payment.financial_id', '=', 'financial_accounts.id')
             ->where('financial_accounts.table_reference_id', TableReferenceFinanceEnum::DIARIST)
             ->whereBetween('date', [$arrayData['start_date'], $arrayData['end_date']])
             ->where(function ($query) use ($arrayData) {
@@ -125,6 +127,8 @@ class DiaristRepository implements DiaristRepositoryInterface
             'financial_accounts.finished_data as finished_date_account',
             'financial_accounts.status_id as status',
             'financial_accounts.credential_id as credential_payment_id',
+            'proof_of_payment.file_patch as proof_of_payment_url',
+            'proof_of_payment.status_id as proof_of_payment_status_id',
             'diarist_group.function_name as diarist_group_function_name', 'diarist_group.daily as diarist_group_daily'
         ]);
 
@@ -136,6 +140,13 @@ class DiaristRepository implements DiaristRepositoryInterface
             if ($item->daily < 1) {
                 $item->daily = $item->diarist_group_daily;
             }
+
+            if ($item->proof_of_payment_status_id == ProofOfPaymentStatusEnum::PENDENT)
+                $item->proof_of_payment_status_id = 'PENDENTE';
+            if ($item->proof_of_payment_status_id == ProofOfPaymentStatusEnum::APPROVED)
+                $item->proof_of_payment_status_id = 'APROVADO';
+            if ($item->proof_of_payment_status_id == ProofOfPaymentStatusEnum::REJECTED)
+                $item->proof_of_payment_status_id = 'REJEITADO';
 
             $item->due_date_account = FormatHelper::dateToBr($item->due_date_account);
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Main;
 use App\Helpers\FormatHelper;
 use App\Http\Controllers\Controller;
 use App\Interfaces\Main\DiaristRepositoryInterface;
+use Exception;
 use Illuminate\Http\Request;
 
 class DiaristController extends Controller
@@ -20,7 +21,7 @@ class DiaristController extends Controller
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function register(Request $request)
     {
@@ -63,7 +64,10 @@ class DiaristController extends Controller
         return response()->json($this->diaristRepository->findAll($selectConfig, $whereCriterious, $request->user()));
     }
 
-    public function select(Request $request)
+    /**
+     * @throws Exception
+     */
+    public function select(Request $request): \Illuminate\Http\JsonResponse
     {
         $request->validate([
             'document' => 'required_without:phone_number',
