@@ -194,6 +194,13 @@ class DiaristRepository implements DiaristRepositoryInterface
                 $diaristGroup->function_name = 'NAO_CONTEM';
             }
 
+            $statusId = StatusEnum::TO_DISCOUNT;
+            $finishedDate = null;
+            if ($arrayData['paid'] == 'sim'){
+                $statusId = StatusEnum::DISCOUNT;
+                $finishedDate = now();
+            }
+
             $document = $diarist->document ?? 'NAO CONTEM!';
             $phoneNumber = $diarist->phone_number ?? 'NAO CONTEM!';
             $financialAccount = FinancialAccounts::create([
@@ -213,7 +220,8 @@ class DiaristRepository implements DiaristRepositoryInterface
                 'company_id' => $credential->company_id,
                 'reference_id' => $diarist->id,
                 'table_reference_id' => TableReferenceFinanceEnum::DIARIST,
-                'status_id' => StatusEnum::TO_DISCOUNT
+                'status_id' => $statusId,
+                'finished_data' => $finishedDate
             ]);
 
             if ($arrayData['paid'] == 'sim') {
@@ -236,10 +244,11 @@ class DiaristRepository implements DiaristRepositoryInterface
         }
     }
 
-    public function update(int $id, array $arrayData): JsonResponse
+    public function update(int $id, array $arrayData, $credential): JsonResponse
     {
         unset($arrayData['diarist_id']);
         try {
+            DB::beginTransaction();
             $diarist = Diarist::where('id', '<>', $id)
                 ->where('enabled', true)
                 ->where('company_id', $arrayData['company_id'])
@@ -254,10 +263,63 @@ class DiaristRepository implements DiaristRepositoryInterface
 
             if ($diarist) {
                 $day = (new \DateTime($arrayData['date']))->format('d-m-Y');
+                DB::rollBack();
                 return ResponseService::businessError('Esse diarista ja foi cadastrada para o dia -> ' . $day);
             }
 
             Diarist::whereId($id)->update($arrayData);
+
+            if ($arrayData['daily'] == 0) {
+                $diaristGroup = DiaristGroup::find($arrayData['diarist_group_id']);
+                $arrayData['daily'] = $diaristGroup->daily;
+            } else {
+                $diaristGroup = new \stdClass();
+                $diaristGroup->function_name = 'NAO_CONTEM';
+            }
+
+            $document = $diarist->document ?? 'NAO CONTEM!';
+            $phoneNumber = $diarist->phone_number ?? 'NAO CONTEM!';
+
+            $statusId = StatusEnum::TO_DISCOUNT;
+            $finishedDate = null;
+            if ($arrayData['paid'] == 'sim'){
+                $statusId = StatusEnum::DISCOUNT;
+                $finishedDate = now();
+            }
+
+            $financialAccount = FinancialAccounts::where('reference_id', $diarist->id)->update([
+                'description' => "Cadastro de diarista.",
+                'cost_center_id' => CostCenterIdEnum::DIARIA,
+                'description_data' => json_encode([
+                    'name' => $diarist->name,
+                    'document' => $document,
+                    'phone_number' => $phoneNumber,
+                    'function' => $diaristGroup->function_name,
+                    'date' => $diarist->date
+                ]),
+                'amount' => $arrayData['daily'],
+                'due_date' => (new \DateTime($arrayData['date']))->format('Y-m-d') . " 20:00:00",
+                'type' => TypeFinanceEnum::TO_DISCOUNT,
+                'credential_id' => $credential->id,
+                'company_id' => $credential->company_id,
+                'table_reference_id' => TableReferenceFinanceEnum::DIARIST,
+                'status_id' => $statusId,
+                'finished_data' => $finishedDate
+            ]);
+
+            if ($arrayData['paid'] == 'sim') {
+                $paymentData['proof_of_payment'] = $arrayData['proof_of_payment'];
+                $paymentData['status_proof_of_payment'] = $arrayData['status_proof_of_payment'];
+                $paymentData['observation_proof_of_payment'] = $arrayData['observation_proof_of_payment'] ?? null;
+
+                $upload = UploadBase64Service::uploadProofPayment($paymentData, $arrayData['credential_id'], $financialAccount);
+                if (!$upload['success']) {
+                    DB::rollBack();
+                    return ResponseService::businessError($upload['message'], $upload['error']);
+                }
+            }
+
+            DB::commit();
             return ResponseService::success204();
         } catch (Exception $e) {
             return ResponseService::internalServerError('Falha em  registrar diarista', $e->getMessage());

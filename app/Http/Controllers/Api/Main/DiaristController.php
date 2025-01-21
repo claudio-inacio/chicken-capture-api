@@ -109,7 +109,7 @@ class DiaristController extends Controller
             $arrayData['document'] = null;
         }
 
-        return $this->diaristRepository->update($request->diarist_id, $arrayData);
+        return $this->diaristRepository->update($request->diarist_id, $arrayData, $request->user());
     }
 
     public function enable(Request $request)
