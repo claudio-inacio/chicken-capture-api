@@ -280,6 +280,9 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
         $arrayData['due_date'] = FormatHelper::dateToUsTimeStamp($arrayData['due_date']);
         $arrayData['amount'] = FormatHelper::moneyToUS($arrayData['amount']);
 
+        if (!empty($data['finished_data']))
+            $arrayData['finished_data'] = FormatHelper::dateToUsTimeStamp($arrayData['finished_data']);
+
         try {
             DB::beginTransaction();
             if ($arrayData['status_id'] != StatusEnum::DISCOUNT) {
@@ -303,6 +306,9 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function update(int $id, array $data, array $paymentData): \Illuminate\Http\JsonResponse
     {
         $data['due_date'] = FormatHelper::dateToUsTimeStamp($data['due_date']);
@@ -315,7 +321,10 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
                 }
             }
 
-            $financialAccount = FinancialAccounts::create($data);
+            if (!empty($data['finished_data']))
+                $data['finished_data'] = FormatHelper::dateToUsTimeStamp($data['finished_data']);
+
+            $financialAccount = FinancialAccounts::find($id)->update($data);
 
             if ($paymentData['proof_of_payment']) {
                 $upload = UploadBase64Service::uploadProofPayment($paymentData, $data['credential_id'], $financialAccount);
