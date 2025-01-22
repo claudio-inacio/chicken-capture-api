@@ -5,6 +5,7 @@ namespace App\Repositories\Main;
 use App\Enum\Authentication\AccessGroupEnum;
 use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
+use App\Helpers\FormatHelper;
 use App\Interfaces\Main\DiaristGroupRepositoryInterface;
 use App\Models\Main\DiaristGroup;
 use App\Services\ResponseService;
@@ -39,10 +40,14 @@ class DiaristGroupRepository implements DiaristGroupRepositoryInterface
             'company.name as company_name'
         ]);
 
-        $result = $query->get();
+        $result = $query->get()->toArray();
+
+        foreach ($result as $item){
+            $item->daily = FormatHelper::decimalToBr($item->daily);
+        }
 
         return [
-            'data' => $result->toArray(),
+            'data' => $result,
             'total' => $total,
         ];
     }
