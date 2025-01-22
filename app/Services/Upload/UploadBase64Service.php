@@ -3,6 +3,7 @@ namespace App\Services\Upload;
 
 use App\Models\Financial\FinancialAccounts;
 use App\Models\Financial\ProofOfPayment;
+use App\Services\Main\LogService;
 use Illuminate\Support\Facades\DB;
 
 class UploadBase64Service {
@@ -38,7 +39,21 @@ class UploadBase64Service {
             $arrayData['credential_id'] = $credentialId;
             $arrayData['observation'] = $arrayPayment['observation_proof_of_payment'] ?? null;
 
-            $register = ProofOfPayment::create($arrayData);
+            try {
+                LogService::save('ArrayDataProofOfPayment', [
+                    'data' => $arrayData
+                ]);
+                $register = ProofOfPayment::create($arrayData);
+            } catch (\Exception $exception){
+                return [
+                    'success' => false,
+                    'message' => 'Falha em cadastrar comprovante de pagamento',
+                    'error' => [
+                        'message' => $exception->getMessage(),
+                        'line' => $exception->getLine()
+                    ]
+                ];
+            }
 
             if (!$register) {
                 return [

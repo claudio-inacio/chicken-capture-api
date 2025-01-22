@@ -16,6 +16,7 @@ use App\Models\Credential;
 use App\Models\Financial\FinancialAccounts;
 use App\Models\Main\Diarist;
 use App\Models\Main\DiaristGroup;
+use App\Services\Main\LogService;
 use App\Services\ResponseService;
 use App\Services\Upload\UploadBase64Service;
 use Exception;
@@ -197,7 +198,7 @@ class DiaristRepository implements DiaristRepositoryInterface
 
             $diarist = Diarist::create($arrayData);
 
-            if ($arrayData['daily'] == 0) {
+            if ($arrayData['daily'] == 0 || empty($arrayData['daily'])) {
                 $diaristGroup = DiaristGroup::find($arrayData['diarist_group_id']);
                 $arrayData['daily'] = $diaristGroup->daily;
             } else {
@@ -241,7 +242,8 @@ class DiaristRepository implements DiaristRepositoryInterface
                 $paymentData['observation_proof_of_payment'] = $arrayData['observation_proof_of_payment'] ?? null;
 
                 $upload = UploadBase64Service::uploadProofPayment($paymentData, $arrayData['credential_id'], $financialAccount);
-                if (!$upload['success']) {
+                LogService::save('ResultUpload', ['result' => $upload]);
+                if ($upload['success'] == false) {
                     DB::rollBack();
                     return ResponseService::businessError($upload['message'], $upload['error']);
                 }
