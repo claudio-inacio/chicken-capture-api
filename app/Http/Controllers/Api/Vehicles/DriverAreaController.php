@@ -70,7 +70,10 @@ class DriverAreaController extends Controller
             'driver_area_id' => 'required'
         ]);
 
-        return DriverAreaService::finalize($request->driver_area_id, $request->all());
+        $arrayData = $request->all();
+        $arrayData['credential_id'] = $request->user()->id;
+
+        return DriverAreaService::finalize($request->driver_area_id, $arrayData);
     }
 
     public function enable(Request $request){

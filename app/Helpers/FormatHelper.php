@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use Exception;
 use Illuminate\Support\Facades\DB;
 
 class FormatHelper
@@ -166,7 +167,7 @@ class FormatHelper
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public static function dateToUs(string $date): string
     {
@@ -174,7 +175,15 @@ class FormatHelper
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
+     */
+    public static function dateToBr(string $date): string
+    {
+        return (new \DateTime(str_replace('/','-', $date)))->format("d-m-Y");
+    }
+
+    /**
+     * @throws Exception
      */
     public static function dateToUsTimeStamp(string $date): string
     {

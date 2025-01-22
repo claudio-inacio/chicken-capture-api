@@ -12,6 +12,7 @@ use App\Interfaces\Catch\CatchsCancelledRespositoryInterface;
 use App\Interfaces\Catch\CatchDailyRespositoryInterface;
 
 use App\Interfaces\Financial\CostCenterRepositoryInterface;
+use App\Interfaces\Financial\ProofOfPaymentRepositoryInterface;
 use App\Interfaces\Main\ContractingCompanyRepositoryInterface;
 use App\Interfaces\Main\IntegratedRepositoryInterface;
 
@@ -50,6 +51,7 @@ use App\Repositories\Catch\CatchDailyRepository;
 
 
 use App\Repositories\Financial\CostCenterRepository;
+use App\Repositories\Financial\ProofOfPaymentRepository;
 use App\Repositories\Main\ContractingCompanyRepository;
 use App\Repositories\Main\IntegratedRepository;
 
@@ -112,6 +114,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(DiaristRepositoryInterface::class, DiaristRepository::class);
         $this->app->bind(CityRepositoryInterface::class, CityRepository::class);
         $this->app->bind(CostCenterRepositoryInterface::class, CostCenterRepository::class);
+        $this->app->bind(ProofOfPaymentRepositoryInterface::class, ProofOfPaymentRepository::class);
     }
 
     /**

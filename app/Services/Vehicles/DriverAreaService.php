@@ -9,6 +9,7 @@ use App\Enum\Financial\TypeFinanceEnum;
 use App\Helpers\FormatHelper;
 use App\Models\Credential;
 use App\Models\Financial\FinancialAccounts;
+use App\Models\Main\Team;
 use App\Models\Vehicles\DriverArea;
 use App\Models\Vehicles\Vehicle;
 use App\Services\Financial\FinancialService;
@@ -47,6 +48,7 @@ class DriverAreaService
                 }
             }
 
+            $team = Team::where('motorista_credential_id', $arrayData['credential_id'])->first();
             $driverAreaUpdate = DriverArea::where('vehicle_id', $arrayData['vehicle_id'])->first();
             if ($driverAreaUpdate){
                 $dateCreatedAt = FormatHelper::dateToUs($driverAreaUpdate->created_at);
@@ -54,7 +56,7 @@ class DriverAreaService
                     DriverArea::whereId($driverAreaUpdate->id)->update($arrayData);
 
                     if ($arrayData['maintenance_expenses'] != 0) {
-                        $maintenance = FinancialService::saveMaintenanceFinance($arrayData, $driverAreaUpdate->id);
+                        $maintenance = FinancialService::saveMaintenanceFinance($arrayData, $driverAreaUpdate->id, $team);
                         if (!$maintenance['success']) {
                             DB::rollBack();
                             return ResponseService::businessError($maintenance['message'], $maintenance['error']);
@@ -62,7 +64,7 @@ class DriverAreaService
                     }
 
                     if ($arrayData['total_supply_value'] != 0) {
-                        $fuel = FinancialService::saveFuelFinance($arrayData, $driverAreaUpdate->id);
+                        $fuel = FinancialService::saveFuelFinance($arrayData, $driverAreaUpdate->id, $team);
                         if (!$fuel['success']) {
                             DB::rollBack();
                             return ResponseService::businessError($fuel['message'], $fuel['error']);
@@ -78,7 +80,7 @@ class DriverAreaService
            $driverArea = DriverArea::create($arrayData);
 
             if ($arrayData['maintenance_expenses'] != 0) {
-                $maintenance = FinancialService::saveMaintenanceFinance($arrayData, $driverArea->id);
+                $maintenance = FinancialService::saveMaintenanceFinance($arrayData, $driverArea->id, $team);
                 if (!$maintenance['success']) {
                     DB::rollBack();
                     return ResponseService::businessError($maintenance['message'], $maintenance['error']);
@@ -86,7 +88,7 @@ class DriverAreaService
             }
 
             if ($arrayData['total_supply_value'] != 0) {
-                $fuel = FinancialService::saveFuelFinance($arrayData, $driverArea->id);
+                $fuel = FinancialService::saveFuelFinance($arrayData, $driverArea->id, $team);
                 if (!$fuel['success']) {
                     DB::rollBack();
                     return ResponseService::businessError($fuel['message'], $fuel['error']);
@@ -123,6 +125,7 @@ class DriverAreaService
                     'type' => TypeFinanceEnum::TO_DISCOUNT,
                     'status_id' => StatusEnum::TO_DISCOUNT,
                     'due_date' => now(),
+                    'vehicle_id' => $arrayData['vehicle_id'],
                     'credential_id' => $driverArea->credential_id,
                     'company_id' => $driverArea->company_id,
                 ]);
@@ -173,6 +176,8 @@ class DriverAreaService
             $arrayData['credential_id'] = $driverArea->credential_id;
             $arrayData['company_id'] = $driverArea->company_id;
 
+            $team = Team::where('motorista_credential_id', $arrayData['credential_id'])->first();
+
             if ($arrayData['daily_end_km'] != 0) {
                 $dailEnd = VehicleService::saveMileageVehicle($arrayData);
                 if (!$dailEnd['success']) {
@@ -182,14 +187,14 @@ class DriverAreaService
             }
 
             if ($arrayData['maintenance_expenses'] != 0) {
-                $maintenance = FinancialService::saveMaintenanceFinance($arrayData, $id);
+                $maintenance = FinancialService::saveMaintenanceFinance($arrayData, $id, $team);
                 if (!$maintenance['success']) {
                     DB::rollBack();
                     return ResponseService::businessError($maintenance['message'], $maintenance['error']);
                 }
             }
             if ($arrayData['total_supply_value'] != 0) {
-                $fuel = FinancialService::saveFuelFinance($arrayData, $id);
+                $fuel = FinancialService::saveFuelFinance($arrayData, $id, $team);
                 if (!$fuel['success']) {
                     DB::rollBack();
                     return ResponseService::businessError($fuel['message'], $fuel['error']);

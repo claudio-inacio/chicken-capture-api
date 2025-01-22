@@ -26,6 +26,8 @@ class VehiclesRepository implements VehiclesRepositoryInterface
     {
         $query = DB::table('vehicles.vehicle')
             ->join('main.company', 'company.id', '=', 'vehicle.company_id')
+            ->join('authentication.credential', 'credential.id', '=', 'vehicle.motorista_credential_id')
+            ->join('authentication.person', 'person.id', '=', 'credential.person_id')
             ->join('main.units', 'units.id', '=', 'vehicle.unit_id');
 
         $whereFactory = new WhereFactory();
@@ -37,6 +39,7 @@ class VehiclesRepository implements VehiclesRepositoryInterface
         $query = $selectFactory->byArray($query, $selectConfig);
         $query->select([
             'vehicle.*',
+            'person.name as motorista_credential_name',
             'company.name as company_name',
             'units.name as unit_name', 'units.code as unit_code'
         ]);
@@ -63,6 +66,14 @@ class VehiclesRepository implements VehiclesRepositoryInterface
                 ->first();
 
             if ($vehicle) return ResponseService::businessError('Veiculo ja cadastrado no sistema!');
+
+            $verifyDriver = Vehicle::where('motorista_credential_id', $value['motorista_credential_id'])->first();
+            if ($verifyDriver){
+                return ResponseService::businessError(
+                    "Esse motorista ja tem um veiculo cadastrado para ele. Veiculo: $verifyDriver->name, Placa: $verifyDriver->plate_number"
+                );
+            }
+
             Vehicle::create($value);
             return ResponseService::success204();
         } catch (\Exception $e){
@@ -80,6 +91,15 @@ class VehiclesRepository implements VehiclesRepositoryInterface
                 ->first();
 
             if ($vehicle) return ResponseService::businessError('Veiculo ja cadastrado no sistema!');
+
+            $verifyDriver = Vehicle::where('motorista_credential_id', $data['motorista_credential_id'])
+                ->where('id', '<>', $id)
+                ->first();
+            if ($verifyDriver){
+                return ResponseService::businessError(
+                    "Esse motorista ja tem um veiculo cadastrado para ele. Veiculo: $verifyDriver->name, Placa: $verifyDriver->plate_number"
+                );
+            }
 
             Vehicle::whereId($id)->update($data);
             return ResponseService::success204();

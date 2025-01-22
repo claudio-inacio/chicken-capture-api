@@ -156,4 +156,114 @@ class  CollectorsService
             ]);
         }
     }
+
+    public static function addNewsCollectors($arrayCollectors): array {
+        try {
+            // IDs dos group_collectors fornecidos
+            $providedIds = array_column($arrayCollectors['group_collectors'], 'id');
+
+            // Consulta para verificar se todos os IDs existem na tabela
+            $collectorsGroup = CollectorsGroup::where('enabled', true)
+                ->whereIn('id', $providedIds)
+                ->pluck('id') // Retorna apenas os IDs encontrados
+                ->toArray();
+
+            $groupCollectorIds = array_map(function ($group) {
+                return $group['id'];
+            }, $arrayCollectors['group_collectors']);
+
+            $missingIds = array_diff($groupCollectorIds, $collectorsGroup);
+
+            // Valida se todos os IDs fornecidos estão na tabela
+            $groupIsValid = empty(array_diff($providedIds, $collectorsGroup));
+
+            if (!$groupIsValid) return [
+                'success' => false,
+                'message' => "Os seguintes IDs não foram encontrados na tabela groupCollectors: " . implode(', ', $missingIds),
+                'error' => ""
+            ];
+
+            foreach ($arrayCollectors as $collectors) {
+                foreach ($collectors as $collector) {
+                    Collectors::where('collectors_group_id', $collector['id'])
+                        ->where('enabled', true)
+                        ->increment('quantity', $collector['quantity_collectors']);
+                }
+            }
+
+            return ['success' => true];
+        }catch (\Exception $e){
+            return [
+                'success' => false,
+                'message' => 'Falha em atualizar coletores',
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    public static function removeCollectors($arrayCollectors, $teamId): array {
+        try {
+            // IDs dos group_collectors fornecidos
+            $providedIds = array_column($arrayCollectors['group_collectors'], 'id');
+
+            // Consulta para verificar se todos os IDs existem na tabela
+            $collectorsGroup = CollectorsGroup::where('enabled', true)
+                ->whereIn('id', $providedIds)
+                ->pluck('id') // Retorna apenas os IDs encontrados
+                ->toArray();
+
+            $groupCollectorIds = array_map(function ($group) {
+                return $group['id'];
+            }, $arrayCollectors['group_collectors']);
+
+            $missingIds = array_diff($groupCollectorIds, $collectorsGroup);
+
+            // Valida se todos os IDs fornecidos estão na tabela
+            $groupIsValid = empty(array_diff($providedIds, $collectorsGroup));
+
+            if (!$groupIsValid) return [
+                'success' => false,
+                'message' => "Os seguintes IDs não foram encontrados na tabela groupCollectors: " . implode(', ', $missingIds),
+                'error' => ""
+            ];
+
+            $team = Team::find($teamId);
+            $collectorsTeam = json_decode($team->collectors, true);
+
+            // Processar coletores para decrement e increment
+            // reduzindo a quantidade de coletores referente ao time
+            // e adcionando a nova quantia de coletores
+
+            foreach ($arrayCollectors as $collectors) {
+                foreach ($collectors as $collector) {
+                    $collectorModel = Collectors::where('collectors_group_id', $collector['id'])
+                        ->where('enabled', true)->first();
+
+                    if (!$collectorModel) {
+                        continue;
+                    }
+
+                    foreach ($collectorsTeam as $collectorTeam) {
+                        foreach ($collectorTeam as $collectorTeamItem) {
+                            if ($collectorTeamItem['id'] == $collector['id']){
+                                $collectorModel->decrement('quantity', $collectorTeamItem['quantity_collectors']);
+
+                                break;
+                            }
+                        }
+                    }
+
+                    $collectorModel->increment('quantity', $collector['quantity_collectors']);
+                }
+            }
+
+            return ['success' => true];
+        }catch (\Exception $e){
+            return [
+                'success' => false,
+                'message' => 'Falha em atualizar coletores',
+                'error' => $e->getMessage()
+            ];
+        }
+    }
 }

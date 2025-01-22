@@ -21,6 +21,10 @@ class PersonService
         DB::beginTransaction();
         try {
             $arrayRequest['document'] = FormatHelper::formatCnpjCpf($arrayRequest['document']);
+
+            if (!empty($arrayRequest['salary'])) $arrayRequest['salary'] = FormatHelper::moneyToUS($arrayRequest['salary']);
+            else $arrayRequest['salary'] = 0;
+
             $arrayRequest['access_group_id'] == AccessGroupEnum::ADMINISTRATIVE ? $isOwner = true : $isOwner = false;
             $company = Company::whereId($user->company_id)->first();
 
@@ -36,6 +40,7 @@ class PersonService
                 'phone_number' => $arrayRequest['phone_number'],
                 'company_group_id' => $company->company_group_id,
                 'is_owner' => $isOwner,
+                'salary' => $arrayRequest['salary'] ?? 0
             ]);
 
             Credential::create([

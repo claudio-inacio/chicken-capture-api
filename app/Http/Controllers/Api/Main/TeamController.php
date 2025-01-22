@@ -27,7 +27,8 @@ class TeamController extends Controller
             'name' => 'required',
             'default_unit_id' => 'required',
             'collectors' => 'required',
-            'contracting_company_id' => 'required'
+            'contracting_company_id' => 'required',
+            "driver_credential_id" => 'required'
         ]);
 
         $arrayData = $request->all();
@@ -39,12 +40,11 @@ class TeamController extends Controller
         $contractingCompany = ContractingCompany::find($request->contracting_company_id);
         if (!$contractingCompany) return ResponseService::invalidArguments('Empresa contratante não encontrada!');
 
-        $verify = CollectorsService::verifyQuantityCollectors($arrayData, $request->user());
-        if (!$verify['success']) {
-            return ResponseService::businessError($verify['message'], $verify['error']);
-        }
+//        $verify = CollectorsService::verifyQuantityCollectors($arrayData, $request->user());
+//        if (!$verify['success']) {
+//            return ResponseService::businessError($verify['message'], $verify['error']);
+//        }
 
-        $arrayData['collectors'] = json_encode($arrayData['collectors']);
         return $this->teamRepository->create($arrayData);
     }
 
@@ -65,7 +65,8 @@ class TeamController extends Controller
             'default_unit_id' => 'required',
             'collectors' => 'required',
             'contracting_company_id' => 'required',
-            'team_id' => 'required'
+            'team_id' => 'required',
+            'driver_credential_id' => 'required'
         ]);
 
         $arrayData = $request->all();
