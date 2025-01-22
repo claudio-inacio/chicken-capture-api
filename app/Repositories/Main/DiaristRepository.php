@@ -242,7 +242,6 @@ class DiaristRepository implements DiaristRepositoryInterface
                 $paymentData['observation_proof_of_payment'] = $arrayData['observation_proof_of_payment'] ?? null;
 
                 $upload = UploadBase64Service::uploadProofPayment($paymentData, $arrayData['credential_id'], $financialAccount);
-                LogService::save('ResultUpload', ['result' => $upload]);
                 if ($upload['success'] == false) {
                     DB::rollBack();
                     return ResponseService::businessError($upload['message'], $upload['error']);

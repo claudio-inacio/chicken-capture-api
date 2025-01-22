@@ -10,19 +10,12 @@ class UploadBase64Service {
     public static function uploadProofPayment($arrayPayment, $credentialId, FinancialAccounts $financialAccounts): array
     {
         try {
-            LogService::save('PayloadUpload', [
-                'arrayPayment' => $arrayPayment,
-                'credentialId' => $credentialId,
-                'financialAccountId' => $financialAccounts->id
-            ]);
-
             $dateNow = date("Y/m/d");
 
             if (!file_exists(storage_path() . "/app/public/$dateNow"))
                 mkdir(storage_path() . "/app/public/$dateNow", 0777, true);
             if (!file_exists(storage_path() . "/app/public/$dateNow/$credentialId"))
                 mkdir(storage_path() . "/app/public/$dateNow/$credentialId", 0777, true);
-
 
             $filePath = storage_path() . "/app/public/$dateNow/$credentialId";
 
@@ -45,21 +38,7 @@ class UploadBase64Service {
             $arrayData['credential_id'] = $credentialId;
             $arrayData['observation'] = $arrayPayment['observation_proof_of_payment'] ?? null;
 
-            try {
-                LogService::save('ArrayDataProofOfPayment', [
-                    'data' => $arrayData
-                ]);
-                $register = ProofOfPayment::create($arrayData);
-            } catch (\Exception $exception){
-                return [
-                    'success' => false,
-                    'message' => 'Falha em cadastrar comprovante de pagamento',
-                    'error' => [
-                        'message' => $exception->getMessage(),
-                        'line' => $exception->getLine()
-                    ]
-                ];
-            }
+            $register = ProofOfPayment::create($arrayData);
 
             if (!$register) {
                 return [
