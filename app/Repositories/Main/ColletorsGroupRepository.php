@@ -5,6 +5,7 @@ namespace App\Repositories\Main;
 use App\Enum\Authentication\AccessGroupEnum;
 use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
+use App\Helpers\FormatHelper;
 use App\Interfaces\Main\ColletorsGroupRepositoryInterface;
 use App\Models\Main\CollectorsGroup;
 use App\Services\ResponseService;
@@ -39,10 +40,14 @@ class ColletorsGroupRepository implements ColletorsGroupRepositoryInterface
             'company.name as company_name'
         ]);
 
-        $result = $query->get();
+        $result = $query->get()->toArray();
+
+        foreach ($result as $item){
+            $item->salary = FormatHelper::decimalToBr($item->salary);
+        }
 
         return [
-            'data' => $result->toArray(),
+            'data' => $result,
             'total' => $total,
         ];
     }
