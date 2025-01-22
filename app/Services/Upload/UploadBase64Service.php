@@ -10,6 +10,12 @@ class UploadBase64Service {
     public static function uploadProofPayment($arrayPayment, $credentialId, FinancialAccounts $financialAccounts): array
     {
         try {
+            LogService::save('PayloadUpload', [
+                'arrayPayment' => $arrayPayment,
+                'credentialId' => $credentialId,
+                'financialAccountId' => $financialAccounts->id
+            ]);
+
             $dateNow = date("Y/m/d");
 
             if (!file_exists(storage_path() . "/app/public/$dateNow"))
