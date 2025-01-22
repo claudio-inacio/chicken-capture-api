@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Main;
 use App\Helpers\FormatHelper;
 use App\Http\Controllers\Controller;
 use App\Interfaces\Main\DiaristRepositoryInterface;
+use Exception;
 use Illuminate\Http\Request;
 
 class DiaristController extends Controller
@@ -20,7 +21,7 @@ class DiaristController extends Controller
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function register(Request $request)
     {
@@ -29,10 +30,17 @@ class DiaristController extends Controller
             'phone_number' => 'required',
             'diarist_group_id' => 'required',
             'date' => 'required',
+            'paid' => 'required'
         ]);
+
+        if ($request->paid == 'sim'){
+            $request->validate(['proof_of_payment' => 'required']);
+            $request->validate(['status_proof_of_payment' => 'required']);
+        }
 
         $arrayData = $request->all();
         $arrayData['company_id'] = $request->user()->company_id;
+        $arrayData['credential_id'] = $request->user()->id;
         $arrayData['phone_number'] = FormatHelper::removeSpecialCaracterTel($arrayData['phone_number']);
         $arrayData['date'] = (new \DateTime($arrayData['date']))->format('Y-m-d');
         $request->daily ? $arrayData['daily'] = FormatHelper::brlTodecimal($request->daily) : $arrayData['daily'] = 0;
@@ -56,7 +64,10 @@ class DiaristController extends Controller
         return response()->json($this->diaristRepository->findAll($selectConfig, $whereCriterious, $request->user()));
     }
 
-    public function select(Request $request)
+    /**
+     * @throws Exception
+     */
+    public function select(Request $request): \Illuminate\Http\JsonResponse
     {
         $request->validate([
             'document' => 'required_without:phone_number',
@@ -102,7 +113,7 @@ class DiaristController extends Controller
             $arrayData['document'] = null;
         }
 
-        return $this->diaristRepository->update($request->diarist_id, $arrayData);
+        return $this->diaristRepository->update($request->diarist_id, $arrayData, $request->user());
     }
 
     public function enable(Request $request)

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Auth\LoginController;
+use App\Http\Controllers\Api\Authentication\DriverController;
 use App\Http\Controllers\Api\Authentication\PersonController;
 
 use App\Http\Controllers\Api\Catch\CatchTypeController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\Api\Catch\CatchCancelledController;
 use App\Http\Controllers\Api\Catch\CatchConfigurationController;
 
 use App\Http\Controllers\Api\Financial\CostCenterController;
+use App\Http\Controllers\Api\Financial\ProofOfPaymentController;
 use App\Http\Controllers\Api\Main\ContractingCompanyController;
 use App\Http\Controllers\Api\Main\IntegratedController;
 use App\Http\Controllers\Api\Main\UnitsController;
@@ -136,6 +138,7 @@ Route::group(['middleware' => ['authJwt']], function (){
     #################################### FINANCIAL #########################################
     Route::post('/financial/financial-accounts', [FinancialAccountsController::class, 'register']);
     Route::get('/financial/financial-accounts', [FinancialAccountsController::class, 'list']);
+    Route::get('/financial/financial-accounts/download', [FinancialAccountsController::class, 'download']);
     Route::put('/financial/financial-accounts', [FinancialAccountsController::class, 'update']);
     Route::put('/financial/financial-accounts/enable', [FinancialAccountsController::class, 'enable']);
     Route::get('/financial/financial-accounts/analytic', [FinancialAccountsController::class, 'analytic']);
@@ -149,6 +152,8 @@ Route::group(['middleware' => ['authJwt']], function (){
     Route::put('/financial/cost-center', [CostCenterController::class, 'update']);
     Route::put('/financial/cost-center/enable', [CostCenterController::class, 'enable']);
 
+    Route::post('/financial/proof-payment', [ProofOfPaymentController::class, 'create']);
+    Route::get('/financial/proof-payment', [ProofOfPaymentController::class, 'list']);
 
     ################################## REGION ############################################
     Route::get('/region/city', [CityController::class, 'list']);
@@ -165,6 +170,9 @@ Route::group(['middleware' => ['authJwt']], function (){
     Route::put('/vehicles/driver-area/finalize', [DriverAreaController::class, 'finalize']);
     Route::put('/vehicles/driver-area/enable', [DriverAreaController::class, 'enable']);
     Route::get('/vehicles/driver-area/analytic', [DriverAreaController::class, 'analytic']);
+
+    ##################################### DRIVER ############################################
+    Route::get('/authentication/credential/available-driver', [DriverController::class, 'listAvailableDriver']);
 });
 
 Route::prefix('auth')->group(function () {

@@ -6,6 +6,7 @@ use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
 use App\Helpers\FormatHelper;
 use App\Interfaces\Catch\CatchsConfigurationRespositoryInterface;
+use App\Models\Catch\CatchConfigurationHistory;
 use App\Models\Catch\CatchsConfiguration;
 use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
@@ -60,10 +61,28 @@ class CatchsConfigurationRepository implements CatchsConfigurationRespositoryInt
         $value['catch_price'] = FormatHelper::brlTodecimal($value['catch_price']);
         $value['cancellation_price'] = FormatHelper::brlTodecimal($value['cancellation_price']);
         try {
-            CatchsConfiguration::create($value);
+            $catchConfigVerify = CatchsConfiguration::where('catch_type_id', $value['catch_type_id'])
+                ->where('enabled', true)
+                ->first();
+
+            if ($catchConfigVerify)
+                return ResponseService::businessError('Ja existe uma configuração para esse tipo de apanha.');
+
+            DB::beginTransaction();
+            $catchConfig = CatchsConfiguration::create($value);
+            unset($value['enabled']);
+
+            $value['catch_configuration_id'] = $catchConfig->id;
+            CatchConfigurationHistory::create($value);
+
+            DB::commit();
             return ResponseService::success204();
         } catch (\Exception $e){
-            return ResponseService::internalServerError('Falha em registrar configuração de apanha', $e->getMessage());
+            DB::rollBack();
+            return ResponseService::internalServerError('Falha em registrar configuração de apanha', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine()
+            ]);
         }
     }
 
@@ -71,12 +90,34 @@ class CatchsConfigurationRepository implements CatchsConfigurationRespositoryInt
     {
         $data['catch_price'] = FormatHelper::brlTodecimal($data['catch_price']);
         $data['cancellation_price'] = FormatHelper::brlTodecimal($data['cancellation_price']);
-        unset($data['catchs_configuration_id']);
+
         try {
+            $catchConfigVerify = CatchsConfiguration::where('catch_type_id', $data['catch_type_id'])
+                ->where('enabled', true)
+                ->where('id', '<>', $data['catchs_configuration_id'])
+                ->first();
+
+            if ($catchConfigVerify)
+                return ResponseService::businessError('Ja existe uma configuração para esse tipo de apanha.');
+
+            unset($data['catchs_configuration_id']);
+
+            DB::beginTransaction();
             CatchsConfiguration::whereId($id)->update($data);
+
+            unset($data['enabled']);
+            $data['catch_configuration_id'] = $id;
+            CatchConfigurationHistory::create($data);
+
+            DB::commit();
             return ResponseService::success204();
         } catch (\Exception $e){
-            return ResponseService::internalServerError('Falha em alterar configuração de apanha', $e->getMessage());
+            DB::rollBack();
+            return ResponseService::internalServerError('Falha em alterar configuração de apanha', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine()
+            ]);
+
         }
     }
 

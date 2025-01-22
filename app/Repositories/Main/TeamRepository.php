@@ -7,6 +7,7 @@ use App\Factory\WhereFactory;
 use App\Interfaces\Main\TeamRepositoryInterface;
 use App\Models\Main\CollectorsGroup;
 use App\Models\Main\Team;
+use App\Services\Main\CollectorsService;
 use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
 
@@ -75,15 +76,29 @@ class TeamRepository implements TeamRepositoryInterface
     public function create(array $value): \Illuminate\Http\JsonResponse
     {
         try {
+            DB::beginTransaction();
             $team = Team::where('name', $value['name'])
                 ->where('company_id', $value['company_id'])
                 ->first();
 
-            if ($team) return ResponseService::businessError('Ja existe um time com esse nome!');
+            if ($team){
+                DB::rollBack();
+                return ResponseService::businessError('Ja existe um time com esse nome!');
+            }
 
+            $addCollectors = CollectorsService::addNewsCollectors($value['collectors']);
+            if (!$addCollectors['success']) {
+                DB::rollBack();
+                return ResponseService::businessError($addCollectors['message'], $addCollectors['error']);
+            }
+
+            $value['collectors'] = json_encode($value['collectors']);
             Team::create($value);
+
+            DB::commit();
             return ResponseService::success204();
         } catch (\Exception $e){
+            DB::rollBack();
             return ResponseService::internalServerError('Falha em registrar time', $e->getMessage());
         }
     }
@@ -96,6 +111,14 @@ class TeamRepository implements TeamRepositoryInterface
                 ->where('id', '<>', $id)->first();
 
             if ($team) return ResponseService::businessError('Ja existe um time com esse nome!');
+
+            $addCollectors = CollectorsService::removeCollectors($data['collectors'], $id);
+            if (!$addCollectors['success']) {
+                DB::rollBack();
+                return ResponseService::businessError($addCollectors['message'], $addCollectors['error']);
+            }
+
+            $data['collectors'] = json_encode($data['collectors']);
 
             Team::whereId($id)->update($data);
             return ResponseService::success204();

@@ -24,6 +24,7 @@ class VehiclesController extends Controller
             'plate_number' => 'required',
             'unit_id' => 'required',
             'mileage' => 'required',
+            'motorista_credential_id' => 'required'
         ]);
 
         $arrayData = $request->all();
