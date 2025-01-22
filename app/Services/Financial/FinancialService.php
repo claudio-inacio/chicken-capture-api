@@ -188,6 +188,7 @@ class FinancialService
             // Obter contas financeiras a receber
             $financialAccountsToReceive = FinancialAccounts::whereBetween('due_date', [$startDate, $endDate])
                 ->where('type', TypeFinanceEnum::TO_RECEIVE)
+                ->where('status_id', StatusEnum::TO_RECEIVE)
                 ->where('enabled', true)
                 ->where('finished_data', null)
                 ->where('company_id', $user->company_id)
@@ -207,6 +208,7 @@ class FinancialService
             // Obter contas financeiras recebidas
             $financialAccountsReceive = FinancialAccounts::whereBetween('due_date', [$startDate, $endDate])
                 ->where('type', TypeFinanceEnum::TO_RECEIVE)
+                ->where('status_id', StatusEnum::RECEIVE)
                 ->where('enabled', true)
                 ->where('finished_data', '<>', null)
                 ->where('company_id', $user->company_id)
@@ -226,6 +228,7 @@ class FinancialService
             // Obter contas financeiras a descontar
             $financialAccountsToDiscount = FinancialAccounts::whereBetween('due_date', [$startDate, $endDate])
                 ->where('type', TypeFinanceEnum::TO_DISCOUNT)
+                ->where('status_id', StatusEnum::TO_DISCOUNT)
                 ->where('enabled', true)
                 ->where('finished_data', null)
                 ->where('company_id', $user->company_id)
@@ -245,6 +248,7 @@ class FinancialService
             // Obter contas financeiras descontadas
             $financialAccountsDiscount = FinancialAccounts::whereBetween('due_date', [$startDate, $endDate])
                 ->where('type', TypeFinanceEnum::TO_DISCOUNT)
+                ->where('status_id', StatusEnum::DISCOUNT)
                 ->where('enabled', true)
                 ->where('finished_data', '<>', null)
                 ->where('company_id', $user->company_id)

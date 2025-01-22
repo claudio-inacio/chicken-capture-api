@@ -285,9 +285,10 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
 
         try {
             DB::beginTransaction();
-            if ($arrayData['status_id'] != StatusEnum::DISCOUNT) {
+            if ($arrayData['status_id'] != StatusEnum::DISCOUNT and $arrayData['status_id'] != StatusEnum::RECEIVE) {
                 unset($arrayData['finished_data']);
             }
+
             $financialAccount = FinancialAccounts::create($arrayData);
 
             if ($paymentData['proof_of_payment']) {
