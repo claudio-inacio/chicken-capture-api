@@ -30,6 +30,7 @@ class PersonRepository implements PersonRespositoryInterface
             ->join('authentication.credential', 'credential.person_id', '=', 'person.id')
             ->join('main.company', 'company.id', '=', 'credential.company_id');
 
+        $query->where('id', '<>', 0);
 
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);
