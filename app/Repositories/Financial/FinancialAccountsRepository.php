@@ -383,9 +383,10 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
 
 // Inicializar centros de custo com valores padrão
         $defaultStatuses = [
-            'a_pagar' => ['status' => 'a pagar', 'valor' => 0],
             'a_receber' => ['status' => 'a receber', 'valor' => 0],
+            'recebido' => ['status' => 'a receber', 'valor' => 0],
             'pago' => ['status' => 'pago', 'valor' => 0],
+            'a_pagar' => ['status' => 'a pagar', 'valor' => 0],
             'cancelado' => ['status' => 'cancelado', 'valor' => 0],
         ];
 
@@ -399,8 +400,8 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             $costCenterName = $item->cost_center_name;
             $statusKey = match ($item->status_id) {
                 StatusEnum::TO_RECEIVE => 'a_receber',
+                StatusEnum::RECEIVE => 'recebido',
                 StatusEnum::TO_DISCOUNT => 'a_pagar',
-                StatusEnum::RECEIVE => 'pago',
                 StatusEnum::DISCOUNT => 'pago',
                 StatusEnum::DEFEATED => 'cancelado',
                 default => 'desconhecido',
@@ -417,9 +418,9 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             ];
 
             // Somatórios
-            if ($statusKey === 'a_pagar') {
+            if (in_array($statusKey, ['a_pagar', 'pago'])) {
                 $totalDespesa += $item->total_amount;
-            } elseif ($statusKey === 'a_receber') {
+            } elseif (in_array($statusKey, ['a_receber', 'recebido'])) {
                 $totalReceita += $item->total_amount;
             } elseif ($statusKey === 'cancelado') {
                 $totalCancelados += $item->total_amount;
