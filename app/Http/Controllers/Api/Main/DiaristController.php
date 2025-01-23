@@ -27,7 +27,7 @@ class DiaristController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'phone_number' => 'required',
+            'document' => 'required',
             'diarist_group_id' => 'required',
             'date' => 'required',
             'paid' => 'required'
@@ -41,12 +41,11 @@ class DiaristController extends Controller
         $arrayData = $request->all();
         $arrayData['company_id'] = $request->user()->company_id;
         $arrayData['credential_id'] = $request->user()->id;
-        $arrayData['phone_number'] = FormatHelper::removeSpecialCaracterTel($arrayData['phone_number']);
         $arrayData['date'] = (new \DateTime($arrayData['date']))->format('Y-m-d');
         $request->daily ? $arrayData['daily'] = FormatHelper::brlTodecimal($request->daily) : $arrayData['daily'] = 0;
 
-        if (!$request->document) {
-            $arrayData['document'] = null;
+        if (isset($arrayData['phone_number'])) {
+            $arrayData['phone_number'] = FormatHelper::removeSpecialCaracterTel($arrayData['phone_number']);
         }
 
         return $this->diaristRepository->create($arrayData, $request->user());
