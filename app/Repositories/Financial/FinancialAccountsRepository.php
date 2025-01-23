@@ -124,6 +124,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             }
 
             $arrayStatus[$item->status_id] = ($arrayStatus[$item->status_id] ?? 0) + $item->amount;
+            $item->amount = FormatHelper::decimalToBr($item->amount);
         }
 
         return [
