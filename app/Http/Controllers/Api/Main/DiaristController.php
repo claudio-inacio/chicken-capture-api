@@ -33,7 +33,7 @@ class DiaristController extends Controller
             'paid' => 'required'
         ]);
 
-        if ($request->paid == 'sim'){
+        if (strtolower($request->paid) == 'sim'){
             $request->validate(['proof_of_payment' => 'required']);
             $request->validate(['status_proof_of_payment' => 'required']);
         }
