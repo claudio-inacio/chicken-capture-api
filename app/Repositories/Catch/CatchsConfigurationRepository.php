@@ -42,10 +42,15 @@ class CatchsConfigurationRepository implements CatchsConfigurationRespositoryInt
             'company.name as company_name'
         ]);
 
-        $result = $query->get();
+        $result = $query->get()->toArray();
+
+        foreach ($result as $item){
+            $item->catch_price = FormatHelper::decimalToBr($item->catch_price);
+            $item->cancellation_price = FormatHelper::decimalToBr($item->cancellation_price);
+        }
 
         return [
-            'data' => $result->toArray(),
+            'data' => $result,
             'total' => $total,
         ];
     }
