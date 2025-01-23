@@ -56,7 +56,15 @@ class TeamRepository implements TeamRepositoryInterface
             foreach ($item->collectors as $keyCollector => $groupsCollector){
                 foreach ($groupsCollector as $keyGroup => $group) {
                     $collectorGroup = CollectorsGroup::find($group['id']);
-                    $item->collectors[$keyCollector][$keyGroup]['function_name'] = $collectorGroup->function_name;
+                    if ($collectorGroup) { // Verifica se o registro foi encontrado
+                        $item->collectors[$keyCollector][$keyGroup] = array_merge(
+                            $item->collectors[$keyCollector][$keyGroup],
+                            ['function_name' => $collectorGroup['function_name']]
+                        );
+                    } else {
+                        // Adicione um valor padrão ou ignore a adição
+                        $item->collectors[$keyCollector][$keyGroup]['function_name'] = null;
+                    }
                 }
             }
         }
