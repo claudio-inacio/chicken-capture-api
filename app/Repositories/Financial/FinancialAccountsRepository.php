@@ -314,6 +314,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
     public function update(int $id, array $data, array $paymentData): \Illuminate\Http\JsonResponse
     {
         $data['due_date'] = FormatHelper::dateToUsTimeStamp($data['due_date']);
+        $arrayData['amount'] = FormatHelper::moneyToUS($arrayData['amount']);
         unset($data['financial_accounts_id']);
         try {
             DB::beginTransaction();
