@@ -63,6 +63,7 @@ class DiaristGroupRepository implements DiaristGroupRepositoryInterface
 
             if ($diaristGroup) return ResponseService::businessError('Ja existe um grupo de diaristas cadastrada com essa função');
 
+            $arrayData['function_name'] = strtoupper($arrayData['function_name']);
             DiaristGroup::create($arrayData);
             return ResponseService::success204();
         } catch (\Exception $e){
