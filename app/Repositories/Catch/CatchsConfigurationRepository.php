@@ -63,8 +63,8 @@ class CatchsConfigurationRepository implements CatchsConfigurationRespositoryInt
 
     public function create(array $value): \Illuminate\Http\JsonResponse
     {
-        $value['catch_price'] = FormatHelper::brlTodecimal($value['catch_price']);
-        $value['cancellation_price'] = FormatHelper::brlTodecimal($value['cancellation_price']);
+        $value['catch_price'] = FormatHelper::brlToFourDecimal($value['catch_price']);
+        $value['cancellation_price'] = FormatHelper::brlToFourDecimal($value['cancellation_price']);
         try {
             $catchConfigVerify = CatchsConfiguration::where('catch_type_id', $value['catch_type_id'])
                 ->where('enabled', true)
@@ -93,8 +93,8 @@ class CatchsConfigurationRepository implements CatchsConfigurationRespositoryInt
 
     public function update(int $id, array $data): \Illuminate\Http\JsonResponse
     {
-        $data['catch_price'] = FormatHelper::brlTodecimal($data['catch_price']);
-        $data['cancellation_price'] = FormatHelper::brlTodecimal($data['cancellation_price']);
+        $data['catch_price'] = FormatHelper::brlToFourDecimal($data['catch_price']);
+        $data['cancellation_price'] = FormatHelper::brlToFourDecimal($data['cancellation_price']);
 
         try {
             $catchConfigVerify = CatchsConfiguration::where('catch_type_id', $data['catch_type_id'])

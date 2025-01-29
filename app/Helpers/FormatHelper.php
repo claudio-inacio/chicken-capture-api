@@ -59,6 +59,28 @@ class FormatHelper
         return (float) number_format($decimal, $casasDecimais, '.', '');
     }
 
+    public static function brlToFourDecimal($brl): float|int
+    {
+        if (empty($brl) || $brl == "") return 0;
+
+        // Se já estiver no formato USD, retorna como float e formatado
+        if (preg_match('/^\d+\.{1}\d{1,4}$/', $brl)) {
+            return (float) number_format($brl, 4, '.', '');
+        }
+
+        // Tira tudo que não for número, ponto ou vírgula
+        $brl = preg_replace('/[^\d\.\,]+/', '', $brl);
+
+        // Tira o ponto
+        $decimal = str_replace('.', '', $brl);
+
+        // Troca a vírgula por ponto
+        $decimal = str_replace(',', '.', $decimal);
+
+        // Retorna com até 4 casas decimais
+        return (float) number_format($decimal, 4, '.', '');
+    }
+
     public static function decimalToBr($value): string
     {
         return number_format($value,2,",",".");
