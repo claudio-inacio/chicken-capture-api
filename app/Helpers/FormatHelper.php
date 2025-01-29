@@ -86,6 +86,11 @@ class FormatHelper
         return number_format($value,2,",",".");
     }
 
+    public static function decimalFourToBr($value): string
+    {
+        return number_format($value,4,",",".");
+    }
+
     public static function formatCnpjCpf($value)
     {
         if (strlen($value) < 11){

@@ -45,8 +45,8 @@ class CatchsConfigurationRepository implements CatchsConfigurationRespositoryInt
         $result = $query->get()->toArray();
 
         foreach ($result as $item){
-            $item->catch_price = FormatHelper::decimalToBr($item->catch_price);
-            $item->cancellation_price = FormatHelper::decimalToBr($item->cancellation_price);
+            $item->catch_price = FormatHelper::decimalFourToBr($item->catch_price);
+            $item->cancellation_price = FormatHelper::decimalFourToBr($item->cancellation_price);
         }
 
         return [
