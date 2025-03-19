@@ -55,6 +55,7 @@ class FuelSupplyRepository implements FuelSupplyRepositoryInterface
 
     public function create(array $value): \Illuminate\Http\JsonResponse
     {
+        DB::beginTransaction();
         try {
             $value['total_value'] = FormatHelper::brlTodecimal($value['total_value']);
             $fuelSupply = FuelSupply::create($value);
@@ -65,56 +66,55 @@ class FuelSupplyRepository implements FuelSupplyRepositoryInterface
                 'amount' => $value['total_value'],
                 'due_date' => now(),
                 'reference_id' => $fuelSupply->id,
-                'status_id' => StatusEnum::TO_RECEIVE,
+                'status_id' => StatusEnum::TO_DISCOUNT,
                 'table_reference_id' => TableReferenceFinanceEnum::FUEL,
                 'type' => TypeFinanceEnum::TO_DISCOUNT,
                 'credential_id' => $value['credential_id'],
                 'company_id' => $value['company_id']
             ]);
 
+            DB::commit();
             return ResponseService::success204();
         } catch (\Exception $e){
+            DB::rollBack();
             return ResponseService::internalServerError('Falha em registrar despesa', $e->getMessage());
         }
     }
 
     public function update(int $id, array $data): \Illuminate\Http\JsonResponse
     {
-        unset($data['vehicle_id']);
+        DB::beginTransaction();
         try {
-            $vehicle = FuelSupply::where('plate_number', $data['plate_number'])
-                ->where('company_id', $data['company_id'])
-                ->where('id', '<>', $id)
-                ->first();
-
-            if ($vehicle) return ResponseService::businessError('Veiculo ja cadastrado no sistema!');
-
-            $verifyDriver = FuelSupply::where('motorista_credential_id', $data['motorista_credential_id'])
-                ->where('id', '<>', $id)
-                ->first();
-            if ($verifyDriver){
-                return ResponseService::businessError(
-                    "Esse motorista ja tem um veiculo cadastrado para ele. Veiculo: $verifyDriver->name, Placa: $verifyDriver->plate_number"
-                );
-            }
+            FinancialAccounts::where('reference_id', $id)
+                ->where('table_reference_id', TableReferenceFinanceEnum::FUEL)
+                ->update([
+                'amount' => $data['total_value'],
+            ]);
 
             FuelSupply::whereId($id)->update($data);
+
+            DB::commit();
             return ResponseService::success204();
         } catch (\Exception $e){
+            DB::rollBack();
             return ResponseService::internalServerError('Falha em alterar despesa', $e->getMessage());
         }
     }
 
     public function enable(int $id, bool $enable): \Illuminate\Http\JsonResponse
     {
+        DB::beginTransaction();
         try {
             FinancialAccounts::where('table_reference_id', TableReferenceFinanceEnum::FUEL)
                 ->where('reference_id', $id)
                 ->update(['enabled' => $enable]);
 
             FuelSupply::whereId($id)->update(['enabled' => $enable]);
+
+            DB::commit();
             return ResponseService::success204();
         } catch (\Exception $e){
+            DB::rollBack();
             return ResponseService::internalServerError('Falha Ativar/Desativar Despesa de combustivel', $e->getMessage());
         }
     }
