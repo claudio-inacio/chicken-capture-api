@@ -7,4 +7,5 @@ class AccessGroupEnum {
     const DRIVER       = 3;
     const FINANCIAL       = 4;
     const LEADER       = 5;
+    const DRIVER_RESPONSIBLE       = 6;
 }

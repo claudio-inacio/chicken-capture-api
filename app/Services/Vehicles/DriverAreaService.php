@@ -11,6 +11,7 @@ use App\Models\Credential;
 use App\Models\Financial\FinancialAccounts;
 use App\Models\Main\Team;
 use App\Models\Vehicles\DriverArea;
+use App\Models\Vehicles\FuelSupply;
 use App\Models\Vehicles\Vehicle;
 use App\Services\Financial\FinancialService;
 use App\Services\ResponseService;
@@ -23,7 +24,7 @@ class DriverAreaService
     /**
      * @throws Exception
      */
-    public static function create(array $arrayData): JsonResponse
+    public static function create(array $arrayData, Vehicle $vehicle): JsonResponse
     {
         DB::beginTransaction();
         $arrayData['maintenance_expenses'] = FormatHelper::brlTodecimal($arrayData['maintenance_expenses']);
@@ -36,7 +37,9 @@ class DriverAreaService
         $fuel['success'] = false;
 
         try {
-            $vehicle = Vehicle::whereId($arrayData['vehicle_id'])->first();
+            $vehicle->mileage = $arrayData['daily_start_km'];
+            $vehicle->update();
+
             $driverArea = DriverArea::where('vehicle_id', $arrayData['vehicle_id'])
                 ->whereBetween('created_at', [$date, $dateOut])
                 ->first();
@@ -48,15 +51,28 @@ class DriverAreaService
                 }
             }
 
-            $team = Team::where('motorista_credential_id', $arrayData['credential_id'])->first();
+            $team = Team::where('motorista_credential_id', $vehicle->motorista_credential_id)->first();
+            if (!$team)
+                return ResponseService::businessError('Time nao encontrado.');
+
             $driverAreaUpdate = DriverArea::where('vehicle_id', $arrayData['vehicle_id'])->first();
             if ($driverAreaUpdate){
                 $dateCreatedAt = FormatHelper::dateToUs($driverAreaUpdate->created_at);
                 if (date('Y-m-d') === $dateCreatedAt) {
                     DriverArea::whereId($driverAreaUpdate->id)->update($arrayData);
 
+                    $fuelSuplly = FuelSupply::where('driver_area_id', $driverAreaUpdate->id)->update([
+                        'credential_id' => $arrayData['credential_id'],
+                        'total_value' => FormatHelper::brlTodecimal($arrayData['total_supply_value']),
+                        'liters_filled' => $arrayData['liters_of_fuel'],
+                        'km_filled' => $arrayData['daily_start_km'],
+                    ]);
+
                     if ($arrayData['maintenance_expenses'] != 0) {
-                        $maintenance = FinancialService::saveMaintenanceFinance($arrayData, $driverAreaUpdate->id, $team);
+                        $maintenance = FinancialService::saveMaintenanceFinance(
+                            $arrayData, $driverAreaUpdate->id, $team, $arrayData['proof_of_payment_expenses']
+                        );
+
                         if (!$maintenance['success']) {
                             DB::rollBack();
                             return ResponseService::businessError($maintenance['message'], $maintenance['error']);
@@ -64,7 +80,7 @@ class DriverAreaService
                     }
 
                     if ($arrayData['total_supply_value'] != 0) {
-                        $fuel = FinancialService::saveFuelFinance($arrayData, $driverAreaUpdate->id, $team);
+                        $fuel = FinancialService::saveFuelFinance($arrayData, $fuelSuplly->id, $team, $arrayData['proof_of_payment_supply']);
                         if (!$fuel['success']) {
                             DB::rollBack();
                             return ResponseService::businessError($fuel['message'], $fuel['error']);
@@ -76,11 +92,18 @@ class DriverAreaService
                 }
             }
 
-           $arrayData['daily_start_km'] = $vehicle->mileage;
            $driverArea = DriverArea::create($arrayData);
 
+            $fuelSuplly = FuelSupply::create([
+                'driver_area_id' => $driverArea->id,
+                'credential_id' => $arrayData['credential_id'],
+                'total_value' => FormatHelper::brlTodecimal($arrayData['total_supply_value']),
+                'liters_filled' => $arrayData['liters_of_fuel'],
+                'km_filled' => $arrayData['daily_start_km']
+            ]);
+
             if ($arrayData['maintenance_expenses'] != 0) {
-                $maintenance = FinancialService::saveMaintenanceFinance($arrayData, $driverArea->id, $team);
+                $maintenance = FinancialService::saveMaintenanceFinance($arrayData, $driverArea->id, $team, $arrayData['proof_of_payment_expenses']);
                 if (!$maintenance['success']) {
                     DB::rollBack();
                     return ResponseService::businessError($maintenance['message'], $maintenance['error']);
@@ -88,7 +111,7 @@ class DriverAreaService
             }
 
             if ($arrayData['total_supply_value'] != 0) {
-                $fuel = FinancialService::saveFuelFinance($arrayData, $driverArea->id, $team);
+                $fuel = FinancialService::saveFuelFinance($arrayData, $fuelSuplly->id, $team, $arrayData['proof_of_payment_supply']);
                 if (!$fuel['success']) {
                     DB::rollBack();
                     return ResponseService::businessError($fuel['message'], $fuel['error']);
@@ -103,7 +126,8 @@ class DriverAreaService
         }
     }
 
-    public static function update(int $id, array $arrayData){
+    public static function update(int $id, array $arrayData): JsonResponse
+    {
         DB::beginTransaction();
         unset($arrayData['driver_area_id']);
         $arrayData['total_supply_value'] = FormatHelper::brlTodecimal($arrayData['total_supply_value']);
@@ -155,7 +179,11 @@ class DriverAreaService
         }
     }
 
-    public static function finalize(int $id, array $arrayData){
+    /**
+     * @throws Exception
+     */
+    public static function finalize(int $id, array $arrayData): JsonResponse
+    {
         DB::beginTransaction();
         unset($arrayData['driver_area_id']);
         $arrayData['daily_end_date'] = FormatHelper::dateToUsTimeStamp($arrayData['daily_end_date']);
@@ -176,7 +204,10 @@ class DriverAreaService
             $arrayData['credential_id'] = $driverArea->credential_id;
             $arrayData['company_id'] = $driverArea->company_id;
 
-            $team = Team::where('motorista_credential_id', $arrayData['credential_id'])->first();
+            $vehicle = Vehicle::find($driverArea->vehicle_id);
+            if(!$vehicle) return ResponseService::businessError('Veículo nao encontrado.');
+
+            $team = Team::where('motorista_credential_id', $vehicle->motorista_credential_id)->first();
 
             if ($arrayData['daily_end_km'] != 0) {
                 $dailEnd = VehicleService::saveMileageVehicle($arrayData);
@@ -186,15 +217,23 @@ class DriverAreaService
                 }
             }
 
+            $fuelSuplly = FuelSupply::create([
+                'driver_area_id' => $driverArea->id,
+                'credential_id' => $arrayData['credential_id'],
+                'total_value' => FormatHelper::brlTodecimal($arrayData['total_supply_value']),
+                'liters_filled' => $arrayData['liters_of_fuel'],
+                'km_filled' => $arrayData['daily_start_km']
+            ]);
+
             if ($arrayData['maintenance_expenses'] != 0) {
-                $maintenance = FinancialService::saveMaintenanceFinance($arrayData, $id, $team);
+                $maintenance = FinancialService::saveMaintenanceFinance($arrayData, $id, $team, $arrayData['proof_of_payment_expenses']);
                 if (!$maintenance['success']) {
                     DB::rollBack();
                     return ResponseService::businessError($maintenance['message'], $maintenance['error']);
                 }
             }
             if ($arrayData['total_supply_value'] != 0) {
-                $fuel = FinancialService::saveFuelFinance($arrayData, $id, $team);
+                $fuel = FinancialService::saveFuelFinance($arrayData, $fuelSuplly->id, $team, $arrayData['proof_of_payment_supply']);
                 if (!$fuel['success']) {
                     DB::rollBack();
                     return ResponseService::businessError($fuel['message'], $fuel['error']);

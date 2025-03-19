@@ -28,6 +28,7 @@ use App\Http\Controllers\Api\Financial\MonthlyClosingReportsController;
 
 use App\Http\Controllers\Api\Region\CityController;
 
+use App\Http\Controllers\Api\Vehicles\FuelSupplyController;
 use App\Http\Controllers\Api\Vehicles\VehiclesController;
 use App\Http\Controllers\Api\Vehicles\DriverAreaController;
 
@@ -170,6 +171,11 @@ Route::group(['middleware' => ['authJwt']], function (){
     Route::put('/vehicles/driver-area/finalize', [DriverAreaController::class, 'finalize']);
     Route::put('/vehicles/driver-area/enable', [DriverAreaController::class, 'enable']);
     Route::get('/vehicles/driver-area/analytic', [DriverAreaController::class, 'analytic']);
+
+    Route::post('/vehicles/fuel-supply', [FuelSupplyController::class, 'register']);
+    Route::get('/vehicles/fuel-supply', [FuelSupplyController::class, 'list']);
+    Route::put('/vehicles/fuel-supply', [FuelSupplyController::class, 'update']);
+    Route::put('/vehicles/fuel-supply/enable', [FuelSupplyController::class, 'enable']);
 
     ##################################### DRIVER ############################################
     Route::get('/authentication/credential/available-driver', [DriverController::class, 'listAvailableDriver']);

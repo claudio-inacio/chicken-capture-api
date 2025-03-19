@@ -29,6 +29,7 @@ use App\Interfaces\Main\DiaristRepositoryInterface;
 use App\Interfaces\Financial\FinancialAccountsRepositoryInterface;
 use App\Interfaces\Financial\MonthlyClosingReportsRepositoryInterface;
 
+use App\Interfaces\Vehicles\FuelSupplyRepositoryInterface;
 use App\Interfaces\Vehicles\VehiclesRepositoryInterface;
 use App\Interfaces\Vehicles\DriverAreaRepositoryInterface;
 
@@ -71,6 +72,7 @@ use App\Repositories\Financial\FinancialAccountsRepository;
 use App\Repositories\Financial\MonthlyClosingReportsRepository;
 
 
+use App\Repositories\Vehicles\FuelSupplyRepository;
 use App\Repositories\Vehicles\VehiclesRepository;
 use App\Repositories\Vehicles\DriverAreaRepository;
 
@@ -115,6 +117,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(CityRepositoryInterface::class, CityRepository::class);
         $this->app->bind(CostCenterRepositoryInterface::class, CostCenterRepository::class);
         $this->app->bind(ProofOfPaymentRepositoryInterface::class, ProofOfPaymentRepository::class);
+        $this->app->bind(FuelSupplyRepositoryInterface::class, FuelSupplyRepository::class);
     }
 
     /**

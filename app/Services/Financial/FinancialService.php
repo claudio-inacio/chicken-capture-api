@@ -3,6 +3,7 @@
 namespace App\Services\Financial;
 
 use App\Enum\Financial\CostCenterIdEnum;
+use App\Enum\Financial\ProofOfPaymentStatusEnum;
 use App\Enum\Financial\StatusEnum;
 use App\Enum\Financial\TableReferenceFinanceEnum;
 use App\Enum\Financial\TypeFinanceEnum;
@@ -10,6 +11,7 @@ use App\Helpers\FormatHelper;
 use App\Models\Financial\FinancialAccounts;
 use App\Models\Main\Team;
 use App\Services\ResponseService;
+use App\Services\Upload\UploadBase64Service;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -79,7 +81,7 @@ class FinancialService
         }
     }
 
-    public static function saveMaintenanceFinance(array $arrayRequest, int $referenceId, Team $team): array
+    public static function saveMaintenanceFinance(array $arrayRequest, int $referenceId, Team $team, $proofPayment = null): array
     {
         DB::beginTransaction();
         try {
@@ -101,7 +103,7 @@ class FinancialService
                 ];
             }
 
-            FinancialAccounts::create([
+            $financialAccount = FinancialAccounts::create([
                 'description' => 'Despesas com manuntencao',
                 'cost_center_id' => CostCenterIdEnum::VEICULO,
                 'amount' => FormatHelper::brlTodecimal($arrayRequest['maintenance_expenses']),
@@ -115,6 +117,27 @@ class FinancialService
                 'company_id' => $arrayRequest['company_id'],
                 'team_id' => $team->id
             ]);
+
+            if ($proofPayment) {
+                $arrayData = [
+                    'proof_of_payment' => $proofPayment,
+                    'status_proof_of_payment' => ProofOfPaymentStatusEnum::PENDENT,
+                    'observation_proof_of_payment' => 'Despesa de veiculo',
+                ];
+
+                $upload = UploadBase64Service::uploadProofPayment($arrayData, $arrayRequest['credential_id'], $financialAccount);
+
+                if (!$upload['success']) {
+                    DB::rollBack();
+
+                    return [
+                        'success' => false,
+                        'message' => 'Falha em cadastrar comprovante de pagamento',
+                        'error' => null
+                    ];
+                }
+            }
+
             DB::commit();
             return [
                 'success' => true
@@ -124,12 +147,16 @@ class FinancialService
             return [
                 'success' => false,
                 'message' => 'Falha em cadastrar finanças',
-                'error' => $exception->getMessage()
+                'error' => [
+                    'message' => $exception->getMessage(),
+                    'file' => $exception->getFile(),
+                    'line' => $exception->getLine()
+                ]
             ];
         }
     }
 
-    public static function saveFuelFinance(array $arrayRequest, int $referenceId, Team $team): array
+    public static function saveFuelFinance(array $arrayRequest, int $referenceId, Team $team, $proofPayment = null): array
     {
         DB::beginTransaction();
         try {
@@ -151,7 +178,7 @@ class FinancialService
                 ];
             }
 
-            FinancialAccounts::create([
+            $financialAccount = FinancialAccounts::create([
                 'description' => 'Despesas com combustivel',
                 'cost_center_id' => CostCenterIdEnum::VEICULO,
                 'amount' => FormatHelper::brlTodecimal($arrayRequest['total_supply_value']),
@@ -165,6 +192,27 @@ class FinancialService
                 'company_id' => $arrayRequest['company_id'],
                 'team_id' => $team->id
             ]);
+
+            if ($proofPayment) {
+                $arrayData = [
+                    'proof_of_payment' => $proofPayment,
+                    'status_proof_of_payment' => ProofOfPaymentStatusEnum::PENDENT,
+                    'observation_proof_of_payment' => 'Despesa de combustivel do veiculo'
+                ];
+
+                $upload = UploadBase64Service::uploadProofPayment($arrayData, $arrayRequest['credential_id'], $financialAccount);
+
+                if (!$upload['success']) {
+                    DB::rollBack();
+
+                    return [
+                        'success' => false,
+                        'message' => 'Falha em cadastrar comprovante de pagamento',
+                        'error' => null
+                    ];
+                }
+            }
+
             DB::commit();
             return [
                 'success' => true
@@ -174,7 +222,11 @@ class FinancialService
             return [
                 'success' => false,
                 'message' => 'Falha em cadastrar finanças',
-                'error' => $exception->getMessage()
+                'error' => [
+                    'message' => $exception->getMessage(),
+                    'file' => $exception->getFile(),
+                    'line' => $exception->getLine()
+                ]
             ];
         }
     }

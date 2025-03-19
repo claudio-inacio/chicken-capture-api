@@ -2,9 +2,14 @@
 
 namespace App\Http\Controllers\Api\Vehicles;
 
+use App\Enum\Authentication\AccessGroupEnum;
 use App\Http\Controllers\Controller;
 use App\Interfaces\Vehicles\VehiclesRepositoryInterface;
+use App\Models\Credential;
+use App\Models\Main\Units;
+use App\Services\ResponseService;
 use Illuminate\Http\Request;
+use SebastianBergmann\CodeCoverage\Report\Xml\Unit;
 
 class VehiclesController extends Controller
 {
@@ -26,6 +31,14 @@ class VehiclesController extends Controller
             'mileage' => 'required',
             'motorista_credential_id' => 'required'
         ]);
+
+        $unit = Units::find($request->unit_id);
+        if(!$unit) return ResponseService::businessError('Uindade nao encontrada.');
+
+        $motorista = Credential::find($request->motorista_credential_id);
+        if (!$motorista || !in_array($motorista->access_group_id, [AccessGroupEnum::DRIVER, AccessGroupEnum::DRIVER_RESPONSIBLE])) {
+            return ResponseService::businessError('Motorista não encontrado.');
+        }
 
         $arrayData = $request->all();
         $arrayData['company_id'] = $request->user()->company_id;

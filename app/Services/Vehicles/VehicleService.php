@@ -32,7 +32,7 @@ class VehicleService
             DB::rollBack();
             return [
                 'success' => false,
-                'message' => 'Falha em cadastrar finanças',
+                'message' => 'Falha em atualizar km do veiculo',
                 'error' => $exception->getMessage()
             ];
         }
