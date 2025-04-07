@@ -398,7 +398,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
      */
     public function create(array $arrayData, array $paymentData): \Illuminate\Http\JsonResponse
     {
-        $arrayData['due_date'] = FormatHelper::setDueDate($arrayData['due_date']);
+        $arrayData['due_date'] = FormatHelper::setDueDate($arrayData['due_date'] ?? null);
         $arrayData['amount'] = FormatHelper::moneyToUS($arrayData['amount']);
 
         if (!empty($data['finished_data']))
@@ -433,7 +433,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
      */
     public function update(int $id, array $data, array $paymentData): \Illuminate\Http\JsonResponse
     {
-        $data['due_date'] = FormatHelper::dateToUsTimeStamp($data['due_date']);
+        $arrayData['due_date'] = FormatHelper::setDueDate($arrayData['due_date'] ?? null);
         $data['amount'] = FormatHelper::moneyToUS($data['amount']);
         unset($data['financial_accounts_id']);
         try {

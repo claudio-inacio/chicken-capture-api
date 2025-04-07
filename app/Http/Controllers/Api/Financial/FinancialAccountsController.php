@@ -29,7 +29,6 @@ class FinancialAccountsController extends Controller
         $request->validate([
             'description' => 'required',
             'amount' => 'required',
-            'due_date' => 'required',
             'type' => 'required',
             'status_id' => 'required',
             'reference_id' => 'required',

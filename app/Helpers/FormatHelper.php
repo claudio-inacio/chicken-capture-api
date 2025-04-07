@@ -222,7 +222,7 @@ class FormatHelper
     {
         // Caso a data tenha sido informada, retorna ela formatada
         if ($dataVencimento) {
-            return Carbon::parse($dataVencimento)->format('Y-m-d');
+            return Carbon::parse($dataVencimento)->format('Y-m-d H:i:s');
         }
 
         $hoje = Carbon::today();
@@ -237,6 +237,7 @@ class FormatHelper
         $dataFinal = Carbon::create($ano, $mes, $diaVencimento);
 
         // Retorna no formato ideal para salvar no PostgreSQL
+        $dataFinal->setTime(18, 0, 0);
         return $dataFinal->format('Y-m-d');
     }
 }
