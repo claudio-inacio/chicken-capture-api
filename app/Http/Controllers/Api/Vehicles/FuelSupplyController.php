@@ -66,23 +66,23 @@ class FuelSupplyController extends Controller
 
     public function update(Request $request){
         $request->validate([
-            'name' => 'required',
-            'plate_number' => 'required',
-            'unit_id' => 'required',
-            'vehicle_id' => 'required'
+            'driver_area_id' => 'required',
+            'total_value' => 'required',
+            'liters_filled' => 'required',
+            'km_filled' => 'required',
+            'fuel_supply_id' => 'required'
         ]);
 
         $arrayData = $request->all();
-        $arrayData['company_id'] = $request->user()->company_id;
-        return $this->fuelSupplyRepository->update($request->vehicle_id, $arrayData);
+        return $this->fuelSupplyRepository->update($request->fuel_supply_id, $arrayData);
     }
 
     public function enable(Request $request){
         $request->validate([
-            'vehicle_id' => 'required',
+            'fuel_supply_id' => 'required',
             'enabled' => 'required',
         ]);
 
-        return $this->fuelSupplyRepository->enable($request->vehicle_id, $request->enabled);
+        return $this->fuelSupplyRepository->enable($request->fuel_supply_id, $request->enabled);
     }
 }
