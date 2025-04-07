@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api\Financial;
 
 use App\Enum\Financial\StatusEnum;
+use App\Enum\Financial\TableReferenceFinanceEnum;
 use App\Http\Controllers\Controller;
 use App\Interfaces\Financial\FinancialAccountsRepositoryInterface;
+use App\Models\Vehicles\Vehicle;
 use App\Services\GenerateExcelService;
 use App\Services\Financial\FinancialService;
 use App\Services\ResponseService;
@@ -22,7 +24,8 @@ class FinancialAccountsController extends Controller
         $this->financialAccountsRepository = $financialAccountsRepository;
     }
 
-    public function register(Request $request) {
+    public function register(Request $request): \Illuminate\Http\JsonResponse
+    {
         $request->validate([
             'description' => 'required',
             'amount' => 'required',
@@ -48,6 +51,12 @@ class FinancialAccountsController extends Controller
         $paymentData['status_proof_of_payment'] = $request->status_proof_of_payment ?? null;
         $paymentData['observation_proof_of_payment'] = $request->observation_proof_of_payment ?? null;
 
+        if ($request->table_reference_id == TableReferenceFinanceEnum::MAINTENANCE){
+            $vehicle = Vehicle::find($request->reference_id);
+            if (!$vehicle) return ResponseService::businessError('Id da referência não pertence a um veículo.');
+            $arrayData['vehicle_id'] = $vehicle->id;
+        }
+
         return $this->financialAccountsRepository->create($arrayData, $paymentData);
     }
 
@@ -68,6 +77,25 @@ class FinancialAccountsController extends Controller
         if ( $valid == false) return ResponseService::businessError('È obrigatorio usar a filtragem por tipo.');
 
         return response()->json($this->financialAccountsRepository->findAll($selectConfig, $whereCriterious));
+    }
+
+    public function listByDate(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $whereCriterious = $request->where ?? false;
+        $selectConfig = $request->selectConfig ?? false;
+        if (!$selectConfig)
+            return response()->json(['message' => 'Select config is required!!!'], 422);
+        if (!$whereCriterious)
+            return response()->json(['message' => 'Where config is required!!!'], 422);
+
+        $valid = false;
+        foreach ($whereCriterious as $criterious){
+            if(str_contains($criterious['field'], 'type')) $valid = true;
+        }
+
+        if ( $valid == false) return ResponseService::businessError('È obrigatorio usar a filtragem por tipo.');
+
+        return response()->json($this->financialAccountsRepository->findAllByDate($selectConfig, $whereCriterious));
     }
 
     public function download(Request $request): \Illuminate\Http\JsonResponse

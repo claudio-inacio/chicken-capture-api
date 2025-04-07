@@ -139,6 +139,7 @@ Route::group(['middleware' => ['authJwt']], function (){
     #################################### FINANCIAL #########################################
     Route::post('/financial/financial-accounts', [FinancialAccountsController::class, 'register']);
     Route::get('/financial/financial-accounts', [FinancialAccountsController::class, 'list']);
+    Route::get('/financial/financial-accounts/by-date', [FinancialAccountsController::class, 'listByDate']);
     Route::get('/financial/financial-accounts/download', [FinancialAccountsController::class, 'download']);
     Route::put('/financial/financial-accounts', [FinancialAccountsController::class, 'update']);
     Route::put('/financial/financial-accounts/enable', [FinancialAccountsController::class, 'enable']);
@@ -174,6 +175,7 @@ Route::group(['middleware' => ['authJwt']], function (){
 
     Route::post('/vehicles/fuel-supply', [FuelSupplyController::class, 'register']);
     Route::get('/vehicles/fuel-supply', [FuelSupplyController::class, 'list']);
+    Route::get('/vehicles/fuel-supply/by-date', [FuelSupplyController::class, 'listByDate']);
     Route::put('/vehicles/fuel-supply', [FuelSupplyController::class, 'update']);
     Route::put('/vehicles/fuel-supply/enable', [FuelSupplyController::class, 'enable']);
 

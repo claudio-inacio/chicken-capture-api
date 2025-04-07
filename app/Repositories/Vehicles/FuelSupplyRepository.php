@@ -14,6 +14,7 @@ use App\Models\Financial\FinancialAccounts;
 use App\Models\Vehicles\FuelSupply;
 use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
+use JetBrains\PhpStorm\ArrayShape;
 
 class FuelSupplyRepository implements FuelSupplyRepositoryInterface
 {
@@ -43,6 +44,42 @@ class FuelSupplyRepository implements FuelSupplyRepositoryInterface
 
         return [
             'data' => $result->toArray(),
+            'total' => $total,
+        ];
+    }
+
+    #[ArrayShape(['data' => "mixed", 'total' => "int"])]
+    public function findAllByDate($selectConfig, array $whereCriterious) : array
+    {
+        $query = DB::table('vehicles.fuel_supply')
+            ->join('vehicles.driver_area', 'driver_area.id', '=', 'fuel_supply.driver_area_id')
+            ->join('vehicles.vehicle', 'vehicle.id', '=', 'driver_area.vehicle_id')
+            ->join('authentication.credential', 'credential.id', '=', 'driver_area.credential_id')
+            ->join('authentication.person', 'person.id', '=', 'credential.person_id');
+
+        $whereFactory = new WhereFactory();
+        $query = $whereFactory->byArray($query, $whereCriterious);
+
+        $total = $query->count('fuel_supply.id');
+
+        $selectFactory = new SelectFactory();
+        $query = $selectFactory->byArray($query, $selectConfig);
+        $query->select([
+            'fuel_supply.*',
+            'vehicle.name as vehicle_name',
+            'vehicle.plate_number as vehicle_plate',
+            'person.name as person_name',
+        ]);
+
+        $result = $query->get();
+
+// Agrupar pelo dia do created_at
+        $grouped = $result->groupBy(function ($item) {
+            return \Carbon\Carbon::parse($item->created_at)->format('d/m/Y');
+        });
+
+        return [
+            'data' => $grouped,
             'total' => $total,
         ];
     }

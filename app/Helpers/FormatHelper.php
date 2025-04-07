@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
@@ -215,5 +216,27 @@ class FormatHelper
     public static function dateToUsTimeStamp(string $date): string
     {
         return (new \DateTime(str_replace('/','-', $date)))->format("Y-m-d H:i:s");
+    }
+
+    public static function setDueDate(?string $dataVencimento = null): string
+    {
+        // Caso a data tenha sido informada, retorna ela formatada
+        if ($dataVencimento) {
+            return Carbon::parse($dataVencimento)->format('Y-m-d');
+        }
+
+        $hoje = Carbon::today();
+        $dia = $hoje->day;
+        $mes = $hoje->month;
+        $ano = $hoje->year;
+
+        // Define o dia com base na lógica solicitada
+        $diaVencimento = ($dia <= 15) ? 15 : 31;
+
+        // Cria a data final com o dia definido
+        $dataFinal = Carbon::create($ano, $mes, $diaVencimento);
+
+        // Retorna no formato ideal para salvar no PostgreSQL
+        return $dataFinal->format('Y-m-d');
     }
 }
