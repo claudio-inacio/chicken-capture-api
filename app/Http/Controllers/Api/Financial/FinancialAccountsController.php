@@ -80,6 +80,11 @@ class FinancialAccountsController extends Controller
 
     public function listByDate(Request $request): \Illuminate\Http\JsonResponse
     {
+        $request->validate([
+            'startDate' => 'required',
+            'endDate' => 'required',
+        ]);
+
         $whereCriterious = $request->where ?? false;
         $selectConfig = $request->selectConfig ?? false;
         if (!$selectConfig)
@@ -94,7 +99,7 @@ class FinancialAccountsController extends Controller
 
         if ( $valid == false) return ResponseService::businessError('È obrigatorio usar a filtragem por tipo.');
 
-        return response()->json($this->financialAccountsRepository->findAllByDate($selectConfig, $whereCriterious));
+        return response()->json($this->financialAccountsRepository->findAllByDate($selectConfig, $whereCriterious, $request->startDate, $request->endDate));
     }
 
     public function download(Request $request): \Illuminate\Http\JsonResponse

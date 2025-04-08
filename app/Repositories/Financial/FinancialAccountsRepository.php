@@ -140,10 +140,13 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
         ];
     }
 
+    /**
+     * @throws Exception
+     */
     #[ArrayShape(['data' => "mixed", 'total' => "int", 'value_to_receive' => "string", 'value_to_discount' => "string",
         'value_receive' => "string", 'value_discount' => "string", 'value_defeated' => "string",
         'value_total_receive' => "string", 'value_total_discount' => "string"])]
-    public function findAllByDate($selectConfig, array $whereCriterious): array
+    public function findAllByDate($selectConfig, array $whereCriterious, $startDate, $endDate): array
     {
         $dateNow = (new \DateTime(now()))->format('Y-m-d');
 
@@ -164,6 +167,8 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             ->join('financial.cost_center', 'cost_center.id', '=', 'financial_accounts.cost_center_id')
             ->leftJoin('vehicles.vehicle', 'vehicle.id', '=', 'financial_accounts.vehicle_id')
             ->join('authentication.person', 'person.id', '=', 'credential.person_id');
+
+        $query->whereBetween('financial_accounts.created_at', [$startDate, $endDate]);
 
         foreach ($whereCriterious as $criterious) {
             if (str_contains($criterious['field'], 'table_reference_id')) {
@@ -249,6 +254,19 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             $dataGrouped[$dateKey][] = $item;
         }
 
+// ✅ Preencher datas ausentes no intervalo com arrays vazios
+        $start = \Carbon\Carbon::parse($startDate)->startOfDay();
+        $end = \Carbon\Carbon::parse($endDate)->endOfDay();
+
+        while ($start->lte($end)) {
+            $key = $start->format('d/m/Y');
+            if (!isset($dataGrouped[$key])) {
+                $dataGrouped[$key] = [];
+            }
+            $start->addDay();
+        }
+
+// ✅ Retorno final
         return [
             'data' => $dataGrouped,
             'total' => $total,

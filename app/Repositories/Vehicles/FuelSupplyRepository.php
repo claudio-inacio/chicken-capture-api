@@ -13,6 +13,8 @@ use App\Interfaces\Vehicles\FuelSupplyRepositoryInterface;
 use App\Models\Financial\FinancialAccounts;
 use App\Models\Vehicles\FuelSupply;
 use App\Services\ResponseService;
+use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use JetBrains\PhpStorm\ArrayShape;
 
@@ -49,7 +51,7 @@ class FuelSupplyRepository implements FuelSupplyRepositoryInterface
     }
 
     #[ArrayShape(['data' => "mixed", 'total' => "int"])]
-    public function findAllByDate($selectConfig, array $whereCriterious) : array
+    public function findAllByDate($selectConfig, $startDate, $endDate) : array
     {
         $query = DB::table('vehicles.fuel_supply')
             ->join('vehicles.driver_area', 'driver_area.id', '=', 'fuel_supply.driver_area_id')
@@ -57,8 +59,7 @@ class FuelSupplyRepository implements FuelSupplyRepositoryInterface
             ->join('authentication.credential', 'credential.id', '=', 'driver_area.credential_id')
             ->join('authentication.person', 'person.id', '=', 'credential.person_id');
 
-        $whereFactory = new WhereFactory();
-        $query = $whereFactory->byArray($query, $whereCriterious);
+        $query->whereBetween('fuel_supply.created_at', [$startDate, $endDate]);
 
         $total = $query->count('fuel_supply.id');
 
@@ -73,13 +74,24 @@ class FuelSupplyRepository implements FuelSupplyRepositoryInterface
 
         $result = $query->get();
 
-// Agrupar pelo dia do created_at
+// Agrupar os registros existentes por dia
         $grouped = $result->groupBy(function ($item) {
-            return \Carbon\Carbon::parse($item->created_at)->format('d/m/Y');
+            return Carbon::parse($item->created_at)->format('d/m/Y');
         });
 
+// Gerar o intervalo de datas entre startDate e endDate
+        $start = Carbon::parse($startDate)->startOfDay();
+        $end = Carbon::parse($endDate)->endOfDay();
+
+        $allDates = [];
+        while ($start->lte($end)) {
+            $key = $start->format('d/m/Y');
+            $allDates[$key] = $grouped->get($key, collect()); // Se existir no grupo, usa. Se não, array vazio.
+            $start->addDay();
+        }
+
         return [
-            'data' => $grouped,
+            'data' => $allDates,
             'total' => $total,
         ];
     }

@@ -4,7 +4,7 @@ namespace App\Interfaces\Vehicles;
 interface FuelSupplyRepositoryInterface
 {
     public function findAll(array $selectConfig, array $whereCriterious) : array;
-    public function findAllByDate(array $selectConfig, array $whereCriterious) : array;
+    public function findAllByDate(array $selectConfig, $startDate, $endDate) : array;
     public function getById(int $id);
     public function create(array $value);
     public function update(int $id, array $data);

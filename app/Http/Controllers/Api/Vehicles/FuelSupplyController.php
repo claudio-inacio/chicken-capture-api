@@ -54,14 +54,16 @@ class FuelSupplyController extends Controller
 
     public function listByDate(Request $request): JsonResponse
     {
-        $whereCriterious = $request->where ?? false;
+        $request->validate([
+            'startDate' => 'required',
+            'endDate' => 'required',
+        ]);
+
         $selectConfig = $request->selectConfig ?? false;
         if (!$selectConfig)
             return response()->json(['message' => 'Select config is required!!!'], 422);
-        if (!$whereCriterious)
-            return response()->json(['message' => 'Where config is required!!!'], 422);
 
-        return response()->json($this->fuelSupplyRepository->findAllByDate($selectConfig, $whereCriterious));
+        return response()->json($this->fuelSupplyRepository->findAllByDate($selectConfig, $request->startDate, $request->endDate));
     }
 
     public function update(Request $request){
