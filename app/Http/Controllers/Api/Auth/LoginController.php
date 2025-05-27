@@ -53,10 +53,13 @@ class LoginController extends Controller
         ];
 
         if($user[0]["access_group_id"] == AccessGroupEnum::DRIVER){
-            $driverArea = DriverArea::where("credential_id", $user[0]["id"])
-                ->whereDate('data_pedido', Carbon::today())->find();
+            $driverArea = DriverArea::where('credential_id', $user[0]['id'])
+                ->whereDate('created_at', Carbon::today())
+                ->first();
             $responseBody["dayStarted"] = !is_null($driverArea);
-            $responseBody["driverArea"] = (array)$driverArea;
+            $responseBody["driverArea"] =  $driverArea
+                ? $driverArea->toArray()
+                : [];
         }
 
         return response()->json($responseBody);
