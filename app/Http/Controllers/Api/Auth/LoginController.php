@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
+use App\Enum\Authentication\AccessGroupEnum;
 use App\Http\Controllers\Controller;
 use App\Interfaces\Authentication\CredentialRepositoryInterface;
 use App\Models\Authentication\Person;
+use App\Models\Vehicles\DriverArea;
 use App\Services\ResponseService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class LoginController extends Controller
@@ -43,7 +46,20 @@ class LoginController extends Controller
         }
 
         $token = $this->respondWithToken($token);
-        return response()->json([ 'token' => $token, 'user' => $user[0] ]);
+        $responseBody = [
+            'token' => $token,
+            'user' => $user[0],
+
+        ];
+
+        if($user[0]["access_group_id"] == AccessGroupEnum::DRIVER){
+            $driverArea = DriverArea::where("credential_id", $user[0]["id"])
+                ->whereDate('data_pedido', Carbon::today())->find();
+            $responseBody["dayStarted"] = !is_null($driverArea);
+            $responseBody["driverArea"] = (array)$driverArea;
+        }
+
+        return response()->json($responseBody);
     }
 
     public function logout(){
