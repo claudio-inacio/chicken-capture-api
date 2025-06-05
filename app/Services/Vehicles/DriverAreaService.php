@@ -59,6 +59,7 @@ class DriverAreaService
             if ($driverAreaUpdate){
                 $dateCreatedAt = FormatHelper::dateToUs($driverAreaUpdate->created_at);
                 if (date('Y-m-d') === $dateCreatedAt) {
+                    unset($arrayData['proof_of_payment_expenses'], $arrayData['proof_of_payment_supply']);
                     DriverArea::whereId($driverAreaUpdate->id)->update($arrayData);
 
                     $fuelSuplly = FuelSupply::where('driver_area_id', $driverAreaUpdate->id)->update([
