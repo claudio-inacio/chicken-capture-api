@@ -30,7 +30,7 @@ class DriverAreaService
         DB::beginTransaction();
         $arrayData['maintenance_expenses'] = FormatHelper::brlTodecimal($arrayData['maintenance_expenses']);
         $maintenance['success'] = false;
-        $day = (int)date('d') - 1;
+        $day = (int)date('d');
         $date = (new \DateTime(date('Y-m-d')))->format('Y-m')."-{$day}";
         $dateOut = $date." 23:59:00";
         $date = FormatHelper::dateToUsTimeStamp($date);
