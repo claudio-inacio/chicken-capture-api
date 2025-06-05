@@ -14,6 +14,7 @@ use App\Models\Vehicles\DriverArea;
 use App\Models\Vehicles\FuelSupply;
 use App\Models\Vehicles\Vehicle;
 use App\Services\Financial\FinancialService;
+use App\Services\Main\LogService;
 use App\Services\ResponseService;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -90,6 +91,12 @@ class DriverAreaService
                                 'km_filled' => $arrayData['daily_start_km']
                             ]);
                         }
+
+                        LogService::save('TESTE', [
+                            'arrayData' => $arrayData,
+                            'FuelSupplyId' => $fuelSuplly->id,
+                            'team' => $team,
+                        ]);
 
                         $fuel = FinancialService::saveFuelFinance($arrayData, $fuelSuplly->id, $team, $arrayData['proof_of_payment_supply']);
                         if (!$fuel['success']) {
