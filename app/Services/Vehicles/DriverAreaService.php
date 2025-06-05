@@ -123,7 +123,11 @@ class DriverAreaService
             return ResponseService::success204();
         } catch (Exception $e){
             DB::rollBack();
-            return ResponseService::internalServerError('Falha em registrar area do motorista', $e->getMessage());
+            return ResponseService::internalServerError('Falha em registrar area do motorista', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
         }
     }
 
