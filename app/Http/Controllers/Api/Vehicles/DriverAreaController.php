@@ -44,13 +44,6 @@ class DriverAreaController extends Controller
         $arrayData['credential_id'] = $request->user()->id;
         $arrayData['company_id'] = $request->user()->company_id;
 
-        LogService::save('LOUCURA', [
-            'CREDENTIAL_ID_DO_ARRAY' => $arrayData['credential_id'],
-            'CREDENTIAL_ID_DA_REQUEST' => $request->user()->id,
-            'COMPANY_ID_DO_ARRAY' => $arrayData['company_id'],
-            'COMPANY_ID_DA_REQUEST' => $request->user()->company_id,
-        ]);
-
         if (!empty($arrayData['maintenance_expenses']) && $arrayData['maintenance_expenses'] > 0) {
             $request->validate(['proof_of_payment_expenses' => 'required']);
 
