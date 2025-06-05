@@ -243,7 +243,7 @@ class DriverAreaService
                 'credential_id' => $arrayData['credential_id'],
                 'total_value' => FormatHelper::brlTodecimal($arrayData['total_supply_value']),
                 'liters_filled' => $arrayData['liters_of_fuel'],
-                'km_filled' => $arrayData['daily_start_km']
+                'km_filled' => $arrayData['daily_end_km']
             ]);
 
             if ($arrayData['maintenance_expenses'] != 0) {
