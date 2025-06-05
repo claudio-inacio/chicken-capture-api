@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Vehicles;
 
+use App\Helpers\FormatHelper;
 use App\Http\Controllers\Controller;
 use App\Interfaces\Vehicles\DriverAreaRepositoryInterface;
 use App\Models\Vehicles\Vehicle;
@@ -44,10 +45,14 @@ class DriverAreaController extends Controller
 
         if (!empty($arrayData['maintenance_expenses']) && $arrayData['maintenance_expenses'] > 0) {
             $request->validate(['proof_of_payment_expenses' => 'required']);
+
+            $arrayData['maintenance_expenses'] = FormatHelper::moneyToUS($arrayData['maintenance_expenses']);
         }
 
         if (!empty($arrayData['total_supply_value']) && $arrayData['total_supply_value'] > 0) {
             $request->validate(['proof_of_payment_supply' => 'required']);
+
+            $arrayData['total_supply_value'] = FormatHelper::moneyToUS($arrayData['total_supply_value']);
         }
 
         return DriverAreaService::create($arrayData, $vehicle);
