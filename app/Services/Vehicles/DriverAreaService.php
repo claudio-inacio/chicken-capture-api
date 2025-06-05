@@ -48,7 +48,9 @@ class DriverAreaService
             if ($driverArea) {
                 if (!$driverArea->daily_end_date || !$driverArea->daily_end_km) {
                     DB::rollBack();
-                    return ResponseService::businessError('Por favor finalize o dia anterior antes de iniciar um novo dia!');
+                    return ResponseService::businessError('Por favor finalize o dia em aberto antes de iniciar um novo dia!', [
+                        'dayStarted' => true
+                    ]);
                 }
             }
 
