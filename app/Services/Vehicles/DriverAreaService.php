@@ -98,6 +98,7 @@ class DriverAreaService
                             'team' => $team,
                         ]);
 
+
                         $fuel = FinancialService::saveFuelFinance($arrayData, $fuelSuplly->id, $team, $arrayData['proof_of_payment_supply']);
                         if (!$fuel['success']) {
                             DB::rollBack();
