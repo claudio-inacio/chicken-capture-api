@@ -63,7 +63,9 @@ class DriverAreaService
                     unset($arrayData['proof_of_payment_expenses'], $arrayData['proof_of_payment_supply']);
                     DriverArea::whereId($driverAreaUpdate->id)->update($arrayData);
 
-                    $fuelSuplly = FuelSupply::where('driver_area_id', $driverAreaUpdate->id)->update([
+                    $fuelSuplly = FuelSupply::where('driver_area_id', $driverAreaUpdate->id)->first();
+
+                    $fuelSuplly->update([
                         'credential_id' => $arrayData['credential_id'],
                         'total_value' => FormatHelper::brlTodecimal($arrayData['total_supply_value']),
                         'liters_filled' => $arrayData['liters_of_fuel'],
@@ -82,23 +84,6 @@ class DriverAreaService
                     }
 
                     if ($arrayData['total_supply_value'] != 0) {
-                        if (!$fuelSuplly) {
-                            $fuelSuplly = FuelSupply::create([
-                                'driver_area_id' => $driverAreaUpdate->id,
-                                'credential_id' => $arrayData['credential_id'],
-                                'total_value' => FormatHelper::brlTodecimal($arrayData['total_supply_value']),
-                                'liters_filled' => $arrayData['liters_of_fuel'],
-                                'km_filled' => $arrayData['daily_start_km']
-                            ]);
-                        }
-
-                        LogService::save('TESTE', [
-                            'arrayData' => $arrayData,
-                            'FuelSupplyId' => $fuelSuplly->id,
-                            'team' => $team,
-                        ]);
-
-
                         $fuel = FinancialService::saveFuelFinance($arrayData, $fuelSuplly->id, $team, $arrayData['proof_of_payment_supply']);
                         if (!$fuel['success']) {
                             DB::rollBack();
