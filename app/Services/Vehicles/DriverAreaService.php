@@ -42,14 +42,20 @@ class DriverAreaService
             $vehicle->update();
 
             $driverArea = DriverArea::where('vehicle_id', $arrayData['vehicle_id'])
+                ->join('vehicles.vehicle', 'vehicle.id', '=', 'driver_area.vehicle_id')
                 ->whereBetween('created_at', [$date, $dateOut])
+                ->select(
+                    'driver_area.*',
+                    'vehicle.name as vehicle_name', 'vehicle.plate_number as vehicle_plate_number',
+                )
                 ->first();
 
             if ($driverArea) {
                 if (!$driverArea->daily_end_date || !$driverArea->daily_end_km) {
                     DB::rollBack();
                     return ResponseService::businessError('Por favor finalize o dia em aberto antes de iniciar um novo dia!', [
-                        'dayStarted' => true
+                        'dayStarted' => true,
+                        'driver_area' => $driverArea
                     ]);
                 }
             }
