@@ -43,7 +43,7 @@ class DriverAreaService
 
             $driverArea = DriverArea::where('vehicle_id', $arrayData['vehicle_id'])
                 ->join('vehicles.vehicle', 'vehicle.id', '=', 'driver_area.vehicle_id')
-                ->whereBetween('created_at', [$date, $dateOut])
+                ->whereBetween('driver_area.created_at', [$date, $dateOut])
                 ->select(
                     'driver_area.*',
                     'vehicle.name as vehicle_name', 'vehicle.plate_number as vehicle_plate_number',
