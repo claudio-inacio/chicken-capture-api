@@ -86,8 +86,18 @@ class DriverAreaController extends Controller
         if(!$vehicle) return ResponseService::businessError('Veículo nao encontrado.');
         $arrayData = $request->all();
         $arrayData['motorista_credential_id'] = $vehicle->motorista_credential_id;
-        $arrayData['maintenance_expenses'] = FormatHelper::moneyToUS($arrayData['maintenance_expenses']);
-        $arrayData['total_supply_value'] = FormatHelper::moneyToUS($arrayData['total_supply_value']);
+
+        if (!empty($arrayData['maintenance_expenses']) && $arrayData['maintenance_expenses'] > 0) {
+            $request->validate(['proof_of_payment_expenses' => 'required']);
+
+            $arrayData['maintenance_expenses'] = FormatHelper::moneyToUS($arrayData['maintenance_expenses']);
+        }
+
+        if (!empty($arrayData['total_supply_value']) && $arrayData['total_supply_value'] > 0) {
+            $request->validate(['proof_of_payment_supply' => 'required']);
+
+            $arrayData['total_supply_value'] = FormatHelper::moneyToUS($arrayData['total_supply_value']);
+        }
 
         return DriverAreaService::update($request->driver_area_id, $arrayData);
     }
