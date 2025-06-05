@@ -32,7 +32,7 @@ class DriverAreaController extends Controller
             'vehicle_id' => 'required',
             'liters_of_fuel' => 'required',
             'total_supply_value' => 'required',
-            'maintenance_expenses' => 'required',
+            //'maintenance_expenses' => 'required',
             'daily_start_time' => 'required',
         ]);
 
