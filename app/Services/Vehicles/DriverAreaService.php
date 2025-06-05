@@ -60,6 +60,8 @@ class DriverAreaService
             if ($driverAreaUpdate){
                 $dateCreatedAt = FormatHelper::dateToUs($driverAreaUpdate->created_at);
                 if (date('Y-m-d') === $dateCreatedAt) {
+                    $proofExpenses = $arrayData['proof_of_payment_expenses'];
+                    $proofSupply = $arrayData['proof_of_payment_supply'];
                     unset($arrayData['proof_of_payment_expenses'], $arrayData['proof_of_payment_supply']);
                     DriverArea::whereId($driverAreaUpdate->id)->update($arrayData);
 
@@ -74,7 +76,7 @@ class DriverAreaService
 
                     if ($arrayData['maintenance_expenses'] != 0) {
                         $maintenance = FinancialService::saveMaintenanceFinance(
-                            $arrayData, $driverAreaUpdate->id, $team, $arrayData['proof_of_payment_expenses']
+                            $arrayData, $driverAreaUpdate->id, $team, $proofExpenses
                         );
 
                         if (!$maintenance['success']) {
@@ -84,7 +86,7 @@ class DriverAreaService
                     }
 
                     if ($arrayData['total_supply_value'] != 0) {
-                        $fuel = FinancialService::saveFuelFinance($arrayData, $fuelSuplly->id, $team, $arrayData['proof_of_payment_supply']);
+                        $fuel = FinancialService::saveFuelFinance($arrayData, $fuelSuplly->id, $team, $proofSupply);
                         if (!$fuel['success']) {
                             DB::rollBack();
                             return ResponseService::businessError($fuel['message'], $fuel['error']);
