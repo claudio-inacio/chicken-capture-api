@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Interfaces\Authentication\CredentialRepositoryInterface;
 use App\Models\Authentication\Person;
 use App\Models\Vehicles\DriverArea;
+use App\Models\Vehicles\Vehicle;
 use App\Services\ResponseService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -53,13 +54,17 @@ class LoginController extends Controller
         ];
 
         if($user[0]["access_group_id"] == AccessGroupEnum::DRIVER){
-            $driverArea = DriverArea::where('credential_id', $user[0]['id'])
+            $driverArea = DriverArea::join('vehicles.vehicle', 'vehicle.id', '=', 'driver_area.vehicle_id')
+                ->where('credential_id', $user[0]['id'])
                 ->whereDate('created_at', Carbon::today())
+                ->select([
+                    'driver_area.*',
+                    'vehicle.name as vehicle_name', 'vehicle.plate_number as vehicle_plate_number'
+                    ])
                 ->first();
+
             $responseBody["dayStarted"] = !is_null($driverArea);
-            $responseBody["driverArea"] =  $driverArea
-                ? $driverArea->toArray()
-                : [];
+            $responseBody["driverArea"] =  $driverArea ? $driverArea->toArray() : [];
         }
 
         return response()->json($responseBody);
