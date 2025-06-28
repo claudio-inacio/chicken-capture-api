@@ -56,7 +56,7 @@ class LoginController extends Controller
         if($user[0]["access_group_id"] == AccessGroupEnum::DRIVER){
             $driverArea = DriverArea::join('vehicles.vehicle', 'vehicle.id', '=', 'driver_area.vehicle_id')
                 ->where('credential_id', $user[0]['id'])
-                ->whereDate('created_at', Carbon::today())
+                ->whereDate('driver_area.created_at', Carbon::today())
                 ->select([
                     'driver_area.*',
                     'vehicle.name as vehicle_name', 'vehicle.plate_number as vehicle_plate_number'
