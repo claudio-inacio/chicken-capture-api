@@ -180,7 +180,7 @@ class FinancialService
 
             $financialAccount = FinancialAccounts::create([
                 'description' => 'Despesas com combustivel',
-                'cost_center_id' => CostCenterIdEnum::VEICULO,
+                'cost_center_id' => CostCenterIdEnum::FUEL,
                 'amount' => FormatHelper::brlTodecimal($arrayRequest['total_supply_value']),
                 'type' => TypeFinanceEnum::TO_DISCOUNT,
                 'status_id' => StatusEnum::TO_DISCOUNT,

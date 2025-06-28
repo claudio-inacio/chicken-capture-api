@@ -8,4 +8,5 @@ enum CostCenterIdEnum
     const VEICULO = 2;
     const DIARIA = 3;
     const MOTORISTA = 4;
+    const FUEL = 5;
 }
