@@ -44,13 +44,13 @@ class DriverAreaController extends Controller
         $arrayData['credential_id'] = $request->user()->id;
         $arrayData['company_id'] = $request->user()->company_id;
 
-        if (!empty($arrayData['maintenance_expenses']) && $arrayData['maintenance_expenses'] > 0) {
+        if (!empty($arrayData['maintenance_expenses']) && FormatHelper::moneyToUS($arrayData['maintenance_expenses']) > 0) {
             $request->validate(['proof_of_payment_expenses' => 'required']);
 
             $arrayData['maintenance_expenses'] = FormatHelper::moneyToUS($arrayData['maintenance_expenses']);
         }
 
-        if (!empty($arrayData['total_supply_value']) && $arrayData['total_supply_value'] > 0) {
+        if (!empty($arrayData['total_supply_value']) && FormatHelper::moneyToUS($arrayData['total_supply_value']) > 0) {
             $request->validate(['proof_of_payment_supply' => 'required']);
 
             $arrayData['total_supply_value'] = FormatHelper::moneyToUS($arrayData['total_supply_value']);
@@ -120,11 +120,11 @@ class DriverAreaController extends Controller
         $arrayData = $request->all();
         $arrayData['credential_id'] = $request->user()->id;
 
-        if (!empty($arrayData['maintenance_expenses']) && $arrayData['maintenance_expenses'] > 0) {
+        if (!empty($arrayData['maintenance_expenses']) && FormatHelper::moneyToUS($arrayData['maintenance_expenses']) > 0) {
             $request->validate(['proof_of_payment_expenses' => 'required']);
         }
 
-        if (!empty($arrayData['total_supply_value']) && $arrayData['total_supply_value'] > 0) {
+        if (!empty($arrayData['total_supply_value']) && FormatHelper::moneyToUS($arrayData['total_supply_value']) > 0) {
             $request->validate(['proof_of_payment_supply' => 'required']);
         }
 
