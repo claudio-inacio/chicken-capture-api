@@ -63,7 +63,13 @@ class LoginController extends Controller
                     ])
                 ->first();
 
+            $driverAreaFinalize = DriverArea::where('credential_id', $user[0]['id'])
+                ->whereDate('driver_area.created_at', Carbon::today())
+                ->whereDate('driver_area.daily_end_date', '<>', null)
+                ->first();
+
             $responseBody["dayStarted"] = !is_null($driverArea);
+            $responseBody["dayFinalized"] = !is_null($driverAreaFinalize);
             $responseBody["driverArea"] =  $driverArea ? $driverArea->toArray() : [];
         }
 
