@@ -105,7 +105,9 @@ class DriverAreaService
                     }
 
                     DB::commit();
-                    return ResponseService::success204();
+                    return ResponseService::success('Dados da area do motorista atualizados.', [
+                        'driver_area_id' => $driverAreaUpdate->id
+                    ]);
                 }
             }
 
@@ -136,7 +138,9 @@ class DriverAreaService
             }
 
             DB::commit();
-            return ResponseService::success204();
+            return ResponseService::success('Dados da area do registrados com sucesso.', [
+                'driver_area_id' => $driverArea->id
+            ]);
         } catch (Exception $e){
             DB::rollBack();
             return ResponseService::internalServerError('Falha em registrar area do motorista', [
