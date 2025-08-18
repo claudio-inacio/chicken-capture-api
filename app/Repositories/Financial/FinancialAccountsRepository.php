@@ -451,7 +451,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
      */
     public function update(int $id, array $data, array $paymentData): \Illuminate\Http\JsonResponse
     {
-        $arrayData['due_date'] = FormatHelper::setDueDate($arrayData['due_date'] ?? null);
+        $data['due_date'] = FormatHelper::setDueDate($data['due_date'] ?? null);
         $data['amount'] = FormatHelper::moneyToUS($data['amount']);
         unset($data['financial_accounts_id']);
         try {
@@ -462,8 +462,10 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
                 }
             }
 
-            if (!empty($data['finished_data']))
-                $data['finished_data'] = FormatHelper::dateToUsTimeStamp($data['finished_data']);
+            if ($data['status_id'] != StatusEnum::TO_RECEIVE and $data['status_id'] != StatusEnum::TO_DISCOUNT) {
+                if (!empty($data['finished_data']))
+                    $data['finished_data'] = FormatHelper::dateToUsTimeStamp($data['finished_data']);
+            }
 
             $financialAccount = FinancialAccounts::find($id)->update($data);
 

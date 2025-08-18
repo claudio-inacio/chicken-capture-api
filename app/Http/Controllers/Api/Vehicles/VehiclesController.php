@@ -8,6 +8,7 @@ use App\Interfaces\Vehicles\VehiclesRepositoryInterface;
 use App\Models\Credential;
 use App\Models\Main\Units;
 use App\Services\ResponseService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use SebastianBergmann\CodeCoverage\Report\Xml\Unit;
 
@@ -77,5 +78,17 @@ class VehiclesController extends Controller
         ]);
 
         return $this->vehiclesRepository->enable($request->vehicle_id, $request->enabled);
+    }
+
+    public function expenses(Request $request): JsonResponse
+    {
+        $whereCriterious = $request->where ?? false;
+        $selectConfig = $request->selectConfig ?? false;
+        if (!$selectConfig)
+            return response()->json(['message' => 'Select config is required!!!'], 422);
+        if (!$whereCriterious)
+            return response()->json(['message' => 'Where config is required!!!'], 422);
+
+        return response()->json($this->vehiclesRepository->expenses($selectConfig, $whereCriterious));
     }
 }

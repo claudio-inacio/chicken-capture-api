@@ -6,6 +6,8 @@ use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
 use App\Helpers\FormatHelper;
 use App\Interfaces\Vehicles\VehiclesRepositoryInterface;
+use App\Models\Financial\FinancialAccounts;
+use App\Models\Vehicles\FuelSupply;
 use App\Models\Vehicles\Vehicle;
 use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
@@ -49,6 +51,71 @@ class VehiclesRepository implements VehiclesRepositoryInterface
         return [
             'data' => $result->toArray(),
             'total' => $total,
+        ];
+    }
+
+    public function expenses($selectConfig, array $whereCriterious) : array
+    {
+        $whereFactory = new WhereFactory();
+        $selectFactory = new SelectFactory();
+        // -------------------------------
+        // CONSULTA DESPESAS FINANCEIRAS
+        // -------------------------------
+        $financialQuery = DB::table('financial.financial_accounts')
+            ->join('vehicles.vehicle as v', 'v.id', '=', 'financial_accounts.vehicle_id')
+            ->select([
+                'financial_accounts.id',
+                'financial_accounts.description',
+                'financial_accounts.amount',
+                'financial_accounts.cost_center_id',
+                'financial_accounts.table_reference_id',
+                'financial_accounts.created_at',
+                'v.id as vehicle_id',
+                'v.name as vehicle_name',
+                'v.plate_number',
+            ]);
+
+
+        $financialQuery = $whereFactory->byArray($financialQuery, $whereCriterious);
+        $financialQuery = $selectFactory->byArray($financialQuery, $selectConfig);
+
+        $financialExpenses = $financialQuery->get();
+
+
+        // -------------------------------
+        // CONSULTA COMBUSTÍVEL
+        // -------------------------------
+        $fuelQuery = DB::table('vehicles.fuel_supply')
+            ->join('vehicles.driver_area as da', 'fuel_supply.driver_area_id', '=', 'da.id')
+            ->join('vehicles.vehicle as v', 'da.vehicle_id', '=', 'v.id')
+            ->select([
+                'fuel_supply.id',
+                'fuel_supply.total_value',
+                'fuel_supply.liters_filled',
+                'fuel_supply.km_filled',
+                'fuel_supply.created_at',
+                'v.id as vehicle_id',
+                'v.name as vehicle_name',
+                'v.plate_number',
+            ]);
+
+        $fuelQuery = $whereFactory->byArray($fuelQuery, $whereCriterious);
+        $fuelQuery = $selectFactory->byArray($fuelQuery, $selectConfig);
+
+        $fuelSupplies = $fuelQuery->get();
+
+
+        // -------------------------------
+        // MONTA O RELATÓRIO
+        // -------------------------------
+        return [
+            'financial_expenses' => $financialExpenses,
+            'fuel_supplies'      => $fuelSupplies,
+            'totals' => [
+                'expenses' => $financialExpenses->sum('amount'),
+                'fuel'      => $fuelSupplies->sum('total_value'),
+                'general'   => $financialExpenses->sum('amount') + $fuelSupplies->sum('total_value')
+            ]
         ];
     }
 

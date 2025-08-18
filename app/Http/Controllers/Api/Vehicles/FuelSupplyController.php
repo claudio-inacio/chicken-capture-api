@@ -76,6 +76,7 @@ class FuelSupplyController extends Controller
         ]);
 
         $arrayData = $request->all();
+        unset($arrayData['fuel_supply_id']);
         return $this->fuelSupplyRepository->update($request->fuel_supply_id, $arrayData);
     }
 
