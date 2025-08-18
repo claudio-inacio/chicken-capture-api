@@ -165,7 +165,7 @@ Route::group(['middleware' => ['authJwt']], function (){
     Route::get('/vehicles/vehicle', [VehiclesController::class, 'list']);
     Route::put('/vehicles/vehicle', [VehiclesController::class, 'update']);
     Route::put('/vehicles/vehicle/enable', [VehiclesController::class, 'enable']);
-    Route::put('/vehicles/expenses', [VehiclesController::class, 'expenses']);
+    Route::get('/vehicles/expenses', [VehiclesController::class, 'expenses']);
 
     Route::post('/vehicles/driver-area', [DriverAreaController::class, 'register']);
     Route::get('/vehicles/driver-area', [DriverAreaController::class, 'list']);
