@@ -11,6 +11,7 @@ use App\Models\Vehicles\FuelSupply;
 use App\Models\Vehicles\Vehicle;
 use App\Services\ResponseService;
 use Illuminate\Support\Facades\DB;
+use JetBrains\PhpStorm\ArrayShape;
 
 class VehiclesRepository implements VehiclesRepositoryInterface
 {
@@ -54,6 +55,8 @@ class VehiclesRepository implements VehiclesRepositoryInterface
         ];
     }
 
+    #[ArrayShape(['financial_expenses' => "\Illuminate\Support\Collection",
+        'fuel_supplies' => "\Illuminate\Support\Collection", 'totals' => "array"])]
     public function expenses($selectConfig, array $whereCriterious) : array
     {
         $whereFactory = new WhereFactory();
