@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Vehicles;
 
+use App\Enum\Authentication\AccessGroupEnum;
 use App\Enum\Financial\CostCenterIdEnum;
 use App\Enum\Financial\StatusEnum;
 use App\Enum\Financial\TableReferenceFinanceEnum;
@@ -10,17 +11,17 @@ use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
 use App\Helpers\FormatHelper;
 use App\Interfaces\Vehicles\FuelSupplyRepositoryInterface;
+use App\Models\Credential;
 use App\Models\Financial\FinancialAccounts;
 use App\Models\Vehicles\FuelSupply;
 use App\Services\ResponseService;
 use Carbon\Carbon;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use JetBrains\PhpStorm\ArrayShape;
 
 class FuelSupplyRepository implements FuelSupplyRepositoryInterface
 {
-    public function findAll($selectConfig, array $whereCriterious) : array
+    public function findAll($selectConfig, array $whereCriterious, Credential $credential) : array
     {
         $query = DB::table('vehicles.fuel_supply')
             ->join('vehicles.driver_area', 'driver_area.id', '=', 'fuel_supply.driver_area_id')
@@ -30,6 +31,13 @@ class FuelSupplyRepository implements FuelSupplyRepositoryInterface
 
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);
+
+        if (
+            $credential->access_group_id != AccessGroupEnum::DEVELOPER and
+            $credential->access_group_id != AccessGroupEnum::ADMINISTRATIVE
+        ){
+            $query->where('fuel_supply.credential_id', $credential->id);
+        }
 
         $total = $query->count('fuel_supply.id');
 

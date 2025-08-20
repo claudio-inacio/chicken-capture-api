@@ -13,7 +13,6 @@ use App\Interfaces\Financial\FinancialAccountsRepositoryInterface;
 use App\Models\Catch\CatchDaily;
 use App\Models\Credential;
 use App\Models\Financial\FinancialAccounts;
-use App\Models\Financial\ProofOfPayment;
 use App\Models\Main\Units;
 use App\Services\ResponseService;
 use App\Services\Upload\UploadBase64Service;
@@ -76,7 +75,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             $credential->access_group_id != AccessGroupEnum::DEVELOPER and
             $credential->access_group_id != AccessGroupEnum::ADMINISTRATIVE
         ){
-            $query->where('credential_id', $credential->id);
+            $query->where('financial_accounts.credential_id', $credential->id);
         }
 
         $total = $query->count('financial_accounts.id');

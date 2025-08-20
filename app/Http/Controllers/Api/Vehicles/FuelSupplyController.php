@@ -49,7 +49,7 @@ class FuelSupplyController extends Controller
         if (!$whereCriterious)
             return response()->json(['message' => 'Where config is required!!!'], 422);
 
-        return response()->json($this->fuelSupplyRepository->findAll($selectConfig, $whereCriterious));
+        return response()->json($this->fuelSupplyRepository->findAll($selectConfig, $whereCriterious, $request->user()));
     }
 
     public function listByDate(Request $request): JsonResponse
