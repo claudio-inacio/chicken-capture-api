@@ -10,6 +10,7 @@ use App\Models\Vehicles\Vehicle;
 use App\Services\GenerateExcelService;
 use App\Services\Financial\FinancialService;
 use App\Services\ResponseService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class FinancialAccountsController extends Controller
@@ -131,7 +132,8 @@ class FinancialAccountsController extends Controller
         return response()->json(['url' => $filePath]);
     }
 
-    public function update(Request $request){
+    public function update(Request $request): JsonResponse
+    {
         $request->validate([
             'description' => 'required',
             'amount' => 'required',

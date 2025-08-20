@@ -18,6 +18,7 @@ use App\Services\ResponseService;
 use App\Services\Upload\UploadBase64Service;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use JetBrains\PhpStorm\ArrayShape;
 
@@ -457,7 +458,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
     /**
      * @throws Exception
      */
-    public function update(int $id, array $data, array $paymentData): \Illuminate\Http\JsonResponse
+    public function update(int $id, array $data, array $paymentData): JsonResponse
     {
         $data['due_date'] = FormatHelper::setDueDate($data['due_date'] ?? null);
         $data['amount'] = FormatHelper::moneyToUS($data['amount']);
