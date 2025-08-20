@@ -38,6 +38,8 @@ class UploadBase64Service {
             $arrayData['credential_id'] = $credentialId;
             $arrayData['observation'] = $arrayPayment['observation_proof_of_payment'] ?? null;
 
+            ProofOfPayment::where('financial_id', $financialAccounts->id)->delete();
+
             $register = ProofOfPayment::create($arrayData);
 
             if (!$register) {
