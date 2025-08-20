@@ -476,7 +476,8 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
                     $data['finished_data'] = FormatHelper::dateToUsTimeStamp($data['finished_data']);
             }
 
-            $financialAccount = FinancialAccounts::find($id)->update($data);
+            $financialAccount = FinancialAccounts::find($id);
+            $financialAccount->update($data);
 
             if ($paymentData['proof_of_payment']) {
                 $upload = UploadBase64Service::uploadProofPayment($paymentData, $data['credential_id'], $financialAccount);
