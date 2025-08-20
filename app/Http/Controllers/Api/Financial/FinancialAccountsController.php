@@ -136,7 +136,6 @@ class FinancialAccountsController extends Controller
             'description' => 'required',
             'amount' => 'required',
             'due_date' => 'required',
-            'finished_data' => 'required',
             'type' => 'required',
             'status_id' => 'required',
             'financial_accounts_id' => 'required',
