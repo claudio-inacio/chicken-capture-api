@@ -1,11 +1,13 @@
 <?php
 namespace App\Interfaces\Financial;
 
+use App\Models\Credential;
+
 interface FinancialAccountsRepositoryInterface
 {
     public function getAll();
     public function getByName(string $name);
-    public function findAll(array $selectConfig, array $whereCriterious) : array;
+    public function findAll(array $selectConfig, array $whereCriterious, Credential $credential) : array;
     public function findAllByDate(array $selectConfig, array $whereCriterious, $startDate, $endDate) : array;
     public function findAllDownload(array $selectConfig, array $whereCriterious) : array;
     public function getById(int $id);

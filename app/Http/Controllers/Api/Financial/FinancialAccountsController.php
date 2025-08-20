@@ -75,7 +75,7 @@ class FinancialAccountsController extends Controller
 
         if ( $valid == false) return ResponseService::businessError('È obrigatorio usar a filtragem por tipo.');
 
-        return response()->json($this->financialAccountsRepository->findAll($selectConfig, $whereCriterious));
+        return response()->json($this->financialAccountsRepository->findAll($selectConfig, $whereCriterious, $request->user()));
     }
 
     public function listByDate(Request $request): \Illuminate\Http\JsonResponse

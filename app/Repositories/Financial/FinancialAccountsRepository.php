@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Financial;
 
+use App\Enum\Authentication\AccessGroupEnum;
 use App\Enum\Financial\StatusEnum;
 use App\Enum\Financial\TableReferenceFinanceEnum;
 use App\Enum\Financial\TypeFinanceEnum;
@@ -10,6 +11,7 @@ use App\Factory\WhereFactory;
 use App\Helpers\FormatHelper;
 use App\Interfaces\Financial\FinancialAccountsRepositoryInterface;
 use App\Models\Catch\CatchDaily;
+use App\Models\Credential;
 use App\Models\Financial\FinancialAccounts;
 use App\Models\Financial\ProofOfPayment;
 use App\Models\Main\Units;
@@ -38,7 +40,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
     #[ArrayShape(['data' => "mixed", 'total' => "int", 'value_to_receive' => "string", 'value_to_discount' => "string",
         'value_receive' => "string", 'value_discount' => "string", 'value_defeated' => "string",
         'value_total_receive' => "string", 'value_total_discount' => "string"])]
-    public function findAll($selectConfig, array $whereCriterious): array
+    public function findAll($selectConfig, array $whereCriterious, Credential $credential): array
     {
         $dateNow = (new \DateTime(now()))->format('Y-m-d');
         $financialAccounts = FinancialAccounts::where('status_id', '<>', StatusEnum::DEFEATED)
@@ -69,6 +71,13 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
 
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);
+
+        if (
+            $credential->access_group_id != AccessGroupEnum::DEVELOPER and
+            $credential->access_group_id != AccessGroupEnum::ADMINISTRATIVE
+        ){
+            $query->where('credential_id', $credential->id);
+        }
 
         $total = $query->count('financial_accounts.id');
 
