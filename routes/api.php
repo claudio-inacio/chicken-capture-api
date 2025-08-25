@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Catch\CatchDailyController;
 use App\Http\Controllers\Api\Catch\CatchCancelledController;
 use App\Http\Controllers\Api\Catch\CatchConfigurationController;
 
+use App\Http\Controllers\Api\Catch\ExtraCatchConfigurationController;
 use App\Http\Controllers\Api\Financial\CostCenterController;
 use App\Http\Controllers\Api\Financial\ProofOfPaymentController;
 use App\Http\Controllers\Api\Main\ContractingCompanyController;
@@ -83,6 +84,12 @@ Route::group(['middleware' => ['authJwt']], function (){
     Route::get('/catch/catchs-configuration', [CatchConfigurationController::class, 'list']);
     Route::put('/catch/catchs-configuration', [CatchConfigurationController::class, 'update']);
     Route::put('/catch/catchs-configuration/enable', [CatchConfigurationController::class, 'enable']);
+
+    Route::post('/catch/extra-catch-configuration', [ExtraCatchConfigurationController::class, 'register']);
+    Route::get('/catch/extra-catch-configuration', [ExtraCatchConfigurationController::class, 'list']);
+    Route::get('/catch/extra-catch-configuration', [ExtraCatchConfigurationController::class, 'select']);
+    Route::put('/catch/extra-catch-configuration', [ExtraCatchConfigurationController::class, 'update']);
+    Route::put('/catch/extra-catch-configuration/enable', [ExtraCatchConfigurationController::class, 'enable']);
 
     ##################################### MAIN ###################################
     Route::post('/main/contracting-company', [ContractingCompanyController::class, 'register']);

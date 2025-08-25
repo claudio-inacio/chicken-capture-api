@@ -6,17 +6,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 
-class MessageConfig extends Model
+class ExtraCatchConfiguration extends Model
 {
     use HasFactory;
 
-    protected $table = 'utils.message_config';
+    protected $table = 'catch.extra_catch_configuration';
 
     protected $fillable = [
-        'auth',
-        'message_service_id',
-        'external_id',
-        'client_id',
+        'company_id',
+        'loading_target',
+        'bonus_amount',
+        'catch_type_id',
+        'enabled',
         'created_at',
         'updated_at'
     ];
