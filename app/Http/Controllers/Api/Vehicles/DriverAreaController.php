@@ -10,6 +10,7 @@ use App\Services\Main\LogService;
 use App\Services\ResponseService;
 use App\Services\Vehicles\DriverAreaService;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class DriverAreaController extends Controller
@@ -140,7 +141,7 @@ class DriverAreaController extends Controller
         return $this->driverAreaRepository->enable($request->driver_area_id, $request->enabled);
     }
 
-    public function analytic(Request $request): \Illuminate\Http\JsonResponse
+    public function analytic(Request $request): JsonResponse
     {
         $request->validate([
             'start_date' => 'required',
@@ -148,5 +149,25 @@ class DriverAreaController extends Controller
         ]);
 
         return DriverAreaService::analytics($request->all(), $request->user());
+    }
+
+    public function initDayAnalytic(Request $request): JsonResponse
+    {
+        $request->validate([
+            'start_date' => 'required',
+            'end_date' => 'required'
+        ]);
+
+        return DriverAreaService::initDayAnalytic($request->all());
+    }
+
+    public function timeToInitAnalytic(Request $request): JsonResponse
+    {
+        $request->validate([
+            'start_date' => 'required',
+            'end_date' => 'required'
+        ]);
+
+        return DriverAreaService::avgInitDayTimeAnalytic($request->all());
     }
 }

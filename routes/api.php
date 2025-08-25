@@ -32,6 +32,7 @@ use App\Http\Controllers\Api\Vehicles\FuelSupplyController;
 use App\Http\Controllers\Api\Vehicles\VehiclesController;
 use App\Http\Controllers\Api\Vehicles\DriverAreaController;
 
+use App\Http\Controllers\Api\Vehicles\ZApiController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -173,6 +174,8 @@ Route::group(['middleware' => ['authJwt']], function (){
     Route::put('/vehicles/driver-area/finalize', [DriverAreaController::class, 'finalize']);
     Route::put('/vehicles/driver-area/enable', [DriverAreaController::class, 'enable']);
     Route::get('/vehicles/driver-area/analytic', [DriverAreaController::class, 'analytic']);
+    Route::get('/vehicles/driver-area/init-day/analytic', [DriverAreaController::class, 'initDayAnalytic']);
+    Route::get('/vehicles/driver-area/time-to-init/analytic', [DriverAreaController::class, 'timeToInitAnalytic']);
 
     Route::post('/vehicles/fuel-supply', [FuelSupplyController::class, 'register']);
     Route::get('/vehicles/fuel-supply', [FuelSupplyController::class, 'list']);
@@ -182,6 +185,9 @@ Route::group(['middleware' => ['authJwt']], function (){
 
     ##################################### DRIVER ############################################
     Route::get('/authentication/credential/available-driver', [DriverController::class, 'listAvailableDriver']);
+
+    ##################################### Z-API #############################################
+    Route::post('/z-api/send-message', [ZApiController::class, 'sendMessage']);
 });
 
 Route::prefix('auth')->group(function () {

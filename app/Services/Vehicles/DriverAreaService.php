@@ -338,4 +338,77 @@ class DriverAreaService
         }
     }
 
+    public static function initDayAnalytic(array $arrayRequest): JsonResponse
+    {
+        try {
+            $startDate = $arrayRequest['start_date'];
+            $endDate   = $arrayRequest['end_date'];
+
+            $drivers = Credential::query()
+                ->select(
+                    'credential.id',
+                    'credential.document',
+                    'person.name',
+                    'person.phone_number',
+                    DB::raw("CASE
+                        WHEN EXISTS (
+                            SELECT 1
+                            FROM vehicles.driver_area da
+                            WHERE da.credential_id = credential.id
+                              AND da.daily_start_time BETWEEN '{$startDate}' AND '{$endDate}'
+                        ) THEN true
+                        ELSE false
+                    END as init_day")
+                )
+                ->join('authentication.person', 'person.id', '=', 'credential.person_id')
+                ->where('credential.access_group_id', AccessGroupEnum::DRIVER)
+                ->where('person.enabled', true)
+                ->get();
+
+            return ResponseService::success('Sucesso em obter dados.', $drivers);
+        }catch (\Exception $exception){
+            return ResponseService::businessError('Falha em obter dados', [
+                'error' => $exception->getMessage(),
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
+            ]);
+        }
+    }
+
+    public static function avgInitDayTimeAnalytic(array $arrayRequest): JsonResponse
+    {
+        try {
+            $startDate = $arrayRequest['start_date'];
+            $endDate = $arrayRequest['end_date'];
+
+            $report = Credential::query()
+                ->select(
+                    'credential.id',
+                    'credential.document',
+                    'person.name',
+                    'person.phone_number',
+                    DB::raw("AVG(EXTRACT(EPOCH FROM (da.daily_start_time - TIMESTAMP '{$startDate}'))) as avg_seconds")
+                )
+                ->join('authentication.person', 'person.id', '=', 'credential.person_id')
+                ->join('vehicles.driver_area as da', 'da.credential_id', '=', 'credential.id')
+                ->where('credential.access_group_id', AccessGroupEnum::DRIVER)
+                ->where('person.enabled', true)
+                ->whereBetween('da.daily_start_time', [$startDate, $endDate])
+                ->groupBy('credential.id', 'credential.document', 'person.name', 'person.phone_number')
+                ->get()
+                ->map(function ($item) {
+                    $item->avg_time_formatted = gmdate("H:i:s", (int)$item->avg_seconds);
+                    $item->avg_days = intval($item->avg_seconds / 86400); // inteiro, se for menor que 1 fica 0
+                    return $item;
+                });
+
+            return ResponseService::success('Sucesso em obter dados.', $report);
+        } catch (\Exception $exception) {
+            return ResponseService::businessError('Falha em obter dados', [
+                'error' => $exception->getMessage(),
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
+            ]);
+        }
+    }
 }

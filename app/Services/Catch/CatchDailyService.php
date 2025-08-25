@@ -10,11 +10,15 @@ use App\Models\Catch\CatchsCancelled;
 use App\Models\Catch\CatchsConfiguration;
 use App\Services\Financial\FinancialService;
 use App\Services\ResponseService;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
 class CatchDailyService
 {
+    /**
+     * @throws Exception
+     */
     public static function savefortnightFinance(array $arrayData): JsonResponse
     {
         DB::beginTransaction();
@@ -52,7 +56,7 @@ class CatchDailyService
 
             DB::commit();
             return ResponseService::success204();
-        }catch (\Exception $e){
+        }catch (Exception $e){
             DB::rollBack();
             return ResponseService::internalServerError('Falha em registrar apanha diaria', $e->getMessage());
         }
@@ -97,7 +101,7 @@ class CatchDailyService
 
             DB::commit();
             return ResponseService::success204();
-        }catch (\Exception $e){
+        }catch (Exception $e){
             DB::rollBack();
             return ResponseService::internalServerError('Falha em atualizar apanha diaria', $e->getMessage());
         }
@@ -156,7 +160,7 @@ class CatchDailyService
             ];
 
             return ResponseService::success('Sucesso em listar analitico de apanhas', $analyticCatchDaily);
-        } catch (\Exception $e){
+        } catch (Exception $e){
             return ResponseService::internalServerError('Falha em listar analitico de apanhas', $e->getMessage());
         }
     }
