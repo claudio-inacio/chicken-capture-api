@@ -65,7 +65,7 @@ class VehiclesRepository implements VehiclesRepositoryInterface
         // CONSULTA DESPESAS FINANCEIRAS
         // -------------------------------
         $financialQuery = DB::table('financial.financial_accounts')
-            ->join('vehicles.vehicle as v', 'v.id', '=', 'financial_accounts.vehicle_id')
+            ->join('vehicles.vehicle', 'vehicle.id', '=', 'financial_accounts.vehicle_id')
             ->select([
                 'financial_accounts.id',
                 'financial_accounts.description',
@@ -73,14 +73,26 @@ class VehiclesRepository implements VehiclesRepositoryInterface
                 'financial_accounts.cost_center_id',
                 'financial_accounts.table_reference_id',
                 'financial_accounts.created_at',
-                'v.id as vehicle_id',
-                'v.name as vehicle_name',
-                'v.plate_number',
+                'vehicle.id as vehicle_id',
+                'vehicle.name as vehicle_name',
+                'vehicle.plate_number',
             ]);
 
+        $newCriterious = [];
+        foreach ($whereCriterious as $key => $criterious){
+            if(str_contains($criterious['field'], 'financial_accounts.')){
+                $newCriterious[$key] = $criterious;
+            }
+            if(str_contains($criterious['field'], 'vehicle.')){
+                $newCriterious[$key] = $criterious;
+            }
+        }
 
-        $financialQuery = $whereFactory->byArray($financialQuery, $whereCriterious);
-        $financialQuery = $selectFactory->byArray($financialQuery, $selectConfig);
+
+        $financialQuery = $whereFactory->byArray($financialQuery, $newCriterious);
+        if (!empty($selectConfig)) {
+            $financialQuery = $selectFactory->byArray($financialQuery, $selectConfig);
+        }
 
         $financialExpenses = $financialQuery->get();
 
@@ -90,20 +102,28 @@ class VehiclesRepository implements VehiclesRepositoryInterface
         // -------------------------------
         $fuelQuery = DB::table('vehicles.fuel_supply')
             ->join('vehicles.driver_area as da', 'fuel_supply.driver_area_id', '=', 'da.id')
-            ->join('vehicles.vehicle as v', 'da.vehicle_id', '=', 'v.id')
+            ->join('vehicles.vehicle', 'da.vehicle_id', '=', 'vehicle.id')
             ->select([
                 'fuel_supply.id',
                 'fuel_supply.total_value',
                 'fuel_supply.liters_filled',
                 'fuel_supply.km_filled',
                 'fuel_supply.created_at',
-                'v.id as vehicle_id',
-                'v.name as vehicle_name',
-                'v.plate_number',
+                'vehicle.id as vehicle_id',
+                'vehicle.name as vehicle_name',
+                'vehicle.plate_number',
             ]);
 
+        foreach ($whereCriterious as $key => $criterious){
+            if(str_contains($criterious['field'], 'financial_accounts.')){
+                unset($whereCriterious[$key]);
+            }
+        }
+
         $fuelQuery = $whereFactory->byArray($fuelQuery, $whereCriterious);
-        $fuelQuery = $selectFactory->byArray($fuelQuery, $selectConfig);
+        if (!empty($selectConfig)) {
+            $fuelQuery = $selectFactory->byArray($fuelQuery, $selectConfig);
+        }
 
         $fuelSupplies = $fuelQuery->get();
 
