@@ -343,4 +343,41 @@ class FinancialService
             return ResponseService::internalServerError('Falha em listar analítico de finanças', $e->getMessage());
         }
     }
+
+    public static function catchRanking(array $arrayRequest, $user): JsonResponse
+    {
+        try {
+            $startDate = FormatHelper::dateToUsTimeStamp($arrayRequest['start_date']);
+            $endDate   = FormatHelper::dateToUsTimeStamp($arrayRequest['end_date']);
+
+            $ranking = FinancialAccounts::query()
+                ->select([
+                    'team.id as team_id',
+                    'team.name as team_name',
+                    'person.name as driver_name',
+                    DB::raw('SUM(financial_accounts.amount) as total_amount'),
+                    DB::raw('COUNT(financial_accounts.id) as total_registros')
+                ])
+                ->join('main.team', 'team.id', '=', 'financial_accounts.team_id')
+                ->join('authentication.credential', 'credential.id', '=', 'team.motorista_credential_id')
+                ->join('authentication.person', 'person.id', '=', 'credential.person_id')
+                ->where('financial_accounts.company_id', $user->company_id)
+                ->whereBetween('financial_accounts.created_at', [$startDate, $endDate])
+                ->whereIn('financial_accounts.cost_center_id', [
+                    CostCenterIdEnum::APANHAS,
+                    CostCenterIdEnum::TEAM_BONUS_AMOUNT
+                ])
+                ->groupBy('team.id', 'team.name', 'person.name')
+                ->orderByDesc('total_amount')
+                ->get();
+
+            return ResponseService::success('sucesso em listar ranking de apanha', $ranking);
+        } catch (\Exception $e) {
+            return ResponseService::internalServerError('Falha em listar ranking de apanha', [
+                'error' => $e->getMessage(),
+                'line'  => $e->getLine(),
+                'file'  => $e->getFile(),
+            ]);
+        }
+    }
 }

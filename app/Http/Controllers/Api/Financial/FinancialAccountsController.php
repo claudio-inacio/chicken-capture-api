@@ -187,4 +187,14 @@ class FinancialAccountsController extends Controller
 
         return response()->json($this->financialAccountsRepository->generalReport($selectConfig, $whereCriterious));
     }
+
+    public function catchRanking(Request $request): JsonResponse
+    {
+        $request->validate([
+            'start_date' => 'required',
+            'end_date' => 'required'
+        ]);
+
+        return FinancialService::catchRanking($request->all(), $request->user());
+    }
 }

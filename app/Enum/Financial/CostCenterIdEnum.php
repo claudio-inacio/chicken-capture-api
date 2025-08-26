@@ -9,4 +9,5 @@ enum CostCenterIdEnum
     const DIARIA = 3;
     const MOTORISTA = 4;
     const FUEL = 5;
+    const TEAM_BONUS_AMOUNT = 6;
 }

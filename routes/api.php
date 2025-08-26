@@ -153,6 +153,7 @@ Route::group(['middleware' => ['authJwt']], function (){
     Route::put('/financial/financial-accounts/enable', [FinancialAccountsController::class, 'enable']);
     Route::get('/financial/financial-accounts/analytic', [FinancialAccountsController::class, 'analytic']);
     Route::get('/financial/financial-accounts/general-report', [FinancialAccountsController::class, 'generalReport']);
+    Route::get('/financial/financial-accounts/catch-ranking', [FinancialAccountsController::class, 'catchRanking']);
 
     Route::post('/financial/monthly-closing-reports', [MonthlyClosingReportsController::class, 'register']);
     Route::get('/financial/monthly-closing-reports', [MonthlyClosingReportsController::class, 'list']);
