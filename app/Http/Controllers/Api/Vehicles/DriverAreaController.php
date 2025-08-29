@@ -159,7 +159,7 @@ class DriverAreaController extends Controller
             'order' => 'required|in:by_init,by_not_init',
         ]);
 
-        return DriverAreaService::initDayAnalytic($request->all(), $request->order);
+        return DriverAreaService::initDayAnalytic($request->all(), $request->order, $request->user());
     }
 
     public function endDayAnalytic(Request $request): JsonResponse
@@ -170,7 +170,7 @@ class DriverAreaController extends Controller
             'order' => 'required|in:by_end,by_not_end',
         ]);
 
-        return DriverAreaService::endDayAnalytic($request->all(), $request->order);
+        return DriverAreaService::endDayAnalytic($request->all(), $request->order, $request->user());
     }
 
     public function timeToInitAnalytic(Request $request): JsonResponse
