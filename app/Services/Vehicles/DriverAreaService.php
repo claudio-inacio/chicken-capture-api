@@ -355,6 +355,13 @@ class DriverAreaService
                     'credential.document',
                     'person.name',
                     'person.phone_number',
+                    'da.daily_start_km',
+                    'da.daily_end_km',
+                    'da.daily_start_time',
+                    'da.daily_end_date',
+                    'da.created_at as driver_area_created_at',
+                    'da.updated_at as driver_area_updated_at',
+                    'da.vehicle_id',
                     DB::raw("CASE
                     WHEN EXISTS (
                         SELECT 1
@@ -400,6 +407,13 @@ class DriverAreaService
                     'credential.document',
                     'person.name',
                     'person.phone_number',
+                    'da.daily_start_km',
+                    'da.daily_end_km',
+                    'da.daily_start_time',
+                    'da.daily_end_date',
+                    'da.created_at as driver_area_created_at',
+                    'da.updated_at as driver_area_updated_at',
+                    'da.vehicle_id',
                     DB::raw("CASE
                     WHEN EXISTS (
                         SELECT 1
