@@ -183,6 +183,7 @@ Route::group(['middleware' => ['authJwt']], function (){
     Route::put('/vehicles/driver-area/enable', [DriverAreaController::class, 'enable']);
     Route::get('/vehicles/driver-area/analytic', [DriverAreaController::class, 'analytic']);
     Route::get('/vehicles/driver-area/init-day/analytic', [DriverAreaController::class, 'initDayAnalytic']);
+    Route::get('/vehicles/driver-area/end-day/analytic', [DriverAreaController::class, 'endDayAnalytic']);
     Route::get('/vehicles/driver-area/time-to-init/analytic', [DriverAreaController::class, 'timeToInitAnalytic']);
 
     Route::post('/vehicles/fuel-supply', [FuelSupplyController::class, 'register']);

@@ -155,10 +155,22 @@ class DriverAreaController extends Controller
     {
         $request->validate([
             'start_date' => 'required',
-            'end_date' => 'required'
+            'end_date' => 'required',
+            'order' => 'required|in:by_init,by_not_init',
         ]);
 
-        return DriverAreaService::initDayAnalytic($request->all());
+        return DriverAreaService::initDayAnalytic($request->all(), $request->order);
+    }
+
+    public function endDayAnalytic(Request $request): JsonResponse
+    {
+        $request->validate([
+            'start_date' => 'required',
+            'end_date' => 'required',
+            'order' => 'required|in:by_end,by_not_end',
+        ]);
+
+        return DriverAreaService::endDayAnalytic($request->all(), $request->order);
     }
 
     public function timeToInitAnalytic(Request $request): JsonResponse

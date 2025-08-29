@@ -338,11 +338,16 @@ class DriverAreaService
         }
     }
 
-    public static function initDayAnalytic(array $arrayRequest): JsonResponse
+    public static function initDayAnalytic(array $arrayRequest, $order): JsonResponse
     {
+        $orderBy = ['init_day', 'desc'];
+        if ($order == 'by_not_init') {
+            $orderBy = ['init_day', 'asc'];
+        }
+
         try {
-            $startDate = $arrayRequest['start_date'];
-            $endDate   = $arrayRequest['end_date'];
+            $startDate = FormatHelper::dateToUsTimeStamp($arrayRequest['start_date']);
+            $endDate = FormatHelper::dateToUsTimeStamp($arrayRequest['end_date']);
 
             $drivers = Credential::query()
                 ->select(
@@ -351,22 +356,68 @@ class DriverAreaService
                     'person.name',
                     'person.phone_number',
                     DB::raw("CASE
-                        WHEN EXISTS (
-                            SELECT 1
-                            FROM vehicles.driver_area da
-                            WHERE da.credential_id = credential.id
-                              AND da.daily_start_time BETWEEN '{$startDate}' AND '{$endDate}'
-                        ) THEN true
-                        ELSE false
-                    END as init_day")
+                    WHEN EXISTS (
+                        SELECT 1
+                        FROM vehicles.driver_area da
+                        WHERE da.credential_id = credential.id
+                          AND da.created_at BETWEEN '{$startDate}' AND '{$endDate}'
+                          AND da.daily_start_time IS NOT NULL
+                    ) THEN true
+                    ELSE false
+                END as init_day")
                 )
                 ->join('authentication.person', 'person.id', '=', 'credential.person_id')
                 ->where('credential.access_group_id', AccessGroupEnum::DRIVER)
                 ->where('person.enabled', true)
+                ->orderBy($orderBy[0], $orderBy[1])
                 ->get();
 
             return ResponseService::success('Sucesso em obter dados.', $drivers);
         }catch (\Exception $exception){
+            return ResponseService::businessError('Falha em obter dados', [
+                'error' => $exception->getMessage(),
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
+            ]);
+        }
+    }
+
+    public static function endDayAnalytic(array $arrayRequest, $order): JsonResponse
+    {
+        $orderBy = ['end_day', 'desc']; // default: quem finalizou primeiro
+        if ($order == 'by_not_end') {
+            $orderBy = ['end_day', 'asc']; // quem não finalizou primeiro
+        }
+
+        try {
+            $startDate = FormatHelper::dateToUsTimeStamp($arrayRequest['start_date']);
+            $endDate = FormatHelper::dateToUsTimeStamp($arrayRequest['end_date']);
+
+            $drivers = Credential::query()
+                ->select(
+                    'credential.id',
+                    'credential.document',
+                    'person.name',
+                    'person.phone_number',
+                    DB::raw("CASE
+                    WHEN EXISTS (
+                        SELECT 1
+                        FROM vehicles.driver_area da
+                        WHERE da.credential_id = credential.id
+                          AND da.created_at BETWEEN '{$startDate}' AND '{$endDate}'
+                          AND da.daily_end_date IS NOT NULL
+                    ) THEN true
+                    ELSE false
+                END as end_day")
+                )
+                ->join('authentication.person', 'person.id', '=', 'credential.person_id')
+                ->where('credential.access_group_id', AccessGroupEnum::DRIVER)
+                ->where('person.enabled', true)
+                ->orderBy($orderBy[0], $orderBy[1])
+                ->get();
+
+            return ResponseService::success('Sucesso em obter dados.', $drivers);
+        } catch (\Exception $exception) {
             return ResponseService::businessError('Falha em obter dados', [
                 'error' => $exception->getMessage(),
                 'file' => $exception->getFile(),
