@@ -374,6 +374,10 @@ class DriverAreaService
                 END as init_day")
                 )
                 ->join('authentication.person', 'person.id', '=', 'credential.person_id')
+                ->leftJoin('vehicles.driver_area as da', function ($join) use ($startDate, $endDate) {
+                    $join->on('da.credential_id', '=', 'credential.id')
+                        ->whereBetween('da.created_at', [$startDate, $endDate]);
+                })
                 ->where('credential.access_group_id', AccessGroupEnum::DRIVER)
                 ->where('person.enabled', true)
                 ->where('credential.company_id', $credential->company_id)
@@ -426,6 +430,10 @@ class DriverAreaService
                 END as end_day")
                 )
                 ->join('authentication.person', 'person.id', '=', 'credential.person_id')
+                ->leftJoin('vehicles.driver_area as da', function ($join) use ($startDate, $endDate) {
+                    $join->on('da.credential_id', '=', 'credential.id')
+                        ->whereBetween('da.created_at', [$startDate, $endDate]);
+                })
                 ->where('credential.access_group_id', AccessGroupEnum::DRIVER)
                 ->where('person.enabled', true)
                 ->where('credential.company_id', $credential->company_id)
