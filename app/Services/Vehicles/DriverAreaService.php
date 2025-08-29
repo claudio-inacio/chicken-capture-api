@@ -338,7 +338,7 @@ class DriverAreaService
         }
     }
 
-    public static function initDayAnalytic(array $arrayRequest, $order): JsonResponse
+    public static function initDayAnalytic(array $arrayRequest, $order, Credential $credential): JsonResponse
     {
         $orderBy = ['init_day', 'desc'];
         if ($order == 'by_not_init') {
@@ -369,6 +369,7 @@ class DriverAreaService
                 ->join('authentication.person', 'person.id', '=', 'credential.person_id')
                 ->where('credential.access_group_id', AccessGroupEnum::DRIVER)
                 ->where('person.enabled', true)
+                ->where('credential.company_id', $credential->company_id)
                 ->orderBy($orderBy[0], $orderBy[1])
                 ->get();
 
@@ -382,7 +383,7 @@ class DriverAreaService
         }
     }
 
-    public static function endDayAnalytic(array $arrayRequest, $order): JsonResponse
+    public static function endDayAnalytic(array $arrayRequest, $order, Credential $credential): JsonResponse
     {
         $orderBy = ['end_day', 'desc']; // default: quem finalizou primeiro
         if ($order == 'by_not_end') {
@@ -413,6 +414,7 @@ class DriverAreaService
                 ->join('authentication.person', 'person.id', '=', 'credential.person_id')
                 ->where('credential.access_group_id', AccessGroupEnum::DRIVER)
                 ->where('person.enabled', true)
+                ->where('credential.company_id', $credential->company_id)
                 ->orderBy($orderBy[0], $orderBy[1])
                 ->get();
 
