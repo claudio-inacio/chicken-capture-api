@@ -13,6 +13,7 @@ use App\Models\Main\Team;
 use App\Services\ResponseService;
 use App\Services\Upload\UploadBase64Service;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class FinancialService
@@ -379,5 +380,22 @@ class FinancialService
                 'file'  => $e->getFile(),
             ]);
         }
+    }
+
+    public static function validCostCenter(CostCenterIdEnum $costCenterId, Request $request): array
+    {
+        if ($costCenterId == CostCenterIdEnum::TEAM_BONUS_AMOUNT){
+            return ['team_id' => 'required'];
+        }
+
+        if ($costCenterId == CostCenterIdEnum::VEICULO){
+            return ['vehicle_id' => 'required'];
+        }
+
+        if ($costCenterId == CostCenterIdEnum::MOTORISTA){
+            return ['driver_credential_id' => 'required'];
+        }
+
+        return [];
     }
 }

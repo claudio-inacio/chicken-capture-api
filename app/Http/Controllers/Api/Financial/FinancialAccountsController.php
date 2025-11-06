@@ -37,6 +37,9 @@ class FinancialAccountsController extends Controller
             'cost_center_id' => 'required',
         ]);
 
+        $validCostCenter = FinancialService::validCostCenter($request->cost_center_id, $request);
+        $request->validate($validCostCenter);
+
         if ($request->status_id == StatusEnum::DISCOUNT || $request->status_id == StatusEnum::RECEIVE){
             $request->validate(['finished_data' => 'required']);
         }
