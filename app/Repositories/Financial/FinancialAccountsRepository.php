@@ -47,7 +47,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             ->where('due_date', '<', $dateNow)
             ->where('finished_data', null)
             ->get()
-            ->toarray();
+            ->toArray();
 
         foreach ($financialAccounts as $financialAccount) {
             FinancialAccounts::whereId($financialAccount['id'])->update(['status_id' => StatusEnum::DEFEATED]);
@@ -61,6 +61,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             ->leftJoin('vehicles.vehicle', 'vehicle.id', '=', 'financial_accounts.vehicle_id')
             ->join('authentication.person', 'person.id', '=', 'credential.person_id');
 
+        // Aplica joins extras se necessário
         foreach ($whereCriterious as $criterious) {
             if (str_contains($criterious['field'], 'table_reference_id')) {
                 if ($criterious['value'] == TableReferenceFinanceEnum::DAILY_CATCH) {
@@ -69,15 +70,27 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             }
         }
 
+        // Cria uma cópia da query para cálculo dos totais (antes de aplicar os filtros)
+        $queryTotals = clone $query;
+
         $whereFactory = new WhereFactory();
         $query = $whereFactory->byArray($query, $whereCriterious);
 
+        // Aplica o filtro de credencial para ambas as queries
         if (
-            $credential->access_group_id != AccessGroupEnum::DEVELOPER and
+            $credential->access_group_id != AccessGroupEnum::DEVELOPER &&
             $credential->access_group_id != AccessGroupEnum::ADMINISTRATIVE
-        ){
+        ) {
             $query->where('financial_accounts.credential_id', $credential->id);
+            $queryTotals->where('financial_accounts.credential_id', $credential->id);
         }
+
+        // Remove o filtro por status_id da query de totais
+        $whereCriteriousWithoutStatus = array_filter($whereCriterious, function ($criterious) {
+            return $criterious['field'] !== 'financial_accounts.status_id';
+        });
+
+        $queryTotals = $whereFactory->byArray($queryTotals, $whereCriteriousWithoutStatus);
 
         $total = $query->count('financial_accounts.id');
 
@@ -96,19 +109,28 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
 
         $result = $query->get()->toArray();
         $arrayStatus = [];
-        $arrayTotalValue = [];
-        foreach ($result as $key => $item) {
+        $arrayTotalValue = [
+            TypeFinanceEnum::TO_RECEIVE => 0,
+            TypeFinanceEnum::TO_DISCOUNT => 0,
+        ];
+
+        // Calcula totais ignorando o filtro de status_id
+        $allItemsForTotals = $queryTotals->select([
+            'financial_accounts.amount',
+            'financial_accounts.type',
+        ])->get();
+
+        foreach ($allItemsForTotals as $item) {
+            if ($item->type == TypeFinanceEnum::TO_RECEIVE) {
+                $arrayTotalValue[TypeFinanceEnum::TO_RECEIVE] += $item->amount;
+            } else {
+                $arrayTotalValue[TypeFinanceEnum::TO_DISCOUNT] += $item->amount;
+            }
+        }
+
+        // Processa o resultado filtrado normalmente
+        foreach ($result as $item) {
             $item->description_data = json_decode($item->description_data);
-
-            if (!key_exists(TypeFinanceEnum::TO_RECEIVE, $arrayTotalValue)) {
-                $arrayTotalValue[TypeFinanceEnum::TO_RECEIVE] = 0;
-            }
-            if (!key_exists(TypeFinanceEnum::TO_DISCOUNT, $arrayTotalValue)) {
-                $arrayTotalValue[TypeFinanceEnum::TO_DISCOUNT] = 0;
-            }
-
-            $item->type == TypeFinanceEnum::TO_RECEIVE ?
-                $arrayTotalValue[TypeFinanceEnum::TO_RECEIVE] += $item->amount : $arrayTotalValue[TypeFinanceEnum::TO_DISCOUNT] += $item->amount;
 
             $item->catch_daily_date = null;
             $item->catch_daily_enabled = null;
