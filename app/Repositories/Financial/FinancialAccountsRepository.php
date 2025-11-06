@@ -53,7 +53,8 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             FinancialAccounts::whereId($financialAccount['id'])->update(['status_id' => StatusEnum::DEFEATED]);
         }
 
-        $query = DB::table('financial.financial_accounts')
+        // Query base com joins
+        $baseQuery = DB::table('financial.financial_accounts')
             ->join('main.company', 'company.id', '=', 'financial_accounts.company_id')
             ->join('authentication.credential', 'credential.id', '=', 'financial_accounts.credential_id')
             ->leftJoin('main.team', 'team.id', '=', 'financial_accounts.team_id')
@@ -61,22 +62,31 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             ->leftJoin('vehicles.vehicle', 'vehicle.id', '=', 'financial_accounts.vehicle_id')
             ->join('authentication.person', 'person.id', '=', 'credential.person_id');
 
-        // Aplica joins extras se necessário
+        // joins dinâmicos (ex.: catch_daily) que dependem do whereCriterious
         foreach ($whereCriterious as $criterious) {
             if (str_contains($criterious['field'], 'table_reference_id')) {
                 if ($criterious['value'] == TableReferenceFinanceEnum::DAILY_CATCH) {
-                    $query->join('catch.catch_daily', 'catch_daily.id', '=', 'financial_accounts.reference_id');
+                    $baseQuery->join('catch.catch_daily', 'catch_daily.id', '=', 'financial_accounts.reference_id');
                 }
             }
         }
 
-        // Cria uma cópia da query para cálculo dos totais (antes de aplicar os filtros)
-        $queryTotals = clone $query;
+        // clone para usar como base das duas queries (uma para data/total, outra para totais agregados)
+        $query = clone $baseQuery;
+        $queryTotals = clone $baseQuery;
 
         $whereFactory = new WhereFactory();
+
+        // Aplica todos os filtros originais na query principal
         $query = $whereFactory->byArray($query, $whereCriterious);
 
-        // Aplica o filtro de credencial para ambas as queries
+        // Para a query de totais: remove apenas filtros sobre financial_accounts.status_id
+        $whereCriteriousWithoutStatus = array_filter($whereCriterious, function ($c) {
+            return $c['field'] !== 'financial_accounts.status_id';
+        });
+        $queryTotals = $whereFactory->byArray($queryTotals, $whereCriteriousWithoutStatus);
+
+        // Aplica restrição de credential (se necessário) em ambas
         if (
             $credential->access_group_id != AccessGroupEnum::DEVELOPER &&
             $credential->access_group_id != AccessGroupEnum::ADMINISTRATIVE
@@ -85,15 +95,10 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             $queryTotals->where('financial_accounts.credential_id', $credential->id);
         }
 
-        // Remove o filtro por status_id da query de totais
-        $whereCriteriousWithoutStatus = array_filter($whereCriterious, function ($criterious) {
-            return $criterious['field'] !== 'financial_accounts.status_id';
-        });
-
-        $queryTotals = $whereFactory->byArray($queryTotals, $whereCriteriousWithoutStatus);
-
+        // total count (aplicado na query filtrada)
         $total = $query->count('financial_accounts.id');
 
+        // Aplica select/pagination apenas na query de listagem
         $selectFactory = new SelectFactory();
         $query = $selectFactory->byArray($query, $selectConfig);
         $query->select([
@@ -108,27 +113,38 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
         ]);
 
         $result = $query->get()->toArray();
-        $arrayStatus = [];
+
+        // ---------- AGREGAÇÕES: calcular totais IGNORANDO filtro de status_id ----------
+        // 1) Totais por status (value_receive, value_discount, value_defeated, etc)
+        $statusSums = $queryTotals
+            ->select('financial_accounts.status_id', DB::raw('SUM(financial_accounts.amount) AS total_amount'))
+            ->groupBy('financial_accounts.status_id')
+            ->get()
+            ->keyBy('status_id'); // facilita lookup por status_id
+
+        // 2) Totais por type (value_total_receive, value_total_discount)
+        $typeSums = $queryTotals
+            ->select('financial_accounts.type', DB::raw('SUM(financial_accounts.amount) AS total_amount'))
+            ->groupBy('financial_accounts.type')
+            ->get()
+            ->keyBy('type');
+
         $arrayTotalValue = [
-            TypeFinanceEnum::TO_RECEIVE => 0,
-            TypeFinanceEnum::TO_DISCOUNT => 0,
+            TypeFinanceEnum::TO_RECEIVE => (float)($typeSums[TypeFinanceEnum::TO_RECEIVE]->total_amount ?? 0),
+            TypeFinanceEnum::TO_DISCOUNT => (float)($typeSums[TypeFinanceEnum::TO_DISCOUNT]->total_amount ?? 0),
         ];
 
-        // Calcula totais ignorando o filtro de status_id
-        $allItemsForTotals = $queryTotals->select([
-            'financial_accounts.amount',
-            'financial_accounts.type',
-        ])->get();
+        // extrai os status específicos
+        $value_receive = (float)($statusSums[StatusEnum::RECEIVE]->total_amount ?? 0);
+        $value_discount = (float)($statusSums[StatusEnum::DISCOUNT]->total_amount ?? 0);
+        $value_defeated = (float)($statusSums[StatusEnum::DEFEATED]->total_amount ?? 0);
+        $value_to_receive = (float)($statusSums[StatusEnum::TO_RECEIVE]->total_amount ?? 0);
+        $value_to_discount = (float)($statusSums[StatusEnum::TO_DISCOUNT]->total_amount ?? 0);
 
-        foreach ($allItemsForTotals as $item) {
-            if ($item->type == TypeFinanceEnum::TO_RECEIVE) {
-                $arrayTotalValue[TypeFinanceEnum::TO_RECEIVE] += $item->amount;
-            } else {
-                $arrayTotalValue[TypeFinanceEnum::TO_DISCOUNT] += $item->amount;
-            }
-        }
-
-        // Processa o resultado filtrado normalmente
+        // ---------- PROCESSA O RESULTADO (apenas formata campos e calcula status do resultado filtrado se quiser) ----------
+        // Se você quer também mostrar os status **aplicados ao resultado filtrado** (por ex.: totals exibidos na UI baseados no filtro),
+        // você pode manter a lógica que somava $arrayStatus a partir de $result — mas conforme seu pedido, vamos usar os valores agregados
+        // vindos de $queryTotals para os valores de resumo (portanto são invariantes ao filtro status_id).
         foreach ($result as $item) {
             $item->description_data = json_decode($item->description_data);
 
@@ -139,14 +155,12 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
 
             if ($item->table_reference_id == TableReferenceFinanceEnum::DAILY_CATCH) {
                 $catch = CatchDaily::find($item->reference_id);
-
                 if ($catch) {
                     $item->catch_daily_date = (new \DateTime($catch->date))->format('d/m/Y');
                     $item->catch_daily_enabled = $catch->enabled;
                     $item->code = $catch->code;
 
                     $unit = Units::find($catch->units_id);
-
                     if ($unit) {
                         $item->catch_daily_units_id = $unit->id;
                         $item->catch_daily_units_name = $unit->name;
@@ -154,18 +168,17 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
                 }
             }
 
-            $arrayStatus[$item->status_id] = ($arrayStatus[$item->status_id] ?? 0) + $item->amount;
             $item->amount = FormatHelper::decimalToBr($item->amount);
         }
 
         return [
             'data' => $result,
             'total' => $total,
-            'value_to_receive' => "R$ " . FormatHelper::decimalToBr($arrayStatus[StatusEnum::TO_RECEIVE] ?? 0),
-            'value_to_discount' => "R$ " . FormatHelper::decimalToBr($arrayStatus[StatusEnum::TO_DISCOUNT] ?? 0),
-            'value_receive' => "R$ " . FormatHelper::decimalToBr($arrayStatus[StatusEnum::RECEIVE] ?? 0),
-            'value_discount' => "R$ " . FormatHelper::decimalToBr($arrayStatus[StatusEnum::DISCOUNT] ?? 0),
-            'value_defeated' => "R$ " . FormatHelper::decimalToBr($arrayStatus[StatusEnum::DEFEATED] ?? 0),
+            'value_to_receive' => "R$ " . FormatHelper::decimalToBr($value_to_receive),
+            'value_to_discount' => "R$ " . FormatHelper::decimalToBr($value_to_discount),
+            'value_receive' => "R$ " . FormatHelper::decimalToBr($value_receive),
+            'value_discount' => "R$ " . FormatHelper::decimalToBr($value_discount),
+            'value_defeated' => "R$ " . FormatHelper::decimalToBr($value_defeated),
             'value_total_receive' => "R$ " . FormatHelper::decimalToBr($arrayTotalValue[TypeFinanceEnum::TO_RECEIVE] ?? 0),
             'value_total_discount' => "R$ " . FormatHelper::decimalToBr($arrayTotalValue[TypeFinanceEnum::TO_DISCOUNT] ?? 0),
         ];
