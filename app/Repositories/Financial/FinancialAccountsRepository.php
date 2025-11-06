@@ -170,7 +170,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
 
             $item->amount = FormatHelper::decimalToBr($item->amount);
 
-            if ($item->enabled == false and $item->status_id != StatusEnum::DEFEATED){
+            if ($item->enabled == false){
                 $item->status_id = StatusEnum::CANCELED;
             }
         }
