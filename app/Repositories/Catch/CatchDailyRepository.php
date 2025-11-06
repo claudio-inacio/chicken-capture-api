@@ -26,7 +26,7 @@ class CatchDailyRepository implements CatchDailyRespositoryInterface
         return CatchDaily::where('name', $name)->get();
     }
 
-    public function findAll($selectConfig, array $whereCriterious) : array
+    public function findAll($selectConfig, array $whereCriterious): array
     {
         $query = DB::table('catch.catch_daily')
             ->join('authentication.credential', 'credential.id', '=', 'catch_daily.credential_id')
@@ -61,11 +61,14 @@ class CatchDailyRepository implements CatchDailyRespositoryInterface
 
         $result = $query->get();
 
-        // Pré-carregar CatchsConfiguration e CatchsCancelled para evitar consultas repetidas
-        // Etudar o que esse KeyBy() faz
+        // Pré-carregar CatchsConfiguration e CatchsCancelled
+        $catchConfigurations = CatchsConfiguration::whereIn('catch_type_id', $result->pluck('catch_type_id'))
+            ->get()
+            ->keyBy('catch_type_id');
 
-        $catchConfigurations = CatchsConfiguration::whereIn('catch_type_id', $result->pluck('catch_type_id'))->get()->keyBy('catch_type_id');
-        $catchCancelleds = CatchsCancelled::whereIn('catch_daily_id', $result->pluck('id'))->get()->groupBy('catch_daily_id');
+        $catchCancelleds = CatchsCancelled::whereIn('catch_daily_id', $result->pluck('id'))
+            ->get()
+            ->groupBy('catch_daily_id');
 
         $totalValueCatch = 0;
         $totalValueCatchCancelled = 0;
@@ -78,13 +81,20 @@ class CatchDailyRepository implements CatchDailyRespositoryInterface
 
             $totalCancelled = $cancelleds->sum('quantity');
             $totalCatch = $item->quantity - $totalCancelled;
-            $qtdCatch = $qtdCatch + $totalCatch;
-            $qtdCatchCancelled = $qtdCatchCancelled + $totalCancelled;
+            $qtdCatch += $totalCatch;
+            $qtdCatchCancelled += $totalCancelled;
 
-            $totalValueCatchCancelled += $catchConfiguration->cancellation_price * $totalCancelled;
-            $totalValueCatch += $catchConfiguration->catch_price * $totalCatch;
+            $itemValueCatch = $catchConfiguration->catch_price * $totalCatch;
+            $itemValueCatchCancelled = $catchConfiguration->cancellation_price * $totalCancelled;
 
+            $totalValueCatch += $itemValueCatch;
+            $totalValueCatchCancelled += $itemValueCatchCancelled;
+
+            // adiciona no item
             $item->total_cancelled = $totalCancelled;
+            $item->total_value_catch = "R$ " . FormatHelper::decimalToBr($itemValueCatch);
+            $item->total_value_catch_cancelled = "R$ " . FormatHelper::decimalToBr($itemValueCatchCancelled);
+            $item->total_value = "R$ " . FormatHelper::decimalToBr($itemValueCatch + $itemValueCatchCancelled);
         }
 
         return [
@@ -94,7 +104,7 @@ class CatchDailyRepository implements CatchDailyRespositoryInterface
             'qtd_apanhas_canceladas' => $qtdCatchCancelled,
             'total_value_catch' => "R$ " . FormatHelper::decimalToBr($totalValueCatch),
             'total_value_catch_cancelled' => "R$ " . FormatHelper::decimalToBr($totalValueCatchCancelled),
-            'total_value' => "R$ " . FormatHelper::decimalToBr($totalValueCatch + $totalValueCatchCancelled)
+            'total_value' => "R$ " . FormatHelper::decimalToBr($totalValueCatch + $totalValueCatchCancelled),
         ];
     }
 
