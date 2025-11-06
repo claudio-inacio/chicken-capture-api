@@ -130,7 +130,34 @@ class FinancialAccountsController extends Controller
             "DATA_DA_APANHA", 'APANHA_ATIVA', 'ID_UNIDADE_APANHA', "NOME_UNIDADE_APANHA", "CODIGO"
         ];
 
-        $filePath = GenerateExcelService::csv($header, $response['data']);
+        $csvData = [];
+
+        foreach ($data as $groupDate => $items) {
+            foreach ($items as $item) {
+                $csvData[] = [
+                    $item->description ?? '',
+                    $item->amount ?? '',
+                    $item->created_at ?? '',
+                    $item->finished_data ?? '',
+                    $item->type ?? '',
+                    $item->status_id ?? '',
+                    $item->reference_id ?? '',
+                    $item->table_reference_id ?? '',
+                    $item->credential_document ?? '',
+                    $item->credential_name ?? '',
+                    $item->company_name ?? '',
+                    $item->team_name ?? '',
+                    $item->cost_center_name ?? '',
+                    $groupDate ?? '',
+                    $item->catch_daily_enabled ?? '',
+                    $item->catch_daily_units_id ?? '',
+                    $item->catch_daily_units_name ?? '',
+                    $item->id ?? '',
+                ];
+            }
+        }
+
+        $filePath = GenerateExcelService::csv($header, $csvData);
 
         return response()->json(['url' => $filePath]);
     }
