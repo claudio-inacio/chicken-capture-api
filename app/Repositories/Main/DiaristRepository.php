@@ -43,7 +43,7 @@ class DiaristRepository implements DiaristRepositoryInterface
 // if ($credential->access_group_id != AccessGroupEnum::DEVELOPER && $credential->access_group_id != AccessGroupEnum::ADMINISTRATIVE) {
 //     $query->where('diarist.company_id', $credential->company_id);
 // }
-
+        $total = $query->count('diarist.id');
         $selectFactory = new SelectFactory();
         $query = $selectFactory->byArray($query, $selectConfig);
 
@@ -90,7 +90,7 @@ class DiaristRepository implements DiaristRepositoryInterface
 
         return [
             'data' => $arrayReturn->values()->toArray(),
-            'total' => $arrayReturn->count(),
+            'total' => $total,
             'total_values' => $arrayDiaristType->toArray(),
         ];
     }
