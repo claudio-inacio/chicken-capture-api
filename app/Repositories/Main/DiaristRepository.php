@@ -128,6 +128,10 @@ class DiaristRepository implements DiaristRepositoryInterface
             'financial_accounts.finished_data as finished_date_account',
             'financial_accounts.status_id as status',
             'financial_accounts.credential_id as credential_payment_id',
+            'financial_accounts.type',
+            'financial_accounts.id',
+            'financial_accounts.table_reference_id',
+            'financial_accounts.reference_id',
             'proof_of_payment.file_patch as proof_of_payment_url',
             'proof_of_payment.status_id as proof_of_payment_status_id',
             'diarist_group.function_name as diarist_group_function_name', 'diarist_group.daily as diarist_group_daily'
