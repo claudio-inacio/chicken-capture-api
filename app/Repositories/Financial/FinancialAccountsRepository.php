@@ -11,6 +11,7 @@ use App\Factory\WhereFactory;
 use App\Helpers\FormatHelper;
 use App\Interfaces\Financial\FinancialAccountsRepositoryInterface;
 use App\Models\Catch\CatchDaily;
+use App\Models\Catch\CatchsCancelled;
 use App\Models\Credential;
 use App\Models\Financial\FinancialAccounts;
 use App\Models\Main\Units;
@@ -155,10 +156,16 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
 
             if ($item->table_reference_id == TableReferenceFinanceEnum::DAILY_CATCH) {
                 $catch = CatchDaily::find($item->reference_id);
+                $catchCancelled = CatchsCancelled::where('catch_daily_id', $catch->id)->first();
                 if ($catch) {
                     $item->catch_daily_date = (new \DateTime($catch->date))->format('d/m/Y');
                     $item->catch_daily_enabled = $catch->enabled;
                     $item->code = $catch->code;
+                    $item->quantity = $catch->quantity;
+
+                    if ($catchCancelled) {
+                        $item->quantity_cancelled = $catchCancelled->quantity;
+                    }
 
                     $unit = Units::find($catch->units_id);
                     if ($unit) {
