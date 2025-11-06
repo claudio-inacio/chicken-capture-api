@@ -176,6 +176,28 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
         $valueDiscount = FormatHelper::decimalToBr($value_discount);
         $valueDefeated = FormatHelper::decimalToBr($value_defeated);
 
+        $type = TypeFinanceEnum::TO_RECEIVE;
+
+        foreach ($whereCriterious as $criterious) {
+            if (
+                array_key_exists('field', $criterious) &&
+                $criterious['field'] === 'financial_accounts.type' &&
+                array_key_exists('value', $criterious)
+            ) {
+                $type = $criterious['value'];
+                break;
+            }
+        }
+
+        $defeatedToReceive = 0;
+        $defeatedToDiscount = 0;
+
+        if ($type == TypeFinanceEnum::TO_DISCOUNT){
+            $defeatedToDiscount = $value_defeated;
+        } else {
+            $defeatedToReceive = $value_defeated;
+        }
+
         return [
             'data' => $result,
             'total' => $total,
@@ -184,8 +206,8 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             'value_receive' => "R$ " . $valueReceive,
             'value_discount' => "R$ " . $valueDiscount,
             'value_defeated' => "R$ " . $valueDefeated,
-            'value_total_receive' => "R$ " . FormatHelper::decimalToBr($value_to_receive + $value_receive + $value_defeated),
-            'value_total_discount' => "R$ " . FormatHelper::decimalToBr($value_to_discount + $value_discount + $value_defeated),
+            'value_total_receive' => "R$ " . FormatHelper::decimalToBr($value_to_receive + $value_receive + $defeatedToReceive),
+            'value_total_discount' => "R$ " . FormatHelper::decimalToBr($value_to_discount + $value_discount + $defeatedToDiscount),
         ];
     }
 
