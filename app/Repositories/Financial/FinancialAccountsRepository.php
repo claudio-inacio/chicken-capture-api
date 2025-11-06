@@ -184,8 +184,8 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             'value_receive' => "R$ " . $valueReceive,
             'value_discount' => "R$ " . $valueDiscount,
             'value_defeated' => "R$ " . $valueDefeated,
-            'value_total_receive' => "R$ " . $value_to_receive + $value_receive + $value_defeated,
-            'value_total_discount' => "R$ " . $value_to_discount + $value_discount + $value_defeated,
+            'value_total_receive' => "R$ " . FormatHelper::decimalToBr($value_to_receive + $value_receive + $value_defeated),
+            'value_total_discount' => "R$ " . FormatHelper::decimalToBr($value_to_discount + $value_discount + $value_defeated),
         ];
     }
 
