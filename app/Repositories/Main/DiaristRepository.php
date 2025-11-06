@@ -129,7 +129,7 @@ class DiaristRepository implements DiaristRepositoryInterface
             'financial_accounts.status_id as status',
             'financial_accounts.credential_id as credential_payment_id',
             'financial_accounts.type',
-            'financial_accounts.id',
+            'financial_accounts.id as financial_account_id',
             'financial_accounts.table_reference_id',
             'financial_accounts.reference_id',
             'proof_of_payment.file_patch as proof_of_payment_url',
