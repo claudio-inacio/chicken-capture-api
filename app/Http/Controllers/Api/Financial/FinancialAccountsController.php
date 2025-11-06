@@ -132,7 +132,7 @@ class FinancialAccountsController extends Controller
 
         $csvData = [];
 
-        foreach ($data as $groupDate => $items) {
+        foreach ($response as $groupDate => $items) {
             foreach ($items as $item) {
                 $csvData[] = [
                     $item->description ?? '',
