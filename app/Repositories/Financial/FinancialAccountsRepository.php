@@ -170,17 +170,22 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
 
             $item->amount = FormatHelper::decimalToBr($item->amount);
         }
+        $valueToReceive = FormatHelper::decimalToBr($value_to_receive);
+        $valueToDiscount = FormatHelper::decimalToBr($value_to_discount);
+        $valueReceive = FormatHelper::decimalToBr($value_receive);
+        $valueDiscount = FormatHelper::decimalToBr($value_discount);
+        $valueDefeated = FormatHelper::decimalToBr($value_defeated);
 
         return [
             'data' => $result,
             'total' => $total,
-            'value_to_receive' => "R$ " . FormatHelper::decimalToBr($value_to_receive),
-            'value_to_discount' => "R$ " . FormatHelper::decimalToBr($value_to_discount),
-            'value_receive' => "R$ " . FormatHelper::decimalToBr($value_receive),
-            'value_discount' => "R$ " . FormatHelper::decimalToBr($value_discount),
-            'value_defeated' => "R$ " . FormatHelper::decimalToBr($value_defeated),
-            'value_total_receive' => "R$ " . FormatHelper::decimalToBr($arrayTotalValue[TypeFinanceEnum::TO_RECEIVE] ?? 0),
-            'value_total_discount' => "R$ " . FormatHelper::decimalToBr($arrayTotalValue[TypeFinanceEnum::TO_DISCOUNT] ?? 0),
+            'value_to_receive' => "R$ " . $valueToReceive,
+            'value_to_discount' => "R$ " . $valueToDiscount,
+            'value_receive' => "R$ " . $valueReceive,
+            'value_discount' => "R$ " . $valueDiscount,
+            'value_defeated' => "R$ " . $valueDefeated,
+            'value_total_receive' => "R$ " . $value_to_receive + $value_receive + $value_defeated,
+            'value_total_discount' => "R$ " . $value_to_discount + $value_discount + $value_defeated,
         ];
     }
 
