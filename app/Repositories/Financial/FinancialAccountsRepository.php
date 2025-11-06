@@ -61,6 +61,8 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             ->leftJoin('main.team', 'team.id', '=', 'financial_accounts.team_id')
             ->join('financial.cost_center', 'cost_center.id', '=', 'financial_accounts.cost_center_id')
             ->leftJoin('vehicles.vehicle', 'vehicle.id', '=', 'financial_accounts.vehicle_id')
+            ->leftJoin('authentication.credential as driver_credential', 'driver_credential.id', '=', 'financial_accounts.driver_credential_id')
+            ->leftJoin('authentication.person as driver_person', 'driver_person.id', '=', 'driver_credential.person_id')
             ->join('authentication.person', 'person.id', '=', 'credential.person_id');
 
         // joins dinâmicos (ex.: catch_daily) que dependem do whereCriterious
@@ -111,6 +113,9 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             'vehicle.name as vehicle_name',
             'vehicle.plate_number',
             'cost_center.name as cost_center_name',
+            'driver_credential.name as driver_credential_name',
+            'driver_credential.document as driver_credential_document',
+            'driver_person.phone_number as driver_credential_phone_number',
         ]);
 
         $result = $query->get()->toArray();
