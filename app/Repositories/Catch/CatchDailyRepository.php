@@ -36,6 +36,10 @@ class CatchDailyRepository implements CatchDailyRespositoryInterface
             ->join('region.city', 'city.id', '=', 'integrated.city_id')
             ->join('main.company', 'company.id', '=', 'catch_daily.company_id')
             ->join('main.team', 'team.id', '=', 'catch_daily.team_id')
+            ->leftJoin('financial.financial_accounts', function ($join) {
+                $join->on('financial_accounts.reference_id', '=', 'catch_daily.id')
+                    ->where('financial_accounts.table_reference_id', '=', TableReferenceFinanceEnum::DAILY_CATCH);
+            })
             ->join('catch.catch_type', 'catch_type.id', '=', 'catch_daily.catch_type_id');
 
         $whereFactory = new WhereFactory();
@@ -56,7 +60,17 @@ class CatchDailyRepository implements CatchDailyRespositoryInterface
             'city.code as city_code',
             'company.name as company_name',
             'team.name as team_name',
-            'catch_type.name as catch_type_name'
+            'catch_type.name as catch_type_name',
+            'financial_accounts.description as description_account',
+            'financial_accounts.due_date as due_date_account',
+            'financial_accounts.finished_data as finished_date_account',
+            'financial_accounts.status_id as status_id',
+            'financial_accounts.credential_id as credential_payment_id',
+            'financial_accounts.type',
+            'financial_accounts.id as financial_account_id',
+            'financial_accounts.table_reference_id',
+            'financial_accounts.reference_id',
+            'financial_accounts.amount',
         ]);
 
         $result = $query->get();
