@@ -382,7 +382,7 @@ class FinancialService
         }
     }
 
-    public static function validCostCenter(CostCenterIdEnum $costCenterId, Request $request): array
+    public static function validCostCenter(int $costCenterId): array
     {
         if ($costCenterId == CostCenterIdEnum::TEAM_BONUS_AMOUNT){
             return ['team_id' => 'required'];
