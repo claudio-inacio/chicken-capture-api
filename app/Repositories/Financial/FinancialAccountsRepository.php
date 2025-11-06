@@ -113,7 +113,7 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             'vehicle.name as vehicle_name',
             'vehicle.plate_number',
             'cost_center.name as cost_center_name',
-            'driver_credential.name as driver_credential_name',
+            'driver_person.name as driver_credential_name',
             'driver_credential.document as driver_credential_document',
             'driver_person.phone_number as driver_credential_phone_number',
         ]);
