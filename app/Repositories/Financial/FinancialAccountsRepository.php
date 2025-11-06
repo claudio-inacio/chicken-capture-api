@@ -169,6 +169,10 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             }
 
             $item->amount = FormatHelper::decimalToBr($item->amount);
+
+            if ($item->enabled == false){
+                $item->status_id = StatusEnum::CANCELED;
+            }
         }
         $valueToReceive = FormatHelper::decimalToBr($value_to_receive);
         $valueToDiscount = FormatHelper::decimalToBr($value_to_discount);

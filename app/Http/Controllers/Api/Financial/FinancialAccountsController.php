@@ -160,7 +160,7 @@ class FinancialAccountsController extends Controller
     public function enable(Request $request){
         $request->validate([
             'financial_accounts_id' => 'required',
-            'enabled' => 'required',
+            'enabled' => 'required'
         ]);
 
         return $this->financialAccountsRepository->enable($request->financial_accounts_id, $request->enabled);

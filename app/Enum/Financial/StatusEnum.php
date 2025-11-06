@@ -9,4 +9,5 @@ class StatusEnum
     const RECEIVE = 3;
     const DISCOUNT = 4;
     const DEFEATED = 5;
+    const CANCELED = 6;
 }
