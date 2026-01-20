@@ -119,7 +119,7 @@ class TeamController extends Controller
 //            return ResponseService::businessError($verify['message'], $verify['error']);
 //        }
 
-        return $this->teamRepository->update($request->team_id, $request->all());
+        return $this->teamRepository->update($request->team_id, $arrayData);
     }
 
     public function enable(Request $request){
