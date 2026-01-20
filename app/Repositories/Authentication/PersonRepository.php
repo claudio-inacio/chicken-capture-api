@@ -77,7 +77,7 @@ class PersonRepository implements PersonRespositoryInterface
 
         $arrayCredential['document'] = FormatHelper::formatCnpjCpf($arrayCredential['document']);
 
-        if (!empty($arrayPerson['salary'])) $arrayRequest['salary'] = FormatHelper::moneyToUS($arrayPerson['salary']);
+        if (!empty($arrayPerson['salary'])) $arrayPerson['salary'] = FormatHelper::moneyToUS($arrayPerson['salary']);
         else $arrayPerson['salary'] = 0;
 
         $arrayPerson['phone_number'] = FormatHelper::removeSpecialCaracterTel($arrayPerson['phone_number']);

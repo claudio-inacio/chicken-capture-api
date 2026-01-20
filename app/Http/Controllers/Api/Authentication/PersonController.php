@@ -55,9 +55,11 @@ class PersonController extends Controller
             'person.name' => 'required',
             'person.email' => 'required',
             'person.phone_number' => 'required',
-            'person.company_id' => 'required',
+            'person.salary' => 'required',
             'person.person_id' => 'required',
+            'credential.company_id' => 'required',
             'credential.document' => 'required',
+            'credential.credential_id' => 'required',
             'credential.access_group_id' => 'required',
         ]);
 
