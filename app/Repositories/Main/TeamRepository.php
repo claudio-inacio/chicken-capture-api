@@ -82,8 +82,8 @@ class TeamRepository implements TeamRepositoryInterface
             }
 
             $item->collectors['total_salary_collectors'] = $totalSalary;
-            $item->collectors['total_geral'] = $totalSalary + ($item->person_leader_salary + $item->person_driver_salary);
-            $totalGeral = $totalGeral + $item->collectors['total_geral'];
+            $item->total_geral = $totalSalary + ($item->person_leader_salary + $item->person_driver_salary);
+            $totalGeral = $totalGeral + $item->total_geral;
             $totalSalary = 0;
         }
 
