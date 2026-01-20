@@ -77,7 +77,7 @@ class  CollectorsService
             if (!empty($errors)) {
                 return [
                     'success' => false,
-                    'message' => 'Falha em tentar cadastrar time',
+                    'message' => 'Falha em tentar selecionar coletores COD1',
                     'error' => $errors
                 ];
             }
@@ -87,7 +87,7 @@ class  CollectorsService
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => 'Falha em tentar cadastrar time',
+                'message' => 'Falha em tentar cadastrar time COD2',
                 'error' => $e->getMessage()
             ];
         }

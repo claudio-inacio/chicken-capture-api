@@ -89,6 +89,12 @@ class TeamController extends Controller
         $arrayData['driver_credential_id'] = $request->driver_credential_id;
         $arrayData['company_id'] = $request->user()->company_id;
 
+        $verifyTeam = Team::find($request->team_id);
+        if(!$verifyTeam) {
+            return ResponseService::businessError('Time não encontrado!');
+        }
+
+
         $verifyTeamDriver = Team::where('driver_credential_id', $request->driver_credential_id)
             ->where('team.id', '<>', $request->team_id)
             ->first();

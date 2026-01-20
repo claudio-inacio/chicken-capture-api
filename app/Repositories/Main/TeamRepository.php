@@ -134,11 +134,6 @@ class TeamRepository implements TeamRepositoryInterface
     {
         unset($data['team_id']);
         try {
-            $team = Team::where('name', $data['name'])
-                ->where('id', '<>', $id)->first();
-
-            if ($team) return ResponseService::businessError('Ja existe um time com esse nome!');
-
             $addCollectors = CollectorsService::removeCollectors($data['collectors'], $id);
             if (!$addCollectors['success']) {
                 DB::rollBack();
