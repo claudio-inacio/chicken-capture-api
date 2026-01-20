@@ -56,10 +56,13 @@ class TeamController extends Controller
         $contractingCompany = ContractingCompany::find($request->contracting_company_id);
         if (!$contractingCompany) return ResponseService::invalidArguments('Empresa contratante não encontrada!');
 
+        $arrayData['team_id'] = null;
         $verify = CollectorsService::verifyQuantityCollectors($arrayData, $request->user());
         if (!$verify['success']) {
             return ResponseService::businessError($verify['message'], $verify['error']);
         }
+
+        unset($arrayData['team_id']);
 
         return $this->teamRepository->create($arrayData);
     }
