@@ -526,7 +526,9 @@ class FinancialAccountsRepository implements FinancialAccountsRepositoryInterfac
             }
 
             DB::commit();
-            return ResponseService::success204();
+            return ResponseService::success('Grupo de companhia cadastrada com sucesso!', [
+                'financial_accounts' => $financialAccount->id
+            ]);
         } catch (Exception $e) {
             DB::rollBack();
             return ResponseService::internalServerError('Falha em registrar conta', $e->getMessage());

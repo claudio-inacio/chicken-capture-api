@@ -253,7 +253,9 @@ class DiaristRepository implements DiaristRepositoryInterface
             }
 
             DB::commit();
-            return ResponseService::success204();
+            return ResponseService::success('Diarista cadastrada com sucesso!', [
+                'diarist' => $diarist->id
+            ]);
         } catch (Exception $e) {
             DB::rollBack();
             return ResponseService::internalServerError('Falha em registrar diarista', $e->getMessage());

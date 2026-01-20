@@ -98,7 +98,9 @@ class CatchCancelledService
             }
 
             DB::commit();
-            return ResponseService::success204();
+            return ResponseService::success('Apanha cancelada cadastrada com sucesso!', [
+                'catchs_cancelled' => $catchCancelled->id,
+            ]);
         }catch (\Exception $e){
             DB::rollBack();
             return ResponseService::internalServerError('Falha em atualizar apanha diaria', $e->getMessage());

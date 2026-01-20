@@ -61,10 +61,14 @@ class ColletorsGroupRepository implements ColletorsGroupRepositoryInterface
                 ->where('company_id', $arrayData['company_id'])
                 ->first();
 
-            if ($collectorsGroup) return ResponseService::businessError('Ja existe um grupo de coletores cadastrada com essa função');
+            if ($collectorsGroup) return ResponseService::businessError('Ja existe um grupo de coletores cadastrada com essa função', [
+                'collectors_group' => $collectorsGroup->id
+            ]);
 
-            CollectorsGroup::create($arrayData);
-            return ResponseService::success204();
+            $collectorsGroup = CollectorsGroup::create($arrayData);
+            return ResponseService::success('Grupo de coletores cadastrada com sucesso!', [
+                'collectors_group' => $collectorsGroup->id
+            ]);
         } catch (\Exception $e){
             return ResponseService::internalServerError('Falha em registrar grupo de coletores', $e->getMessage());
         }

@@ -81,7 +81,9 @@ class CatchsConfigurationRepository implements CatchsConfigurationRespositoryInt
             CatchConfigurationHistory::create($value);
 
             DB::commit();
-            return ResponseService::success204();
+            return ResponseService::success('Configuração de apanha cadastrada com sucesso!', [
+                'catchs_configuration' => $catchConfig->id
+            ]);
         } catch (\Exception $e){
             DB::rollBack();
             return ResponseService::internalServerError('Falha em registrar configuração de apanha', [

@@ -53,12 +53,16 @@ class CompanyGroupRepository implements CompanyGroupRepositoryInterface
     {
         try {
             $companyGroup = CompanyGroup::where('name', $value['name'])->first();
-            if ($companyGroup) return ResponseService::businessError('Ja existe um grupo de compania com esse nome');
+            if ($companyGroup) return ResponseService::businessError('Ja existe um grupo de companhia com esse nome', [
+                'company_group' => $companyGroup->id
+            ]);
 
-            CompanyGroup::create($value);
-            return ResponseService::success204();
+            $companyGroup = CompanyGroup::create($value);
+            return ResponseService::success('Grupo de companhia cadastrada com sucesso!', [
+                'company_group' => $companyGroup->id
+            ]);
         } catch (\Exception $e){
-            return ResponseService::internalServerError('Falha em registrar grupo de compania', $e->getMessage());
+            return ResponseService::internalServerError('Falha em registrar grupo de companhia', $e->getMessage());
         }
     }
 
@@ -69,12 +73,12 @@ class CompanyGroupRepository implements CompanyGroupRepositoryInterface
             $companyGroup = CompanyGroup::where('name', $data['name'])
                 ->where('id', '<>', $id)
                 ->first();
-            if ($companyGroup) return ResponseService::businessError('Ja existe um grupo de compania com esse nome');
+            if ($companyGroup) return ResponseService::businessError('Ja existe um grupo de companhia com esse nome');
 
             CompanyGroup::whereId($id)->update($data);
             return ResponseService::success204();
         } catch (\Exception $e){
-            return ResponseService::internalServerError('Falha em alterar grupo de compania', $e->getMessage());
+            return ResponseService::internalServerError('Falha em alterar grupo de companhia', $e->getMessage());
         }
     }
 
@@ -84,7 +88,7 @@ class CompanyGroupRepository implements CompanyGroupRepositoryInterface
             CompanyGroup::whereId($id)->update(['enabled' => $enable]);
             return ResponseService::success204();
         } catch (\Exception $e){
-            return ResponseService::internalServerError('Falha Ativar/Desativar grupo de compania', $e->getMessage());
+            return ResponseService::internalServerError('Falha Ativar/Desativar grupo de companhia', $e->getMessage());
         }
     }
 }

@@ -72,7 +72,7 @@ class CompanyRepository implements CompanyRepositoryInterface
                 ->where('company_group_id', $value['company_group_id'])
                 ->first();
 
-            if($company) return ResponseService::businessError('Compania ja cadastrado, por favor verificar dados');
+            if($company) return ResponseService::businessError('companhia ja cadastrado, por favor verificar dados');
 
             if ($value['is_main']) {
                 $company = Company::where('company.company_group_id', $value['company_group_id'])
@@ -84,14 +84,16 @@ class CompanyRepository implements CompanyRepositoryInterface
 
                 if ($company)
                     return ResponseService::businessError(
-                        'Ja existe uma compania cadastrada como main para o grupo -> '. $company->company_group_name
+                        'Ja existe uma companhia cadastrada como main para o grupo -> '. $company->company_group_name
                     );
             }
 
-            Company::create($value);
-            return ResponseService::success204();
+           $company = Company::create($value);
+            return ResponseService::success('Companhia cadastrada com sucesso!', [
+                'company' => $company->id
+            ]);
         } catch (\Exception $e){
-            return ResponseService::internalServerError('Falha em registrar compania', $e->getMessage());
+            return ResponseService::internalServerError('Falha em registrar companhia', $e->getMessage());
         }
     }
 
@@ -112,12 +114,12 @@ class CompanyRepository implements CompanyRepositoryInterface
                 ->orWhere('email', $data['email'])
                 ->first();
 
-            if($company) return ResponseService::businessError('Compania ja cadastrado, por favor verificar dados');
+            if($company) return ResponseService::businessError('companhia ja cadastrado, por favor verificar dados');
 
             Company::whereId($id)->update($data);
             return ResponseService::success204();
         } catch (\Exception $e){
-            return ResponseService::internalServerError('Falha em alterar compania', $e->getMessage());
+            return ResponseService::internalServerError('Falha em alterar companhia', $e->getMessage());
         }
     }
 
@@ -135,14 +137,14 @@ class CompanyRepository implements CompanyRepositoryInterface
                 $companyGroup = CompanyGroup::whereId($company->company_group_id)->first();
                 if (count($companyVerify) > 0)
                     return ResponseService::businessError(
-                        'Voce não pode reativar essa compania. Ja existe uma compania cadastrada como main para o grupo -> '. $companyGroup->name
+                        'Voce não pode reativar essa companhia. Ja existe uma companhia cadastrada como main para o grupo -> '. $companyGroup->name
                     );
             }
 
             Company::whereId($id)->update(['enabled' => $enable]);
             return ResponseService::success204();
         } catch (\Exception $e){
-            return ResponseService::internalServerError('Falha Ativar/Desativar compania', $e->getMessage());
+            return ResponseService::internalServerError('Falha Ativar/Desativar companhia', $e->getMessage());
         }
     }
 }

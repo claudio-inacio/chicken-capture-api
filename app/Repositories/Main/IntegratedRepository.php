@@ -57,13 +57,17 @@ class IntegratedRepository implements IntegratedRepositoryInterface
     {
         try {
             $integrated = Integrated::where('name', $value['name'])->first();
-            if ($integrated) return ResponseService::businessError('Ja existe uma integraçao com esse nome!');
+            if ($integrated) return ResponseService::businessError('Ja existe uma integraçao com esse nome!', [
+                'integrated' => $integrated->id
+            ]);
 
             $city = City::find($value['city_id']);
             if (!$city) return ResponseService::businessError('Cidade não encontrado no banco de dados!');
 
-            Integrated::create($value);
-            return ResponseService::success204();
+            $integrated = Integrated::create($value);
+            return ResponseService::success('Integraçao cadastrada com sucesso!', [
+                'integrated' => $integrated->id
+            ]);
         } catch (\Exception $e){
             return ResponseService::internalServerError('Falha em registrar integraçao', $e->getMessage());
         }

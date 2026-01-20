@@ -117,7 +117,7 @@ class FuelSupplyRepository implements FuelSupplyRepositoryInterface
             $value['total_value'] = FormatHelper::brlTodecimal($value['total_value']);
             $fuelSupply = FuelSupply::create($value);
 
-            FinancialAccounts::create([
+            $financialAccounts = FinancialAccounts::create([
                 'description' => 'Despesas com combustivel',
                 'cost_center_id' => CostCenterIdEnum::VEICULO,
                 'amount' => $value['total_value'],
@@ -131,7 +131,10 @@ class FuelSupplyRepository implements FuelSupplyRepositoryInterface
             ]);
 
             DB::commit();
-            return ResponseService::success204();
+            return ResponseService::success('Despesa cadastrada com sucesso!', [
+                'fuel_supply' => $fuelSupply->id,
+                'financial_accounts' => $financialAccounts->id
+            ]);
         } catch (\Exception $e){
             DB::rollBack();
             return ResponseService::internalServerError('Falha em registrar despesa', $e->getMessage());

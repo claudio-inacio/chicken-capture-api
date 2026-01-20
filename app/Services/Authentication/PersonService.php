@@ -43,7 +43,7 @@ class PersonService
                 'salary' => $arrayRequest['salary'] ?? 0
             ]);
 
-            Credential::create([
+            $crecential = Credential::create([
                 'document' => $arrayRequest['document'],
                 'password' => bcrypt($arrayRequest['password']),
                 'person_id' => $person->id,
@@ -52,7 +52,11 @@ class PersonService
             ]);
 
             DB::commit();
-            return ResponseService::success204();
+
+            return ResponseService::success('Sucesso em cadastrar usuário.', [
+                'credential_id' => $crecential->id,
+                'person_id' => $person->id,
+            ]);
         } catch (\Exception $exception){
             DB::rollBack();
             return ResponseService::internalServerError('Falha em cadastrar usuario', $exception->getMessage());

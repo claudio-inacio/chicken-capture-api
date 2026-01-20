@@ -52,10 +52,14 @@ class CatchTypeRepository implements CatchTypeRespositoryInterface
     {
         try {
             $catchType = CatchType::where('name', $value['name'])->first();
-            if ($catchType) return ResponseService::businessError('Ja existe um tipo de apanha com esse nome!');
+            if ($catchType) return ResponseService::businessError('Ja existe um tipo de apanha com esse nome!', [
+                'catch_type' => $catchType->id
+            ]);
 
-            CatchType::create($value);
-            return ResponseService::success204();
+            $catchType = CatchType::create($value);
+            return ResponseService::success('Tipo de apanha cadastrada com sucesso!', [
+                'catch_type' => $catchType->id,
+            ]);
         } catch (\Exception $e){
             return ResponseService::internalServerError('Falha em registrar tipo de apanha', $e->getMessage());
         }

@@ -57,12 +57,16 @@ class ContractingCompanyRepository implements ContractingCompanyRepositoryInterf
                 ->where('company_id', $value['company_id'])
                 ->first();
 
-            if ($contractingCompany) return ResponseService::businessError('Ja existe uma compania contratante com esse nome!');
+            if ($contractingCompany) return ResponseService::businessError('Ja existe uma companhia contratante com esse nome!', [
+                'contracting_company' => $contractingCompany->id
+            ]);
 
-            ContractingCompany::create($value);
-            return ResponseService::success204();
+            $contractingCompany = ContractingCompany::create($value);
+            return ResponseService::success('Configuração cadastrada com sucesso!', [
+                'contracting_company' => $contractingCompany->id
+            ]);
         } catch (\Exception $e){
-            return ResponseService::internalServerError('Falha em registrar compania contratante', $e->getMessage());
+            return ResponseService::internalServerError('Falha em registrar companhia contratante', $e->getMessage());
         }
     }
 
@@ -73,12 +77,12 @@ class ContractingCompanyRepository implements ContractingCompanyRepositoryInterf
             $contractingCompany = ContractingCompany::where('name', $data['name'])
                 ->where('id', '<>', $id)->first();
 
-            if ($contractingCompany) return ResponseService::businessError('Ja existe uma compania contratante com esse nome!');
+            if ($contractingCompany) return ResponseService::businessError('Ja existe uma companhia contratante com esse nome!');
 
             ContractingCompany::whereId($id)->update($data);
             return ResponseService::success204();
         } catch (\Exception $e){
-            return ResponseService::internalServerError('Falha em alterar compania contratante', $e->getMessage());
+            return ResponseService::internalServerError('Falha em alterar companhia contratante', $e->getMessage());
         }
     }
 
@@ -88,7 +92,7 @@ class ContractingCompanyRepository implements ContractingCompanyRepositoryInterf
             ContractingCompany::whereId($id)->update(['enabled' => $enable]);
             return ResponseService::success204();
         } catch (\Exception $e){
-            return ResponseService::internalServerError('Falha Ativar/Desativar compania contratante', $e->getMessage());
+            return ResponseService::internalServerError('Falha Ativar/Desativar companhia contratante', $e->getMessage());
         }
     }
 }

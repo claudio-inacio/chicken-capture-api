@@ -21,7 +21,7 @@ class SendGenericMessageJobService
         try {
             $phoneNumber = FormatHelper::removeSpecialCaracterTel($credential->phone_number);
 
-            //deixei pegando direto da compania 0, mais caso queria pegar do ususario logado só pegar do $credentialSystem
+            //deixei pegando direto da companhia 0, mais caso queria pegar do ususario logado só pegar do $credentialSystem
             $messageConfig = MessageConfig::where('message_service_id', MessageServiceEnum::ZAPI)
                 ->first();
 

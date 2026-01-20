@@ -69,8 +69,10 @@ class ExtraCatchRepository implements ExtraCatchRepositoryInterface
                 return ResponseService::businessError('Ja existe uma configuração para esse tipo de apanha.');
             }
 
-            ExtraCatchConfiguration::create($value);
-            return ResponseService::success204();
+            $extraCatchConfig = ExtraCatchConfiguration::create($value);
+            return ResponseService::success('Configuração cadastrada com sucesso!', [
+                'extra_catch_configuration' => $extraCatchConfig->id
+            ]);
         } catch (\Exception $e){
             DB::rollBack();
             return ResponseService::internalServerError('Falha em registrar configuração de apanha extra', [

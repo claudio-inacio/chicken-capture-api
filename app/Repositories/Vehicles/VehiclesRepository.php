@@ -155,7 +155,9 @@ class VehiclesRepository implements VehiclesRepositoryInterface
                 ->where('company_id', $value['company_id'])
                 ->first();
 
-            if ($vehicle) return ResponseService::businessError('Veiculo ja cadastrado no sistema!');
+            if ($vehicle) return ResponseService::businessError('Veiculo ja cadastrado no sistema!', [
+                'vehicle' => $vehicle->id
+            ]);
 
             $verifyDriver = Vehicle::where('driver_credential_id', $value['driver_credential_id'])->first();
             if ($verifyDriver){
@@ -164,8 +166,10 @@ class VehiclesRepository implements VehiclesRepositoryInterface
                 );
             }
 
-            Vehicle::create($value);
-            return ResponseService::success204();
+            $vehicle = Vehicle::create($value);
+            return ResponseService::success('Veículo cadastrada com sucesso!', [
+                'vehicle' => $vehicle->id
+            ]);
         } catch (\Exception $e){
             return ResponseService::internalServerError('Falha em registrar Veiculo', $e->getMessage());
         }

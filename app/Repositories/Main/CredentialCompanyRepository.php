@@ -56,12 +56,17 @@ class CredentialCompanyRepository implements CredentialCompanyRepositoryInterfac
             $credentialCompany = CredentialCompany::where('credential_id', $value['credential_id'])
                 ->where('company_id', $value['company_id'])
                 ->first();
-            if ($credentialCompany) return ResponseService::businessError('Compania da credencial ja cadastrado!');
+            if ($credentialCompany) return ResponseService::businessError('companhia da credencial ja cadastrado!', [
+                'credential_company' => $credentialCompany->id
+            ]);
 
-            CredentialCompany::create($value);
-            return ResponseService::success204();
+            $credentialCompany = CredentialCompany::create($value);
+
+            return ResponseService::success('companhia da credencial cadastrada com sucesso!', [
+                'credential_company' => $credentialCompany->id,
+            ]);
         } catch (\Exception $e){
-            return ResponseService::internalServerError('Falha em registrar compania da credencial', $e->getMessage());
+            return ResponseService::internalServerError('Falha em registrar companhia da credencial', $e->getMessage());
         }
     }
 
@@ -73,12 +78,12 @@ class CredentialCompanyRepository implements CredentialCompanyRepositoryInterfac
                 ->where('company_id', $data['company_id'])
                 ->where('id', '<>', $id)
                 ->first();
-            if ($credentialCompany) return ResponseService::businessError('Compania da credencial ja cadastrado!');
+            if ($credentialCompany) return ResponseService::businessError('companhia da credencial ja cadastrado!');
 
             CredentialCompany::whereId($id)->update($data);
             return ResponseService::success204();
         } catch (\Exception $e){
-            return ResponseService::internalServerError('Falha em alterar compania da credencial', $e->getMessage());
+            return ResponseService::internalServerError('Falha em alterar companhia da credencial', $e->getMessage());
         }
     }
 
@@ -88,7 +93,7 @@ class CredentialCompanyRepository implements CredentialCompanyRepositoryInterfac
             CredentialCompany::whereId($id)->update(['enabled' => $enable]);
             return ResponseService::success204();
         } catch (\Exception $e){
-            return ResponseService::internalServerError('Falha Ativar/Desativar compania da credencial', $e->getMessage());
+            return ResponseService::internalServerError('Falha Ativar/Desativar companhia da credencial', $e->getMessage());
         }
     }
 }

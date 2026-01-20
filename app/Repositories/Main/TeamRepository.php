@@ -120,10 +120,12 @@ class TeamRepository implements TeamRepositoryInterface
             }
 
             $value['collectors'] = json_encode($value['collectors']);
-            Team::create($value);
+            $team = Team::create($value);
 
             DB::commit();
-            return ResponseService::success204();
+            return ResponseService::success('Time cadastrada com sucesso!', [
+                'team' => $team->id
+            ]);
         } catch (\Exception $e){
             DB::rollBack();
             return ResponseService::internalServerError('Falha em registrar time', $e->getMessage());

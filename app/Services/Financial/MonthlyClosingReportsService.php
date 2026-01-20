@@ -27,7 +27,7 @@ class MonthlyClosingReportsService
                 return ResponseService::success('Registro atualizado com sucesso!');
             }
 
-            MonthlyClosingReports::create([
+            $monthlyClosing = MonthlyClosingReports::create([
                 'month' => $arrayRequest['month'],
                 'year' => $arrayRequest['year'],
                 'company_id' => $arrayRequest['company_id'],
@@ -35,7 +35,9 @@ class MonthlyClosingReportsService
                 'total_income' => FormatHelper::brlTodecimal($arrayRequest['total_income']),
             ]);
             DB::commit();
-            return ResponseService::success('Registro efetuado com sucesso');
+            return ResponseService::success('Fechamento mensal cadastrada com sucesso!', [
+                'monthly_closing_reports' => $monthlyClosing->id
+            ]);
         } catch (\Exception $exception){
             DB::rollBack();
             return ResponseService::internalServerError('Falha em cadastrar mensalidade', $exception->getMessage());

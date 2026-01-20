@@ -52,8 +52,10 @@ class CostCenterRepository implements CostCenterRepositoryInterface
     {
         try {
             $value['name'] = strtoupper($value['name']);
-            CostCenter::create($value);
-            return ResponseService::success204();
+            $costCenter = CostCenter::create($value);
+            return ResponseService::success('Centro de custo cadastrada com sucesso!', [
+                'cost_center' => $costCenter->id
+            ]);
         } catch (Exception $e) {
             return ResponseService::internalServerError('Falha em registrar centro de custo', $e->getMessage());
         }

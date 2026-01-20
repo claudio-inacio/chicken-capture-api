@@ -62,10 +62,14 @@ class UnitsRepository implements UnitsRepositoryInterface
                 ->where('contracting_company_id', $value['contracting_company_id'])
                 ->first();
 
-            if ($units) return ResponseService::businessError('Ja existe uma unidade com esse nome!');
+            if ($units) return ResponseService::businessError('Ja existe uma unidade com esse nome!', [
+                'units' => $units->id
+            ]);
 
-            Units::create($value);
-            return ResponseService::success204();
+            $units = Units::create($value);
+            return ResponseService::success('Unidade cadastrada com sucesso!', [
+                'units' => $units->id
+            ]);
         } catch (\Exception $e){
             return ResponseService::internalServerError('Falha em registrar unidade', $e->getMessage());
         }

@@ -55,7 +55,9 @@ class CatchDailyService
             }
 
             DB::commit();
-            return ResponseService::success204();
+            return ResponseService::success('Apanha diária cadastrada com sucesso!', [
+                'catch_daily' => $catchDaily->id,
+            ]);
         }catch (Exception $e){
             DB::rollBack();
             return ResponseService::internalServerError('Falha em registrar apanha diaria', $e->getMessage());

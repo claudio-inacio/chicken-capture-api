@@ -61,11 +61,15 @@ class DiaristGroupRepository implements DiaristGroupRepositoryInterface
                 ->where('company_id', $arrayData['company_id'])
                 ->first();
 
-            if ($diaristGroup) return ResponseService::businessError('Ja existe um grupo de diaristas cadastrada com essa função');
+            if ($diaristGroup) return ResponseService::businessError('Ja existe um grupo de diaristas cadastrada com essa função', [
+                'diarist_group' => $diaristGroup->id
+            ]);
 
             $arrayData['function_name'] = strtoupper($arrayData['function_name']);
-            DiaristGroup::create($arrayData);
-            return ResponseService::success204();
+            $diaristGroup = DiaristGroup::create($arrayData);
+            return ResponseService::success('Grupo de diaristas cadastrada com sucesso!', [
+                'diarist_group' => $diaristGroup->id
+            ]);
         } catch (\Exception $e){
             return ResponseService::internalServerError('Falha em registrar grupo de diaristas', $e->getMessage());
         }

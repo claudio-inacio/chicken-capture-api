@@ -59,8 +59,10 @@ class CollectorsRepository implements CollectorsRepositoryInterface
     public function create(array $value): \Illuminate\Http\JsonResponse
     {
         try {
-            Collectors::create($value);
-            return ResponseService::success204();
+            $collectors = Collectors::create($value);
+            return ResponseService::success('Coletores cadastrada com sucesso!', [
+                'collectors' => $collectors->id
+            ]);
         } catch (\Exception $e){
             return ResponseService::internalServerError('Falha em registrar coletores', $e->getMessage());
         }
