@@ -29,7 +29,7 @@ class VehiclesRepository implements VehiclesRepositoryInterface
     {
         $query = DB::table('vehicles.vehicle')
             ->join('main.company', 'company.id', '=', 'vehicle.company_id')
-            ->join('authentication.credential', 'credential.id', '=', 'vehicle.motorista_credential_id')
+            ->join('authentication.credential', 'credential.id', '=', 'vehicle.driver_credential_id')
             ->join('authentication.person', 'person.id', '=', 'credential.person_id')
             ->join('main.units', 'units.id', '=', 'vehicle.unit_id');
 
@@ -42,7 +42,7 @@ class VehiclesRepository implements VehiclesRepositoryInterface
         $query = $selectFactory->byArray($query, $selectConfig);
         $query->select([
             'vehicle.*',
-            'person.name as motorista_credential_name',
+            'person.name as driver_credential_name',
             'company.name as company_name',
             'units.name as unit_name', 'units.code as unit_code'
         ]);
@@ -157,7 +157,7 @@ class VehiclesRepository implements VehiclesRepositoryInterface
 
             if ($vehicle) return ResponseService::businessError('Veiculo ja cadastrado no sistema!');
 
-            $verifyDriver = Vehicle::where('motorista_credential_id', $value['motorista_credential_id'])->first();
+            $verifyDriver = Vehicle::where('driver_credential_id', $value['driver_credential_id'])->first();
             if ($verifyDriver){
                 return ResponseService::businessError(
                     "Esse motorista ja tem um veiculo cadastrado para ele. Veiculo: $verifyDriver->name, Placa: $verifyDriver->plate_number"
@@ -182,7 +182,7 @@ class VehiclesRepository implements VehiclesRepositoryInterface
 
             if ($vehicle) return ResponseService::businessError('Veiculo ja cadastrado no sistema!');
 
-            $verifyDriver = Vehicle::where('motorista_credential_id', $data['motorista_credential_id'])
+            $verifyDriver = Vehicle::where('driver_credential_id', $data['driver_credential_id'])
                 ->where('id', '<>', $id)
                 ->first();
             if ($verifyDriver){

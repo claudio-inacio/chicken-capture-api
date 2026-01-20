@@ -5,6 +5,7 @@ namespace App\Repositories\Main;
 use App\Factory\SelectFactory;
 use App\Factory\WhereFactory;
 use App\Interfaces\Main\TeamRepositoryInterface;
+use App\Models\Credential;
 use App\Models\Main\CollectorsGroup;
 use App\Models\Main\Team;
 use App\Services\Main\CollectorsService;
@@ -48,30 +49,48 @@ class TeamRepository implements TeamRepositoryInterface
             'contracting_company.name as contracting_company_name',
             "person_leader.name as leader_credential_name",
             "person_driver.name as driver_credential_name",
+            "person_leader.salary as person_leader_salary",
+            "person_driver.salary as person_driver_salary",
         ]);
+
         $result = $query->get()->toArray();
+        $totalSalary = 0;
+        $totalGeral = 0;
 
         foreach ($result as $item){
             $item->collectors = json_decode($item->collectors, true);
             foreach ($item->collectors as $keyCollector => $groupsCollector){
                 foreach ($groupsCollector as $keyGroup => $group) {
+                    $quantityCollectors = $group['quantity_collectors'];
                     $collectorGroup = CollectorsGroup::find($group['id']);
                     if ($collectorGroup) { // Verifica se o registro foi encontrado
                         $item->collectors[$keyCollector][$keyGroup] = array_merge(
                             $item->collectors[$keyCollector][$keyGroup],
-                            ['function_name' => $collectorGroup['function_name']]
+                            [
+                                'function_name' => $collectorGroup['function_name'],
+                                'salary' => $collectorGroup['salary'] * $quantityCollectors,
+                            ]
                         );
+
+                        $totalSalary = $totalSalary + ($collectorGroup['salary'] * $quantityCollectors);
                     } else {
                         // Adicione um valor padrão ou ignore a adição
                         $item->collectors[$keyCollector][$keyGroup]['function_name'] = null;
+                        $item->collectors[$keyCollector][$keyGroup]['salary'] = 0;
                     }
                 }
             }
+
+            $item->collectors['total_salary_collectors'] = $totalSalary;
+            $item->collectors['total_geral'] = $totalSalary + ($item->person_leader_salary + $item->person_driver_salary);
+            $totalGeral = $totalGeral + $item->collectors['total_geral'];
+            $totalSalary = 0;
         }
 
         return [
             'data' => $result,
             'total' => $total,
+            'value_total_geral' => $totalGeral
         ];
     }
 

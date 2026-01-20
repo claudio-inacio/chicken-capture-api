@@ -49,7 +49,7 @@ class CredentialRepository implements CredentialRepositoryInterface
     {
         $query = DB::table('authentication.credential')
             ->join('authentication.person', 'person.id', '=', 'credential.person_id')
-            ->leftJoin('main.team', 'credential.id', '=', 'team.motorista_credential_id')
+            ->leftJoin('main.team', 'credential.id', '=', 'team.driver_credential_id')
             ->join('main.company', 'company.id', '=', 'credential.company_id')
             ->join('main.company_group', 'company_group.id', '=', 'person.company_group_id');
 
@@ -58,10 +58,10 @@ class CredentialRepository implements CredentialRepositoryInterface
             $query->where('credential.company_id', $credential->company_id);
         }
 
-        // Subquery para filtrar diaristas que não têm seu ID presente em team.motorista_credential_id
+        // Subquery para filtrar diaristas que não têm seu ID presente em team.driver_credential_id
         $subquery = DB::table('main.team')
-            ->select('motorista_credential_id')
-            ->whereNotNull('motorista_credential_id');
+            ->select('driver_credential_id')
+            ->whereNotNull('driver_credential_id');
 
         // Filtro para excluir diaristas presentes na subquery
         $query->whereNotIn('credential.id', $subquery);

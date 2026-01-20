@@ -32,7 +32,7 @@ class TeamController extends Controller
         ]);
 
         $arrayData = $request->all();
-        $arrayData['motorista_credential_id'] = $request->driver_credential_id;
+        $arrayData['driver_credential_id'] = $request->driver_credential_id;
         $arrayData['company_id'] = $request->user()->company_id;
 
         $verifyUnits = Units::find($request->default_unit_id);
@@ -71,7 +71,7 @@ class TeamController extends Controller
         ]);
 
         $arrayData = $request->all();
-        $arrayData['motorista_credential_id'] = $request->driver_credential_id;
+        $arrayData['driver_credential_id'] = $request->driver_credential_id;
         $arrayData['company_id'] = $request->user()->company_id;
 
         $verify = CollectorsService::verifyQuantityCollectors($arrayData, $request->user());

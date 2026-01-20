@@ -87,7 +87,7 @@ class DriverAreaController extends Controller
         $vehicle = Vehicle::find($request->vehicle_id);
         if(!$vehicle) return ResponseService::businessError('Veículo nao encontrado.');
         $arrayData = $request->all();
-        $arrayData['motorista_credential_id'] = $vehicle->motorista_credential_id;
+        $arrayData['driver_credential_id'] = $vehicle->driver_credential_id;
 
         if (!empty($arrayData['maintenance_expenses']) && $arrayData['maintenance_expenses'] > 0) {
             $request->validate(['proof_of_payment_expenses' => 'required']);

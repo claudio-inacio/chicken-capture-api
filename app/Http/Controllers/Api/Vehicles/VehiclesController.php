@@ -30,13 +30,13 @@ class VehiclesController extends Controller
             'plate_number' => 'required',
             'unit_id' => 'required',
             'mileage' => 'required',
-            'motorista_credential_id' => 'required'
+            'driver_credential_id' => 'required'
         ]);
 
         $unit = Units::find($request->unit_id);
         if(!$unit) return ResponseService::businessError('Uindade nao encontrada.');
 
-        $motorista = Credential::find($request->motorista_credential_id);
+        $motorista = Credential::find($request->driver_credential_id);
         if (!$motorista || !in_array($motorista->access_group_id, [AccessGroupEnum::DRIVER, AccessGroupEnum::DRIVER_RESPONSIBLE])) {
             return ResponseService::businessError('Motorista não encontrado.');
         }

@@ -63,7 +63,7 @@ class DriverAreaService
                 }
             }
 
-            $team = Team::where('motorista_credential_id', $vehicle->motorista_credential_id)->first();
+            $team = Team::where('driver_credential_id', $vehicle->driver_credential_id)->first();
             if (!$team)
                 return ResponseService::businessError('Time nao encontrado.');
 
@@ -232,7 +232,7 @@ class DriverAreaService
             $vehicle = Vehicle::find($driverArea->vehicle_id);
             if(!$vehicle) return ResponseService::businessError('Veículo nao encontrado.');
 
-            $team = Team::where('motorista_credential_id', $vehicle->motorista_credential_id)->first();
+            $team = Team::where('driver_credential_id', $vehicle->driver_credential_id)->first();
 
             if ($arrayData['daily_end_km'] != 0) {
                 $dailEnd = VehicleService::saveMileageVehicle($arrayData);

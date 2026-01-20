@@ -360,7 +360,7 @@ class FinancialService
                     DB::raw('COUNT(financial_accounts.id) as total_registros')
                 ])
                 ->join('main.team', 'team.id', '=', 'financial_accounts.team_id')
-                ->join('authentication.credential', 'credential.id', '=', 'team.motorista_credential_id')
+                ->join('authentication.credential', 'credential.id', '=', 'team.driver_credential_id')
                 ->join('authentication.person', 'person.id', '=', 'credential.person_id')
                 ->where('financial_accounts.company_id', $user->company_id)
                 ->whereBetween('financial_accounts.created_at', [$startDate, $endDate])
