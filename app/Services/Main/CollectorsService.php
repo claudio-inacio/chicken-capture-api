@@ -88,7 +88,11 @@ class  CollectorsService
             return [
                 'success' => false,
                 'message' => 'Falha em tentar cadastrar time COD2',
-                'error' => $e->getMessage()
+                'error' => [
+                    'error' => $e->getMessage(),
+                    'line' => $e->getLine(),
+                    'file' => $e->getFile(),
+                ]
             ];
         }
     }
