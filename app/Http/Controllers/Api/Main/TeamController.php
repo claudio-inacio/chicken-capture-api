@@ -57,10 +57,10 @@ class TeamController extends Controller
         if (!$contractingCompany) return ResponseService::invalidArguments('Empresa contratante não encontrada!');
 
         $arrayData['team_id'] = null;
-        $verify = CollectorsService::verifyQuantityCollectors($arrayData, $request->user());
-        if (!$verify['success']) {
-            return ResponseService::businessError($verify['message'], $verify['error']);
-        }
+//        $verify = CollectorsService::verifyQuantityCollectors($arrayData, $request->user());
+//        if (!$verify['success']) {
+//            return ResponseService::businessError($verify['message'], $verify['error']);
+//        }
 
         unset($arrayData['team_id']);
 
@@ -114,10 +114,10 @@ class TeamController extends Controller
             return ResponseService::businessError("Lider selecionado ja pertence a equipe: {$verifyTeamLeader->name}");
         }
 
-        $verify = CollectorsService::verifyQuantityCollectors($arrayData, $request->user());
-        if (!$verify['success']) {
-            return ResponseService::businessError($verify['message'], $verify['error']);
-        }
+//        $verify = CollectorsService::verifyQuantityCollectors($arrayData, $request->user());
+//        if (!$verify['success']) {
+//            return ResponseService::businessError($verify['message'], $verify['error']);
+//        }
 
         return $this->teamRepository->update($request->team_id, $request->all());
     }
