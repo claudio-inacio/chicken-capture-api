@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Main;
 use App\Http\Controllers\Controller;
 use App\Interfaces\Main\TeamRepositoryInterface;
 use App\Models\Main\ContractingCompany;
+use App\Models\Main\Team;
 use App\Models\Main\Units;
 use App\Services\Main\CollectorsService;
 use App\Services\ResponseService;
@@ -34,6 +35,20 @@ class TeamController extends Controller
         $arrayData = $request->all();
         $arrayData['driver_credential_id'] = $request->driver_credential_id;
         $arrayData['company_id'] = $request->user()->company_id;
+
+        $verifyTeamDriver = Team::where('driver_credential_id', $request->driver_credential_id)
+            ->first();
+
+        if ($verifyTeamDriver){
+            return ResponseService::businessError("Motorista selecionado ja pertence a equipe: {$verifyTeamDriver->name}");
+        }
+
+        $verifyTeamLeader = Team::where('driver_credential_id', $request->driver_credential_id)
+            ->first();
+
+        if ($verifyTeamLeader){
+            return ResponseService::businessError("Lider selecionado ja pertence a equipe: {$verifyTeamLeader->name}");
+        }
 
         $verifyUnits = Units::find($request->default_unit_id);
         if (!$verifyUnits) return ResponseService::invalidArguments('Unidade não encontrada!');
@@ -73,6 +88,22 @@ class TeamController extends Controller
         $arrayData = $request->all();
         $arrayData['driver_credential_id'] = $request->driver_credential_id;
         $arrayData['company_id'] = $request->user()->company_id;
+
+        $verifyTeamDriver = Team::where('driver_credential_id', $request->driver_credential_id)
+            ->where('team.id', '<>', $request->team_id)
+            ->first();
+
+        if ($verifyTeamDriver){
+            return ResponseService::businessError("Motorista selecionado ja pertence a equipe: {$verifyTeamDriver->name}");
+        }
+
+        $verifyTeamLeader = Team::where('driver_credential_id', $request->driver_credential_id)
+            ->where('team.id', '<>', $request->team_id)
+            ->first();
+
+        if ($verifyTeamLeader){
+            return ResponseService::businessError("Lider selecionado ja pertence a equipe: {$verifyTeamLeader->name}");
+        }
 
         $verify = CollectorsService::verifyQuantityCollectors($arrayData, $request->user());
         if (!$verify['success']) {
