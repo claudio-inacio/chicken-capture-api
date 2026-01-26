@@ -172,6 +172,8 @@ Route::group(['middleware' => ['authJwt']], function (){
     ################################### VEHICLES ###########################################
     Route::post('/vehicles/vehicle', [VehiclesController::class, 'register']);
     Route::get('/vehicles/vehicle', [VehiclesController::class, 'list']);
+    Route::get('/vehicles/vehicle/report-maintenance', [VehiclesController::class, 'reportMaintenances']);
+    Route::get('/vehicles/vehicle/ranking-expenses', [VehiclesController::class, 'rankingExpenses']);
     Route::put('/vehicles/vehicle', [VehiclesController::class, 'update']);
     Route::put('/vehicles/vehicle/enable', [VehiclesController::class, 'enable']);
     Route::get('/vehicles/expenses', [VehiclesController::class, 'expenses']);

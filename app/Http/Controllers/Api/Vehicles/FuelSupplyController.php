@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Vehicles;
 use App\Http\Controllers\Controller;
 use App\Interfaces\Vehicles\FuelSupplyRepositoryInterface;
 use App\Models\Vehicles\DriverArea;
+use App\Models\Vehicles\Vehicle;
 use App\Services\ResponseService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
