@@ -222,6 +222,7 @@ class VehiclesRepository implements VehiclesRepositoryInterface
         }
     }
 
+    #[ArrayShape(['data' => "array", 'total' => "int"])]
     public function expensesGraphic(
         array $whereCriterious,
         array $selectConfig,
@@ -437,7 +438,10 @@ class VehiclesRepository implements VehiclesRepositoryInterface
             ];
         }
 
-        return $result;
+        return [
+            'data' => $result,
+            'total' => count($result)
+        ];
     }
 
 }
