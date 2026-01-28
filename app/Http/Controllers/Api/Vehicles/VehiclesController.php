@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Vehicles;
 use App\Enum\Authentication\AccessGroupEnum;
 use App\Enum\Financial\StatusEnum;
 use App\Enum\Financial\TypeFinanceEnum;
+use App\Helpers\FormatHelper;
 use App\Http\Controllers\Controller;
 use App\Interfaces\Vehicles\VehiclesRepositoryInterface;
 use App\Models\Credential;
@@ -78,6 +79,9 @@ class VehiclesController extends Controller
             ->select([
                 'vehicle.*',
                 'vehicle_maintenances.maintenance_mileage',
+                'vehicle_maintenances.value as maintenance_mileage_value',
+                'vehicle_maintenances.description as maintenance_mileage_description',
+                'vehicle_maintenances.created_at as maintenance_mileage_created_at',
                 'person.name as person_name',
                 'person.phone_number as person_phone_number',
             ])
@@ -105,6 +109,9 @@ class VehiclesController extends Controller
                     'current_mileage' => $currentMileage,
                     'last_maintenance_mileage' => $lastMaintenanceMileage,
                     'mileage_since_last_maintenance' => $mileageSinceLastMaintenance,
+                    'maintenance_mileage_created_at' => $vehicle->maintenance_mileage_created_at,
+                    'maintenance_mileage_description' => $vehicle->maintenance_mileage_description,
+                    'maintenance_mileage_value' => $vehicle->maintenance_mileage_value,
                 ];
             }
         }
@@ -112,22 +119,36 @@ class VehiclesController extends Controller
         return ResponseService::success('Lista de veículos obtida com sucesso!', $needMaintenance);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function rankingExpenses(Request $request): JsonResponse
     {
+        $request->validate([
+            'start_date' => 'required',
+            'end_date' => 'required',
+            'orderBy' => 'required|array'
+        ]);
+        $startDate = FormatHelper::dateToUsTimeStamp($request->start_date);
+        $endDate = FormatHelper::dateToUsTimeStamp($request->end_date);
+        $orderBy = $request->orderBy;
+
         $credential = $request->user();
         $ranking = FinancialAccounts::query()
-        ->join('vehicles.vehicle as v', 'v.id', '=', 'financial.financial_accounts.vehicle_id')
+        ->join('vehicles.vehicle', 'vehicle.id', '=', 'financial.financial_accounts.vehicle_id')
         ->where('financial.financial_accounts.company_id', $credential->company_id)
         ->where('financial.financial_accounts.type', TypeFinanceEnum::TO_DISCOUNT)
         ->where('financial.financial_accounts.status_id', StatusEnum::DISCOUNT)
+        ->whereBetween('financial_accounts.created_at', [$startDate, $endDate])
         ->select([
-            'v.id as vehicle_id',
-            'v.name as vehicle_name',
-            'v.plate_number',
+            'vehicle.id as vehicle_id',
+            'vehicle.name as vehicle_name',
+            'vehicle.plate_number',
         ])
         ->selectRaw('COUNT(financial.financial_accounts.id) as records_count')
         ->selectRaw('SUM(financial.financial_accounts.amount) as total_expenses')
-        ->groupBy('v.id', 'v.name', 'v.plate_number')
+        ->groupBy('vehicle.id', 'vehicle.name', 'vehicle.plate_number')
+        ->orderBy($orderBy['column'], $orderBy['order'])
         ->get();
 
         return ResponseService::success('Lista obtida com sucesso', $ranking);
@@ -165,5 +186,18 @@ class VehiclesController extends Controller
             return response()->json(['message' => 'Where config is required!!!'], 422);
 
         return response()->json($this->vehiclesRepository->expenses($selectConfig, $whereCriterious));
+    }
+
+    public function expensesGraphic(Request $request): JsonResponse
+    {
+        $request->validate(['groupBy' => 'required']);
+        $whereCriterious = $request->where ?? false;
+        $selectConfig = $request->selectConfig ?? false;
+        if (!$selectConfig)
+            return response()->json(['message' => 'Select config is required!!!'], 422);
+        if (!$whereCriterious)
+            return response()->json(['message' => 'Where config is required!!!'], 422);
+
+        return response()->json($this->vehiclesRepository->expensesGraphic($whereCriterious, $selectConfig, $request->groupBy));
     }
 }

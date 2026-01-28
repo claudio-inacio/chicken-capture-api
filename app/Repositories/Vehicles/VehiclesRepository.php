@@ -66,6 +66,8 @@ class VehiclesRepository implements VehiclesRepositoryInterface
         // -------------------------------
         $financialQuery = DB::table('financial.financial_accounts')
             ->join('vehicles.vehicle', 'vehicle.id', '=', 'financial_accounts.vehicle_id')
+            ->join('authentication.credential', 'credential.id', 'vehicle.driver_credential_id')
+            ->join('authentication.person', 'person.id', 'credential.person_id')
             ->select([
                 'financial_accounts.id',
                 'financial_accounts.description',
@@ -76,6 +78,9 @@ class VehiclesRepository implements VehiclesRepositoryInterface
                 'vehicle.id as vehicle_id',
                 'vehicle.name as vehicle_name',
                 'vehicle.plate_number',
+                'person.name as person_name',
+                'person.phone_number as person_phone_number',
+                'credential.document as person_document',
             ]);
 
         $newCriterious = [];
@@ -101,8 +106,10 @@ class VehiclesRepository implements VehiclesRepositoryInterface
         // CONSULTA COMBUSTÍVEL
         // -------------------------------
         $fuelQuery = DB::table('vehicles.fuel_supply')
-            ->join('vehicles.driver_area as da', 'fuel_supply.driver_area_id', '=', 'da.id')
-            ->join('vehicles.vehicle', 'da.vehicle_id', '=', 'vehicle.id')
+            ->join('vehicles.driver_area', 'fuel_supply.driver_area_id', '=', 'driver_area.id')
+            ->join('vehicles.vehicle', 'driver_area.vehicle_id', '=', 'vehicle.id')
+            ->join('authentication.credential', 'credential.id', 'vehicle.driver_credential_id')
+            ->join('authentication.person', 'person.id', 'credential.person_id')
             ->select([
                 'fuel_supply.id',
                 'fuel_supply.total_value',
@@ -112,6 +119,9 @@ class VehiclesRepository implements VehiclesRepositoryInterface
                 'vehicle.id as vehicle_id',
                 'vehicle.name as vehicle_name',
                 'vehicle.plate_number',
+                'person.name as person_name',
+                'person.phone_number as person_phone_number',
+                'credential.document as person_document',
             ]);
 
         foreach ($whereCriterious as $key => $criterious){
@@ -211,4 +221,223 @@ class VehiclesRepository implements VehiclesRepositoryInterface
             return ResponseService::internalServerError('Falha Ativar/Desativar Veiculo', $e->getMessage());
         }
     }
+
+    public function expensesGraphic(
+        array $whereCriterious,
+        array $selectConfig,
+        string $groupBy = 'day' // week | day | month | year
+    ): array {
+        $whereFactory  = new WhereFactory();
+        $selectFactory = new SelectFactory();
+
+        /*
+        |--------------------------------------------------------------------------
+        | DEFINIÇÃO DE PERÍODO (COM ALIAS PARA EVITAR AMBIGUIDADE)
+        |--------------------------------------------------------------------------
+        */
+        switch ($groupBy) {
+            case 'week':
+                $dateGroupFa = DB::raw("EXTRACT(DOW FROM financial_accounts.created_at) as period");
+                $dateGroupFs = DB::raw("EXTRACT(DOW FROM fuel_supply.created_at) as period");
+                $periodo     = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
+                break;
+
+            case 'month':
+                $dateGroupFa = DB::raw("EXTRACT(MONTH FROM financial_accounts.created_at) as period");
+                $dateGroupFs = DB::raw("EXTRACT(MONTH FROM fuel_supply.created_at) as period");
+                $periodo     = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+                break;
+
+            case 'year':
+                $dateGroupFa = DB::raw("EXTRACT(YEAR FROM financial_accounts.created_at) as period");
+                $dateGroupFs = DB::raw("EXTRACT(YEAR FROM fuel_supply.created_at) as period");
+                $periodo     = [];
+                break;
+
+            default: // day
+                $dateGroupFa = DB::raw("EXTRACT(DAY FROM financial_accounts.created_at) as period");
+                $dateGroupFs = DB::raw("EXTRACT(DAY FROM fuel_supply.created_at) as period");
+                $periodo     = range(1, 31);
+                break;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | FILTRA WHERES POR TABELA (IGUAL AO SEU PADRÃO)
+        |--------------------------------------------------------------------------
+        */
+        $financialWhere = [];
+        $fuelWhere      = [];
+
+        foreach ($whereCriterious as $criterious) {
+            if (
+                str_contains($criterious['field'], 'financial.financial_accounts') ||
+                str_contains($criterious['field'], 'vehicle.vehicle')
+            ) {
+                $financialWhere[] = $criterious;
+            }
+
+            if (
+                str_contains($criterious['field'], 'vehicles.fuel_supply') ||
+                str_contains($criterious['field'], 'vehicle.vehicle')
+            ) {
+                $fuelWhere[] = $criterious;
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | DESPESAS FINANCEIRAS
+        |--------------------------------------------------------------------------
+        */
+        $financialQuery = DB::table('financial.financial_accounts')
+            ->join('vehicles.vehicle', 'vehicle.id', '=', 'financial_accounts.vehicle_id')
+            ->join('authentication.credential', 'credential.id', '=', 'vehicle.driver_credential_id')
+            ->join('authentication.person', 'person.id', '=', 'credential.person_id')
+            ->select([
+                'vehicle.id as vehicle_id',
+                'vehicle.name as vehicle_name',
+                'vehicle.plate_number',
+                'person.name as driver_name',
+                'credential.document as driver_cpf',
+                'person.phone_number as driver_phone',
+                $dateGroupFa,
+                DB::raw('SUM(financial_accounts.amount) as total')
+            ])
+            ->groupBy(
+                'vehicle.id',
+                'vehicle.name',
+                'vehicle.plate_number',
+                'person.name',
+                'credential.document',
+                'person.phone_number',
+                'period'
+            );
+
+        $financialQuery = $whereFactory->byArray($financialQuery, $financialWhere);
+
+        if (!empty($selectConfig)) {
+            $financialQuery = $selectFactory->byArray($financialQuery, $selectConfig);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | COMBUSTÍVEL
+        |--------------------------------------------------------------------------
+        */
+        $fuelQuery = DB::table('vehicles.fuel_supply')
+            ->join('vehicles.driver_area', 'fuel_supply.driver_area_id', '=', 'driver_area.id')
+            ->join('vehicles.vehicle', 'vehicle.id', '=', 'driver_area.vehicle_id')
+            ->join('authentication.credential', 'credential.id', '=', 'vehicle.driver_credential_id')
+            ->join('authentication.person', 'person.id', '=', 'credential.person_id')
+            ->select([
+                'vehicle.id as vehicle_id',
+                'vehicle.name as vehicle_name',
+                'vehicle.plate_number',
+                'person.name as driver_name',
+                'credential.document as driver_cpf',
+                'person.phone_number as driver_phone',
+                $dateGroupFs,
+                DB::raw('SUM(fuel_supply.total_value) as total')
+            ])
+            ->groupBy(
+                'vehicle.id',
+                'vehicle.name',
+                'vehicle.plate_number',
+                'person.name',
+                'credential.document',
+                'person.phone_number',
+                'period'
+            );
+
+        $fuelQuery = $whereFactory->byArray($fuelQuery, $fuelWhere);
+
+        if (!empty($selectConfig)) {
+            $fuelQuery = $selectFactory->byArray($fuelQuery, $selectConfig);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | UNIFICA RESULTADOS
+        |--------------------------------------------------------------------------
+        */
+        $rows = $financialQuery
+            ->unionAll($fuelQuery)
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | MONTA RETORNO PARA O FRONT
+        |--------------------------------------------------------------------------
+        */
+        $grouped = [];
+
+        foreach ($rows as $row) {
+            $vehicleKey = $row->vehicle_id;
+
+            if (!isset($grouped[$vehicleKey])) {
+                $grouped[$vehicleKey] = [
+                    'vehicle_id'    => $row->vehicle_id,
+                    'vehicle_name'  => $row->vehicle_name,
+                    'plate_number'  => $row->plate_number,
+                    'driver_name'   => $row->driver_name,
+                    'driver_cpf'    => $row->driver_cpf,
+                    'driver_phone'  => $row->driver_phone,
+                    'data'          => []
+                ];
+            }
+
+            if ($groupBy === 'year') {
+                $year = (int) $row->period;
+                $grouped[$vehicleKey]['data'][$year] =
+                    ($grouped[$vehicleKey]['data'][$year] ?? 0) + (float) $row->total;
+                continue;
+            }
+
+            $index = (int) $row->period - 1;
+            $grouped[$vehicleKey]['data'][$index] =
+                ($grouped[$vehicleKey]['data'][$index] ?? 0) + (float) $row->total;
+        }
+
+        $result = [];
+
+
+        foreach ($grouped as $item) {
+
+            if ($groupBy === 'year') {
+                ksort($item['data']);
+
+                $result[] = [
+                    'vehicle_id'   => $item['vehicle_id'],
+                    'vehicle_name' => $item['vehicle_name'],
+                    'plate_number' => $item['plate_number'],
+                    'driver_name'  => $item['driver_name'],
+                    'driver_cpf'   => $item['driver_cpf'],
+                    'driver_phone' => $item['driver_phone'],
+                    'data'         => array_map(fn ($v) => round($v, 2), array_values($item['data'])),
+                    'periodo'      => array_map('strval', array_keys($item['data']))
+                ];
+                continue;
+            }
+
+            $filledData = array_replace(
+                array_fill(0, count($periodo), 0),
+                $item['data']
+            );
+
+            $result[] = [
+                'vehicle_id'   => $item['vehicle_id'],
+                'vehicle_name' => $item['vehicle_name'],
+                'plate_number' => $item['plate_number'],
+                'driver_name'  => $item['driver_name'],
+                'driver_cpf'   => $item['driver_cpf'],
+                'driver_phone' => $item['driver_phone'],
+                'data'         => array_map(fn ($v) => round($v, 2), $filledData),
+                'periodo'      => $periodo
+            ];
+        }
+
+        return $result;
+    }
+
 }

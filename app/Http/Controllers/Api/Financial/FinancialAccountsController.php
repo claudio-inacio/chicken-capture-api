@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Api\Financial;
 
 use App\Enum\Financial\StatusEnum;
 use App\Enum\Financial\TableReferenceFinanceEnum;
+use App\Helpers\FormatHelper;
 use App\Http\Controllers\Controller;
 use App\Interfaces\Financial\FinancialAccountsRepositoryInterface;
 use App\Models\Vehicles\Vehicle;
+use App\Models\Vehicles\VehicleMaintenances;
 use App\Services\GenerateExcelService;
 use App\Services\Financial\FinancialService;
 use App\Services\ResponseService;
@@ -32,7 +34,7 @@ class FinancialAccountsController extends Controller
             'amount' => 'required',
             'type' => 'required',
             'status_id' => 'required',
-            'reference_id' => 'required',
+            //'reference_id' => 'required',
             'table_reference_id' => 'required',
             'cost_center_id' => 'required',
         ]);
@@ -54,10 +56,25 @@ class FinancialAccountsController extends Controller
         $paymentData['status_proof_of_payment'] = $request->status_proof_of_payment ?? null;
         $paymentData['observation_proof_of_payment'] = $request->observation_proof_of_payment ?? null;
 
-        if ($request->table_reference_id == TableReferenceFinanceEnum::MAINTENANCE){
+        if ($request->table_reference_id == TableReferenceFinanceEnum::VEHICLE){
             $vehicle = Vehicle::find($request->reference_id);
             if (!$vehicle) return ResponseService::businessError('Id da referência não pertence a um veículo.');
             $arrayData['vehicle_id'] = $vehicle->id;
+        }
+
+        if ($request->table_reference_id == TableReferenceFinanceEnum::VEHICLE_MAINTENANCE){
+            $vehicle = Vehicle::find($request->reference_id);
+            if (!$vehicle) return ResponseService::businessError('Id da referência não pertence a um veículo.');
+            $arrayData['vehicle_id'] = $vehicle->id;
+
+            $vehicleMaintenances = VehicleMaintenances::create([
+                'vehicle_id' => $vehicle->id,
+                'maintenance_mileage' => $vehicle->mileage,
+                'description' => $request->description ?? '',
+                'value' => FormatHelper::moneyToUS($request->amount ?? 0)
+            ]);
+
+            $request->merge(['reference_id' => $vehicleMaintenances->id]);
         }
 
         return $this->financialAccountsRepository->create($arrayData, $paymentData);
@@ -183,6 +200,22 @@ class FinancialAccountsController extends Controller
         $paymentData['proof_of_payment'] = $request->proof_of_payment ?? null;
         $paymentData['status_proof_of_payment'] = $request->status_proof_of_payment ?? null;
         $paymentData['observation_proof_of_payment'] = $request->observation_proof_of_payment ?? null;
+
+        if ($request->table_reference_id == TableReferenceFinanceEnum::VEHICLE_MAINTENANCE){
+            $vehicle = Vehicle::find($request->reference_id);
+            if (!$vehicle) return ResponseService::businessError('Id da referência não pertence a um veículo.');
+            $arrayData['vehicle_id'] = $vehicle->id;
+
+            $vehicleMaintenances = VehicleMaintenances::find($request->reference_id)
+                ->update([
+                'vehicle_id' => $vehicle->id,
+                'maintenance_mileage' => $vehicle->mileage,
+                'description' => $request->description ?? '',
+                'value' => FormatHelper::moneyToUS($request->amount ?? 0)
+            ]);
+
+            $request->merge(['reference_id' => $vehicleMaintenances->id]);
+        }
 
         return $this->financialAccountsRepository->update($request->financial_accounts_id, $arrayData, $paymentData);
     }

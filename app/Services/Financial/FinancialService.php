@@ -111,7 +111,7 @@ class FinancialService
                 'type' => TypeFinanceEnum::TO_DISCOUNT,
                 'status_id' => StatusEnum::TO_DISCOUNT,
                 'reference_id' => $referenceId,
-                'table_reference_id' => TableReferenceFinanceEnum::MAINTENANCE,
+                'table_reference_id' => TableReferenceFinanceEnum::VEHICLE,
                 'due_date' => now(),
                 'vehicle_id' => $arrayRequest['vehicle_id'],
                 'credential_id' => $arrayRequest['credential_id'],

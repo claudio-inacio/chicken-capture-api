@@ -17,6 +17,7 @@ class VehicleMaintenances extends Model
         'vehicle_id',
         'maintenance_mileage',
         'description',
+        'value',
         'created_at',
         'updated_at'
     ];
