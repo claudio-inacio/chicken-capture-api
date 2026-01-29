@@ -63,8 +63,8 @@ class FinancialAccountsController extends Controller
         }
 
         if ($request->table_reference_id == TableReferenceFinanceEnum::VEHICLE_MAINTENANCE){
-            $vehicle = Vehicle::find($request->reference_id);
-            if (!$vehicle) return ResponseService::businessError('Id da referência não pertence a um veículo.');
+            $vehicle = Vehicle::find($request->vehicle_id);
+            if (!$vehicle) return ResponseService::businessError('Veículo não encontrado.');
             $arrayData['vehicle_id'] = $vehicle->id;
 
             $vehicleMaintenances = VehicleMaintenances::create([
