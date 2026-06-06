@@ -1,6 +1,5 @@
 FROM php:8.2-apache
 
-# Dependências do sistema
 RUN apt-get update && apt-get install -y \
     libpq-dev \
     libzip-dev \
@@ -14,22 +13,18 @@ RUN apt-get update && apt-get install -y \
         pgsql \
         pcntl \
         zip \
+        calendar \
     && apt-get clean
 
-# Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
-# Copia arquivos
 COPY . .
 
-# Instala dependências PHP
 RUN composer install --optimize-autoloader --no-interaction --no-scripts
 
-# Permissões
 RUN chmod -R 775 storage bootstrap/cache
-
 
 EXPOSE 8000
 
