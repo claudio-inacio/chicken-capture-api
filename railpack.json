@@ -1,5 +1,5 @@
 {
   "php": {
-    "extensions": ["pcntl", "opcache", "sodium"]
+    "extensions": ["pdo_pgsql", "pgsql", "pcntl", "opcache"]
   }
 }
