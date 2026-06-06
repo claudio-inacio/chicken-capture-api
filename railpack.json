@@ -1,0 +1,5 @@
+{
+  "php": {
+    "extensions": ["pcntl", "opcache", "sodium"]
+  }
+}
